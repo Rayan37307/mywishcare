@@ -7,6 +7,7 @@ import Science from '../components/Science'
 import Features from '../components/Features'
 import DisSlider from '../components/DisSlider'
 import DisSlider1 from '../components/DisSlider1'
+import CategoryHome from '../components/CategoryHome'
 
 const Home = () => {
   return (
@@ -19,6 +20,7 @@ const Home = () => {
       <Features />
       <DisSlider />
       <DisSlider1 />
+      <CategoryHome />
     </div>
   )
 }

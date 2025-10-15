@@ -19,7 +19,7 @@ const DisSlider1 = () => {
   }, [images.length]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-auto">
       {images.map((image, index) => (
         <div
           key={index}

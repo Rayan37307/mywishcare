@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Topbar from './components/Topbar'
 import Header from './components/Header'
+import Footer from './components/Footer'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -70,11 +71,12 @@ const App = () => {
       <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
         <Topbar/>
         <Header toggleMenu={toggleMenu} />
-        <div className='container mx-auto'>
+        <div className='container mx-auto max-w-7xl'>
           <Routes>
             <Route path='/' element={<Home/>}/>
           </Routes>
         </div>
+        <Footer />
       </div>
     </div>
   )
