@@ -4,6 +4,9 @@ import Home from './pages/Home'
 import Topbar from './components/Topbar'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import Collections from './pages/Collections'
+import BestSellers from './pages/BestSellers'
+import About from './pages/About'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -74,6 +77,9 @@ const App = () => {
         <div className='container mx-auto max-w-7xl'>
           <Routes>
             <Route path='/' element={<Home/>}/>
+            <Route path="/collections" element={<Collections/>} />
+            <Route path="/collections/bestsellers" element={<BestSellers/>} />
+            <Route path='/pages/about-us' element={<About />} />
           </Routes>
         </div>
         <Footer />
