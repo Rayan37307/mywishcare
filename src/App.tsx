@@ -9,6 +9,9 @@ import BestSellers from './pages/BestSellers'
 import About from './pages/About'
 import AllProducts from './pages/AllProducts'
 import TermsOfService from './pages/TermsOfService'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import ShippingPolicy from './pages/ShippingPolicy'
+import RefundPolicy from './pages/RefundPolicy'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -84,6 +87,9 @@ const App = () => {
             <Route path='/pages/about-us' element={<About />} />
             <Route path="/collections/all-products" element={<AllProducts />} />
             <Route path='/policies/terms-of-service' element={ <TermsOfService />} />
+            <Route path='/policies/privacy-policy' element={ <PrivacyPolicy />} />
+            <Route path='/policies/shipping-policy' element={ <ShippingPolicy />} />
+            <Route path='/policies/refund-policy' element={ <RefundPolicy />} />
           </Routes>
         </div>
         <Footer />
