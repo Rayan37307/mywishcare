@@ -7,6 +7,8 @@ import Footer from './components/Footer'
 import Collections from './pages/Collections'
 import BestSellers from './pages/BestSellers'
 import About from './pages/About'
+import AllProducts from './pages/AllProducts'
+import TermsOfService from './pages/TermsOfService'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -80,6 +82,8 @@ const App = () => {
             <Route path="/collections" element={<Collections/>} />
             <Route path="/collections/bestsellers" element={<BestSellers/>} />
             <Route path='/pages/about-us' element={<About />} />
+            <Route path="/collections/all-products" element={<AllProducts />} />
+            <Route path='/policies/terms-of-service' element={ <TermsOfService />} />
           </Routes>
         </div>
         <Footer />

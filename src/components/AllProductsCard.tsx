@@ -8,7 +8,7 @@ interface Product {
   description: string;
 }
 
-const BestSellersCard = () => {
+const AllProductsCard = () => {
   const sampleProducts: Product[] = [
     {
       id: 1,
@@ -107,4 +107,4 @@ const BestSellersCard = () => {
   );
 };
 
-export default BestSellersCard;
+export default AllProductsCard

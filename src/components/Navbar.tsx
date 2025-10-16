@@ -6,7 +6,7 @@ interface NavbarProps {
 
 const Navbar = ({ toggleMenu }: NavbarProps) => {
   return (
-    <nav className="bg-[#E4EDFD] py-6 px-3">
+    <nav className="bg-[#E4EDFD] py-8 px-6">
       <div className="flex items-center justify-between">
         {/* Left: Menu Button */}
         <div className="flex items-center">

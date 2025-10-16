@@ -6,29 +6,27 @@ const Footer = () => {
   return (
     <div className='mt-20 bg-[#373737] text-white py-8 rounded-t-2xl'>
         <div className='container mx-auto'>
-            <div className='flex items-start justify-between flex-wrap px-4'>
+            <div className='flex items-start justify-between flex-wrap max-lg:px-4'>
             <div>
                 <h3 className='text-sm font-semibold mb-5'>Shop</h3>
                 <ul className='text-[14px] space-y-2 text-gray-300'>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
+                    <li>Bestsellers</li>
+                    <li>Sun Care</li>
+                    <li>Hairfall</li>
+                    <li>Acne & Acne Marks</li>
+                    <li>Pigmentation</li>
+                    <li>Dull Skin</li>
+                    <li>Detan</li>
+                    <li>Damaged Hair</li>
                 </ul>
             </div>
             <div>
                 <h3 className='text-sm  font-semibold mb-5'>Ploices</h3>
                 <ul className='text-[14px] space-y-2 text-gray-300'>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
-                    <li>Link</li>
+                    <li>Terms Of Service</li>
+                    <li>Privacy Policy</li>
+                    <li>Shipping Policy</li>
+                    <li>Refund Policy</li>
                 </ul>
             </div>
             <div>
@@ -42,8 +40,8 @@ const Footer = () => {
                 <div className='text-gray-300 space-y-2'>
                     <p className='max-w-80'>Rabiko Lifestyle Private Limited <br />
 GodrejGenesis, Unit No. 1609, Sector 5, Saltlake, West Bengal - 700091</p>
-                <p className='pb-8'>982018201</p>
-                <a href="" className='underline'>euhdeud@gjs.oj</a>
+                <p className='pb-8'>+91 83368 33230</p>
+                <a href="" className='underline'>hello@mywishcare.com</a>
                 </div>
 
             </div>
