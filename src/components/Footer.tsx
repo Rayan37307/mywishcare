@@ -27,9 +27,9 @@ const Footer = () => {
             <h3 className='text-sm font-semibold mb-5'>Policies</h3>
             <ul className='text-[14px] space-y-2 text-gray-300'>
               <li><Link to="/policies/terms-of-service">Terms Of Service</Link></li>
-              <li><Link to="/privacy">Privacy Policy</Link></li>
-              <li><Link to="/shipping">Shipping Policy</Link></li>
-              <li><Link to="/refund">Refund Policy</Link></li>
+              <li><Link to="/policies/privacy-policy">Privacy Policy</Link></li>
+              <li><Link to="/policies/shipping-policy">Shipping Policy</Link></li>
+              <li><Link to="/policies/refund-policy">Refund Policy</Link></li>
             </ul>
           </div>
           

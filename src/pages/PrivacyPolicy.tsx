@@ -3,9 +3,9 @@ import React from 'react'
 const PrivacyPolicy = () => {
   return (
     <div className='flex justify-center items-center flex-col'>
-      <br />
-      <h3 className='uppercase text-3xl text-black text-center font-semibold'>PRIVACY POLICY</h3>
-      <br />
+      <br /><br />
+      <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>PRIVACY POLICY</h3>
+      <br /><br />
       <p className='text-sm max-w-4xl'>
         This Privacy Policy describes how your personal information is collected, used, and shared when you visit or make a purchase from www.mywishcare.com (the "Site").
         <br /><br />
