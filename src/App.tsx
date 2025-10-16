@@ -76,7 +76,7 @@ const App = () => {
       <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
         <Topbar/>
         <Header toggleMenu={toggleMenu} />
-        <div className='container mx-auto max-w-7xl'>
+        <div className=''>
           <Routes>
             <Route path='/' element={<Home/>}/>
             <Route path="/collections" element={<Collections/>} />
