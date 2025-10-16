@@ -12,6 +12,7 @@ import TermsOfService from './pages/TermsOfService'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import ShippingPolicy from './pages/ShippingPolicy'
 import RefundPolicy from './pages/RefundPolicy'
+import SunCare from './pages/Suncare'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -47,9 +48,8 @@ const App = () => {
         <div className="absolute top-0 left-0 w-64 h-full bg-white shadow-lg z-50">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Menu</h2>
               <button 
-                className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                className="p-1 rounded-md"
                 onClick={closeMenu}
                 aria-label="Close menu"
               >
@@ -58,19 +58,22 @@ const App = () => {
                 </svg>
               </button>
             </div>
-            <ul className="space-y-4">
-              {menuItems.map((item, index) => (
-                <li key={index}>
-                  <a 
-                    href={item.path}
-                    className="block py-2 text-lg hover:text-[#D4F871] transition-colors"
-                    onClick={closeMenu}
-                  >
-                    {item.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
+           <ul className="space-y-4">
+  {menuItems.map((item, index) => (
+    <li key={index}>
+      <a 
+        href={item.path}
+        className="block py-2 text-lg hover:text-[#D4F871] transition-colors"
+        onClick={closeMenu}
+      >
+        {item.name}
+      </a>
+      {/* Divider except after last item */}
+      {index !== menuItems.length - 1 && <hr className="border-gray-300 mt-2" />}
+    </li>
+  ))}
+</ul>
+
           </div>
         </div>
       </div>
@@ -84,6 +87,7 @@ const App = () => {
             <Route path='/' element={<Home/>}/>
             <Route path="/collections" element={<Collections/>} />
             <Route path="/collections/bestsellers" element={<BestSellers/>} />
+            <Route path="/collections/sun-care" element={<SunCare/>} />
             <Route path='/pages/about-us' element={<About />} />
             <Route path="/collections/all-products" element={<AllProducts />} />
             <Route path='/policies/terms-of-service' element={ <TermsOfService />} />

@@ -1,4 +1,3 @@
-import React from 'react'
 import Hero from '../components/Hero'
 import BannerSlider from '../components/BannerSlider'
 import WhatsNew from '../components/WhatsNew'
@@ -11,7 +10,7 @@ import CategoryHome from '../components/CategoryHome'
 
 const Home = () => {
   return (
-    <div>
+    <div className='container mx-auto max-w-7xl'>
       <Hero />
       <BestSellers />
       <BannerSlider />

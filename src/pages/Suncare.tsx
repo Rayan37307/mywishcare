@@ -2,13 +2,13 @@ import React from 'react'
 import ProblemCategory from '../components/ProblemCategory'
 import BestSellersCard from '../components/BestSellersCards'
 
-const BestSellers = () => {
+const SunCare = () => {
   return (
-    <div className='px-20'>
+    <div>
         <ProblemCategory/>
         <BestSellersCard />
     </div>
   )
 }
 
-export default BestSellers
+export default SunCare
