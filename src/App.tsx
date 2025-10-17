@@ -14,6 +14,7 @@ import ShippingPolicy from './pages/ShippingPolicy'
 import RefundPolicy from './pages/RefundPolicy'
 import SunCare from './pages/Suncare'
 import MobileMenu from './components/MobileMenu'
+import ProductDetail from './pages/ProductDetail'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -61,6 +62,7 @@ const App = () => {
             <Route path="/policies/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/policies/shipping-policy" element={<ShippingPolicy />} />
             <Route path="/policies/refund-policy" element={<RefundPolicy />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
           </Routes>
         </div>
         <Footer />
