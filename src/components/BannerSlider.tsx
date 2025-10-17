@@ -2,39 +2,41 @@ import React from 'react';
 
 const BannerSlider = () => {
   const messages = [
-    "WELCOME TO MY WISH CARE",
-    "FREE SHIPPING ON ORDERS OVER ₹500",
-    "EXCLUSIVE DISCOUNTS FOR NEW CUSTOMERS",
-    "PREMIUM QUALITY GUARANTEED",
-    "24/7 CUSTOMER SUPPORT",
-    "NATURAL INGREDIENTS"
+    "Multifunctional Approach",
+    "Effective SelfCare",
+    "Biomimetic Ingredients",
   ];
+
+  // Function to insert dot dividers between every message (including end-to-start)
+  const renderMessages = () => {
+    const spacedDot = "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0•\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0";
+    const repeatedMessages = [...messages, ...messages]; // duplicate for seamless loop
+    return repeatedMessages.map((msg, i) => (
+      <span key={i} className="flex items-center text-2xl sm:text-3xl tracking-wide">
+        {msg}
+        {i !== repeatedMessages.length - 1 && <span>{spacedDot}</span>}
+      </span>
+    ));
+  };
 
   return (
     <div className="w-full bg-white py-3 overflow-hidden">
       <div className="flex whitespace-nowrap animate-marquee">
-        {messages.map((message, index) => (
-          <div key={index} className="text-black uppercase text-lg font-bold flex-shrink-0 mx-8">
-            {message}
-          </div>
-        ))}
-        {/* Duplicate the messages to create a seamless loop */}
-        {messages.map((message, index) => (
-          <div key={`dup-${index}`} className="text-black uppercase text-lg font-bold flex-shrink-0 mx-8">
-            {message}
-          </div>
-        ))}
+        {renderMessages()}
       </div>
+
       <style jsx>{`
         .animate-marquee {
-          animation: marquee 20s linear infinite;
+          display: inline-flex;
+          animation: marquee 25s linear infinite;
         }
+
         @keyframes marquee {
           0% {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-100%);
+            transform: translateX(-50%);
           }
         }
       `}</style>

@@ -5,7 +5,7 @@ import { ImInstagram } from 'react-icons/im'
 
 const Footer = () => {
   return (
-    <div className='mt-20 bg-[#373737] text-white py-8 rounded-t-2xl'>
+    <div className='bg-[#373737] text-white py-8 rounded-t-2xl'>
       <div className='lg:px-10 md:px-8 sm:px-6 px-4'>
         <div className='flex items-start justify-between flex-wrap max-lg:px-4'>
           
