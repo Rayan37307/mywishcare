@@ -54,7 +54,7 @@ const Footer = () => {
 
         </div>
 
-        <div className='text-gray-300 gap-4 text-xl flex py-8'>
+        <div className='text-gray-300 gap-4 text-xl flex py-14'>
           <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"><FaFacebook/></a>
           <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"><ImInstagram/></a>
           <a href="https://youtube.com" target="_blank" rel="noopener noreferrer"><BsYoutube/></a>

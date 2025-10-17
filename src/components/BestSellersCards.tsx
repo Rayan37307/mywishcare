@@ -13,7 +13,7 @@ const BestSellersCard: React.FC<BestSellersCardProps> = ({ products = [] }) => {
         {products.map((product) => (
           <Link to={`/products/${product.id}`} key={product.id}>
             <div className="bg-white rounded-lg overflow-hidden p-2 flex flex-col transition-all h-full">
-              <div className="w-full aspect-[5/4]">
+              <div className="w-full aspect-[5/6]">
                 <img
                   src={product.images[0]?.src || '/placeholder.webp'}
                   alt={product.name}
