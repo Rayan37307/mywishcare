@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Topbar from './components/Topbar'
 import Header from './components/Header'
@@ -15,6 +15,10 @@ import RefundPolicy from './pages/RefundPolicy'
 import SunCare from './pages/Suncare'
 import MobileMenu from './components/MobileMenu'
 import ProductDetail from './pages/ProductDetail'
+import LoginForm from './components/LoginForm'
+import UserProfile from './components/UserProfile'
+import ProtectedRoute from './components/ProtectedRoute'
+import Navigation from './components/Navigation'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,6 +52,7 @@ const App = () => {
 
       {/* Main Content */}
       <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
+        {/* <Navigation /> */}
         <Topbar />
         <Header toggleMenu={toggleMenu} />
         <div className="">
@@ -63,6 +68,17 @@ const App = () => {
             <Route path="/policies/shipping-policy" element={<ShippingPolicy />} />
             <Route path="/policies/refund-policy" element={<RefundPolicy />} />
             <Route path="/products/:id" element={<ProductDetail />} />
+            
+            {/* Authentication Routes */}
+            <Route path="/login" element={<LoginForm />} />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <UserProfile />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </div>
         <Footer />

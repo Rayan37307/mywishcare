@@ -36,19 +36,41 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <img src={product.images[0]?.src} alt={product.name} className="w-full rounded-lg" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-          <div className="text-2xl text-gray-800 mb-4">₹{product.price}</div>
-          <div
-            className="prose"
-            dangerouslySetInnerHTML={{ __html: product.description }}
-          />
-          <button className="mt-4 w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black">Add to Cart</button>
+    <div className='bg-white py-10'>
+      <div className="container mx-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <img src={product.images[0]?.src} alt={product.name} className="w-[80%] rounded-lg" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">{product.name}</h1>
+            <p
+              className="text-[12px] my-3 text-black"
+              dangerouslySetInnerHTML={{ __html: product.short_description }}
+            />
+            <div className="text-2xl text-gray-800 mb-4">₹{product.price}</div>
+            
+            <button className="mt-4 w-full py-3 bg-transparent uppercase flex items-center justify-center gap-2 border-1 text-[13px] border-gray-600 font-semibold">Add to Cart <svg
+              aria-hidden="true"
+              fill="none"
+              focusable="false"
+              width="15"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              ></path>
+            </svg></button>
+             <button className="mt-4 w-full py-3 bg-black text-white uppercase flex items-center justify-center gap-2 border-1  text-[13px] border-black font-semibold">buy it now</button>
+             <div
+              className="prose pt-10"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
+          </div>
         </div>
       </div>
     </div>

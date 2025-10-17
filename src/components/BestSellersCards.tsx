@@ -20,7 +20,7 @@ const BestSellersCard: React.FC<BestSellersCardProps> = ({ products = [] }) => {
                   className="w-full h-full object-cover rounded-lg"
                 />
               </div>
-              <div className="text-center flex-grow mt-2">
+              <div className="text-center flex-grow mt-2"qwen>
                 <h3 className="text-[15px]">{product.name}</h3>
                 <p
                   className="text-[10px] text-black"
