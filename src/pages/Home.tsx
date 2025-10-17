@@ -1,6 +1,7 @@
 import Hero from '../components/Hero'
 import BannerSlider from '../components/BannerSlider'
 import WhatsNew from '../components/WhatsNew'
+import RoutineBuilder from '../components/RoutineBuilder'
 import BestSellers from '../components/BestSellers'
 import Science from '../components/Science'
 import Features from '../components/Features'
@@ -15,6 +16,7 @@ const Home = () => {
       <BestSellers />
       <BannerSlider />
       <WhatsNew />
+      <RoutineBuilder />
       <Science/>
       <Features />
       <DisSlider />

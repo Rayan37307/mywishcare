@@ -1,85 +1,32 @@
-import React from "react";
+import React from 'react';
+import type { Product } from '../types/product';
 
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  description: string;
+interface AllProductsCardProps {
+  products: Product[];
 }
 
-const AllProductsCard = () => {
-  const sampleProducts: Product[] = [
-    {
-      id: 1,
-      name: "Anti-Dandruff Shampoo",
-      price: "299.00",
-      image: "/dandruff.webp",
-      description:
-        "Specially formulated to combat dandruff and soothe scalp irritation.",
-    },
-    {
-      id: 2,
-      name: "De-Tan Face Wash",
-      price: "199.00",
-      image: "/detan.webp",
-      description:
-        "Gentle face wash that removes tan and impurities while restoring natural glow.",
-    },
-    {
-      id: 3,
-      name: "Hair Fall Control Serum",
-      price: "399.00",
-      image: "/hairfall.webp",
-      description:
-        "Advanced serum to reduce hair fall and promote healthy hair growth. Contains biotin and natural oils.",
-    },
-    {
-      id: 4,
-      name: "Lip Care Kit",
-      price: "149.00",
-      image: "/lipcare.webp",
-      description:
-        "Complete lip care solution including balm and scrub for soft, healthy lips. With SPF protection.",
-    },
-    {
-      id: 5,
-      name: "Sculp Care Oil",
-      price: "249.00",
-      image: "/sculpcare.webp",
-      description:
-        "Nourishing oil for scalp health. Helps with dryness, irritation, and promotes healthy hair growth.",
-    },
-    {
-      id: 6,
-      name: "Skin Care Essentials",
-      price: "499.00",
-      image: "/skincare.webp",
-      description:
-        "Complete skincare routine with cleanser, toner, and moisturizer. Suitable for all skin types.",
-    },
-  ];
-
+const AllProductsCard: React.FC<AllProductsCardProps> = ({ products = [] }) => {
   return (
     <div className="py-8">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {sampleProducts.map((product) => (
+        {products.map((product) => (
           <div
             key={product.id}
             className="bg-white rounded-lg overflow-hidden p-2 flex flex-col transition-all"
           >
             <div className="w-full aspect-[5/4]">
               <img
-                src={product.image}
+                src={product.images[0]?.src || '/placeholder.webp'}
                 alt={product.name}
                 className="w-full h-full object-cover rounded-lg"
               />
             </div>
             <div className="text-center flex-grow mt-2">
               <h3 className="text-[15px]">{product.name}</h3>
-              <p className="text-[10px] text-black">
-                {product.description.substring(0, 100)}...
-              </p>
+              <p
+                className="text-[10px] text-black"
+                dangerouslySetInnerHTML={{ __html: product.short_description }}
+              />
               <p className="text-black mb-2 mt-2">₹{product.price}</p>
             </div>
             <button className="w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2">
@@ -107,4 +54,4 @@ const AllProductsCard = () => {
   );
 };
 
-export default AllProductsCard
+export default AllProductsCard;

@@ -1,0 +1,116 @@
+// src/services/woocommerceService.ts
+import type { Product, WooCommerceAPIProduct } from "../types/product";
+
+const WOO_API_URL = import.meta.env.VITE_WC_API_URL || 'https://your-wordpress-site.com/wp-json/wc/v3';
+const WOO_CONSUMER_KEY = import.meta.env.VITE_WC_CONSUMER_KEY || '';
+const WOO_CONSUMER_SECRET = import.meta.env.VITE_WC_CONSUMER_SECRET || '';
+
+const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxwYXRoIGQ9Ik0yMiAydi0yYTIgMiAwIDAgMC0yLTJIMTRhMiAyIDAgMCAwLTIgMnYySDRhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE2YTIgMiAwIDAgMCAyLTJWMnptLTQgMTZINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyeiIgLz4KPC9zdmc+';
+
+class WooCommerceService {
+  private apiURL: string;
+  private consumerKey: string;
+  private consumerSecret: string;
+
+  constructor() {
+    this.apiURL = WOO_API_URL;
+    this.consumerKey = WOO_CONSUMER_KEY;
+    this.consumerSecret = WOO_CONSUMER_SECRET;
+  }
+
+  private buildAuthURL(endpoint: string): string {
+    const separator = endpoint.includes('?') ? '&' : '?';
+    if (!this.consumerKey || !this.consumerSecret) {
+      return `${this.apiURL}${endpoint}`;
+    }
+    return `${this.apiURL}${endpoint}${separator}consumer_key=${this.consumerKey}&consumer_secret=${this.consumerSecret}`;
+  }
+
+  private transformWooCommerceProduct(product: WooCommerceAPIProduct): Product {
+    return {
+      id: product.id,
+      name: product.name,
+      price: product.price || '0.00',
+      regular_price: product.regular_price,
+      sale_price: product.sale_price,
+      images: product.images && product.images.length > 0 
+        ? product.images.map(img => ({ src: img.src, alt: img.alt })) 
+        : [{ src: PLACEHOLDER_IMAGE }],
+      description: product.description || 'No description available',
+      short_description: product.short_description || product.description || 'No description available',
+      stock_quantity: product.stock_quantity,
+      stock_status: product.stock_status,
+      categories: product.categories || [],
+    };
+  }
+
+  async fetchProducts(): Promise<Product[]> {
+    try {
+      const response = await fetch(this.buildAuthURL('/products'));
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+      }
+      
+      const products: WooCommerceAPIProduct[] = await response.json();
+      
+      return products.map(product => this.transformWooCommerceProduct(product));
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
+  }
+
+  async fetchProductById(id: number): Promise<Product | null> {
+    try {
+      const response = await fetch(this.buildAuthURL(`/products/${id}`));
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch product: ${response.status} ${response.statusText}`);
+      }
+      
+      const product: WooCommerceAPIProduct = await response.json();
+      
+      return this.transformWooCommerceProduct(product);
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
+  }
+
+  async fetchProductsByCategory(categoryId: number): Promise<Product[]> {
+    try {
+      const response = await fetch(this.buildAuthURL(`/products?category=${categoryId}`));
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+      }
+      
+      const products: WooCommerceAPIProduct[] = await response.json();
+      
+      return products.map(product => this.transformWooCommerceProduct(product));
+    } catch (error) {
+      console.error('Error fetching products by category:', error);
+      return [];
+    }
+  }
+
+  async searchProducts(searchTerm: string): Promise<Product[]> {
+    try {
+      const response = await fetch(this.buildAuthURL(`/products?search=${encodeURIComponent(searchTerm)}`));
+      
+      if (!response.ok) {
+        throw new Error(`Failed to search products: ${response.status} ${response.statusText}`);
+      }
+      
+      const products: WooCommerceAPIProduct[] = await response.json();
+      
+      return products.map(product => this.transformWooCommerceProduct(product));
+    } catch (error) {
+      console.error('Error searching products:', error);
+      return [];
+    }
+  }
+}
+
+export const woocommerceService = new WooCommerceService();

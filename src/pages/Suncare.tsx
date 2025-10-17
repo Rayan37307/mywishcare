@@ -1,14 +1,25 @@
-import React from 'react'
-import ProblemCategory from '../components/ProblemCategory'
-import BestSellersCard from '../components/BestSellersCards'
+import React, { useEffect } from 'react';
+import ProblemCategory from '../components/ProblemCategory';
+import BestSellersCard from '../components/BestSellersCards';
+import { useProductStore } from '../store/productStore';
 
 const SunCare = () => {
-  return (
-    <div>
-        <ProblemCategory/>
-        <BestSellersCard />
-    </div>
-  )
-}
+  const { bestSellingProducts, fetchBestSellingProducts, loading } = useProductStore();
 
-export default SunCare
+  useEffect(() => {
+    fetchBestSellingProducts();
+  }, [fetchBestSellingProducts]);
+
+  return (
+    <div className='px-20'>
+      <ProblemCategory />
+      {loading ? (
+        <div className="text-center">Loading...</div>
+      ) : (
+        <BestSellersCard products={bestSellingProducts} />
+      )}
+    </div>
+  );
+};
+
+export default SunCare;

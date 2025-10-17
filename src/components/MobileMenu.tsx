@@ -40,7 +40,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
       <li>
         <button
           onClick={() => onNavigate('openSubmenu', item)}
-          className="flex justify-between items-center w-full py-2 text-lg text-left hover:text-[#D4F871] transition-colors"
+          className="flex justify-between items-center w-full py-2 text-lg text-left hover:text-gray-600 transition-colors"
           aria-haspopup="true"
         >
           {item.name}
@@ -57,7 +57,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
     <li>
       <Link
         to={item.path}
-        className="block py-2 text-lg hover:text-[#D4F871] transition-colors"
+        className="block py-2 text-lg hover:text-gray-600 transition-colors"
         onClick={() => onNavigate('close')}
       >
         {item.name}
@@ -163,7 +163,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, menuItems }) =
                 <li key={idx}>
                   <Link
                     to={subItem.path}
-                    className="block py-2 text-lg hover:text-[#D4F871] transition-colors"
+                    className="block py-2 text-lg hover:text-gray-600 transition-colors"
                     onClick={onClose}
                   >
                     {subItem.name}

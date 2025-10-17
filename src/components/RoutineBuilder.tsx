@@ -7,31 +7,30 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/mousewheel';
 import 'swiper/css/free-mode';
-import BannerSlider from './BannerSlider';
 import { useProductStore } from '../store/productStore';
 
-const WhatsNew = () => {
-  const { whatsNewProducts, loading, error, fetchWhatsNewProducts } = useProductStore();
+const RoutineBuilder = () => {
+  const { routineBuilderProducts, loading, error, fetchRoutineBuilderProducts } = useProductStore();
 
   useEffect(() => {
-    if (whatsNewProducts.length === 0) {
-      fetchWhatsNewProducts();
+    if (routineBuilderProducts.length === 0) {
+      fetchRoutineBuilderProducts();
     }
-  }, [whatsNewProducts.length, fetchWhatsNewProducts]);
+  }, [routineBuilderProducts.length, fetchRoutineBuilderProducts]);
 
-  if (loading && whatsNewProducts.length === 0) {
+  if (loading && routineBuilderProducts.length === 0) {
     return (
       <div className="py-8">
-        <h2 className="text-3xl font-bold mb-8 text-left">What's New</h2>
-        <p>Loading new products...</p>
+        <h2 className="text-3xl font-bold mb-8 text-left">Routine Builder</h2>
+        <p>Loading products for your routine...</p>
       </div>
     );
   }
 
-  if (error && whatsNewProducts.length === 0) {
+  if (error && routineBuilderProducts.length === 0) {
     return (
       <div className="py-8">
-        <h2 className="text-3xl font-bold mb-8 text-left">What's New</h2>
+        <h2 className="text-3xl font-bold mb-8 text-left">Routine Builder</h2>
         <p>Error loading products: {error}</p>
       </div>
     );
@@ -39,7 +38,7 @@ const WhatsNew = () => {
 
   return (
     <div className="py-8">
-      <h2 className="text-3xl font-bold mb-8 text-left">What's New</h2>
+      <h2 className="text-3xl font-bold mb-8 text-left">Routine Builder</h2>
       <Swiper
        modules={[Mousewheel, FreeMode]}
        spaceBetween={20}               // gap between cards
@@ -48,7 +47,7 @@ const WhatsNew = () => {
        mousewheel={true}
        className="mySwiper"
      >
-       {whatsNewProducts.map((product) => (
+       {routineBuilderProducts.map((product) => (
          <SwiperSlide
            key={product.id}
            className="!w-[250px] sm:!w-[280px] md:!w-[300px]" // keeps cards consistent width
@@ -108,4 +107,4 @@ const WhatsNew = () => {
   );
 };
 
-export default WhatsNew;
+export default RoutineBuilder;

@@ -2,12 +2,12 @@ import React from 'react'
 
 const ProblemCategory = () => {
   const problems = [
-    { id: 1, name: 'Dandruff', image: '/dandruff.webp' },
-    { id: 2, name: 'De-tan', image: '/detan.webp' },
     { id: 3, name: 'Hair Fall', image: '/hairfall.webp' },
-    { id: 4, name: 'Lip Care', image: '/lipcare.webp' },
-    { id: 5, name: 'Sculp Care', image: '/sculpcare.webp' },
     { id: 6, name: 'Skin Care', image: '/skincare.webp' },
+    { id: 5, name: 'Sculp Care', image: '/sculpcare.webp' },
+    { id: 2, name: 'De-tan', image: '/detan.webp' },
+    { id: 1, name: 'Dandruff', image: '/dandruff.webp' },
+    { id: 4, name: 'Lip Care', image: '/lipcare.webp' },
   ]
 
   return (
