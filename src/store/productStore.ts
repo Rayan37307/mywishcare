@@ -117,7 +117,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchProductById: async (id: number) => {
     set({ loading: true, error: null });
     try {
-      const product = await woocommerceService.fetchProductById(id);
+      const product = await woocommerceService.fetchProductById(id, true); // Include WishCare data
       set({ loading: false });
       return product;
     } catch (error) {

@@ -1,3 +1,10 @@
+// Meta data item interface for WooCommerce API
+export interface WooCommerceAPIMetaDataItem {
+  id: number;
+  key: string;
+  value: any;
+}
+
 export interface WooCommerceAPIProduct {
   id: number;
   name: string;
@@ -22,6 +29,34 @@ export interface WooCommerceAPIProduct {
   }>;
 }
 
+// Extended product interface with WishCare data
+export interface WooCommerceAPIProductWithWishCare extends WooCommerceAPIProduct {
+  meta_data: WooCommerceAPIMetaDataItem[];
+}
+
+// WishCare FAQ interface
+export interface WishCareFAQ {
+  q: string;
+  a: string;
+}
+
+// WishCare product data interface
+export interface WishCareProductData {
+  activeOffers?: string[];
+  benefits?: string[];
+  suitableFor?: string[];
+  whatMakesItGreat?: string;
+  whatMakesImages?: number[];
+  howToUse?: string;
+  howToImages?: number[];
+  ingredients?: string;
+  results?: string;
+  resultsImages?: number[];
+  pairsWith?: string;
+  faqs?: WishCareFAQ[];
+}
+
+// Extended Product interface with WishCare data
 export interface Product {
   id: number;
   name: string;
@@ -34,4 +69,5 @@ export interface Product {
   stock_quantity: number | null;
   stock_status: 'instock' | 'outofstock' | 'onbackorder';
   categories: Array<{ id: number; name: string }>;
+  wishCare?: WishCareProductData;
 }

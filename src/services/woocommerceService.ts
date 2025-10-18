@@ -1,5 +1,5 @@
 // src/services/woocommerceService.ts
-import type { Product, WooCommerceAPIProduct } from "../types/product";
+import type { Product, WooCommerceAPIProduct, WooCommerceAPIProductWithWishCare, WooCommerceAPIMetaDataItem, WishCareProductData, WishCareFAQ } from "../types/product";
 
 const WOO_API_URL = import.meta.env.VITE_WC_API_URL || 'https://your-wordpress-site.com/wp-json/wc/v3';
 const WOO_CONSUMER_KEY = import.meta.env.VITE_WC_CONSUMER_KEY || '';
@@ -26,7 +26,105 @@ class WooCommerceService {
     return `${this.apiURL}${endpoint}${separator}consumer_key=${this.consumerKey}&consumer_secret=${this.consumerSecret}`;
   }
 
-  private transformWooCommerceProduct(product: WooCommerceAPIProduct): Product {
+  private parseWishCareMetaData(meta_data: WooCommerceAPIMetaDataItem[]): WishCareProductData {
+    const wishCareData: WishCareProductData = {};
+
+    meta_data.forEach(item => {
+      switch (item.key) {
+        case 'wishcare_active_offers':
+          try {
+            wishCareData.activeOffers = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_active_offers:', e);
+            wishCareData.activeOffers = item.value;
+          }
+          break;
+        case 'wishcare_benefits':
+          try {
+            wishCareData.benefits = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_benefits:', e);
+            wishCareData.benefits = item.value;
+          }
+          break;
+        case 'wishcare_suitable_for':
+          try {
+            wishCareData.suitableFor = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_suitable_for:', e);
+            wishCareData.suitableFor = item.value;
+          }
+          break;
+        case 'wishcare_what_makes_it_great':
+          wishCareData.whatMakesItGreat = item.value;
+          break;
+        case 'wishcare_what_makes_images':
+          try {
+            wishCareData.whatMakesImages = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_what_makes_images:', e);
+            wishCareData.whatMakesImages = item.value;
+          }
+          break;
+        case 'wishcare_how_to_use':
+          wishCareData.howToUse = item.value;
+          break;
+        case 'wishcare_how_to_images':
+          try {
+            wishCareData.howToImages = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_how_to_images:', e);
+            wishCareData.howToImages = item.value;
+          }
+          break;
+        case 'wishcare_ingredients':
+          wishCareData.ingredients = item.value;
+          break;
+        case 'wishcare_results':
+          wishCareData.results = item.value;
+          break;
+        case 'wishcare_results_images':
+          try {
+            wishCareData.resultsImages = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_results_images:', e);
+            wishCareData.resultsImages = item.value;
+          }
+          break;
+        case 'wishcare_pairs_with':
+          wishCareData.pairsWith = item.value;
+          break;
+        case 'wishcare_faqs':
+          try {
+            wishCareData.faqs = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_faqs:', e);
+            wishCareData.faqs = item.value;
+          }
+          break;
+      }
+    });
+
+    return wishCareData;
+  }
+
+  private async fetchProductMeta(productId: number): Promise<WishCareProductData> {
+    try {
+      const response = await fetch(this.buildAuthURL(`/products/${productId}/meta`));
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch product meta: ${response.status} ${response.statusText}`);
+      }
+      
+      const meta_data: WooCommerceAPIMetaDataItem[] = await response.json();
+      return this.parseWishCareMetaData(meta_data);
+    } catch (error) {
+      console.error('Error fetching product meta:', error);
+      return {};
+    }
+  }
+
+  private transformWooCommerceProduct(product: WooCommerceAPIProduct, wishCareData?: WishCareProductData): Product {
     return {
       id: product.id,
       name: product.name,
@@ -41,6 +139,7 @@ class WooCommerceService {
       stock_quantity: product.stock_quantity,
       stock_status: product.stock_status,
       categories: product.categories || [],
+      wishCare: wishCareData,
     };
   }
 
@@ -61,7 +160,7 @@ class WooCommerceService {
     }
   }
 
-  async fetchProductById(id: number): Promise<Product | null> {
+  async fetchProductById(id: number, includeWishCare: boolean = true): Promise<Product | null> {
     try {
       const response = await fetch(this.buildAuthURL(`/products/${id}`));
       
@@ -71,7 +170,13 @@ class WooCommerceService {
       
       const product: WooCommerceAPIProduct = await response.json();
       
-      return this.transformWooCommerceProduct(product);
+      let wishCareData = {};
+      if (includeWishCare) {
+        // Also fetch WishCare meta data
+        wishCareData = await this.fetchProductMeta(id);
+      }
+      
+      return this.transformWooCommerceProduct(product, wishCareData);
     } catch (error) {
       console.error('Error fetching product:', error);
       return null;

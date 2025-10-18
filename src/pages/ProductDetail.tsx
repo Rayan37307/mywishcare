@@ -1,6 +1,16 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
+import ActiveOffersSection from '../components/wishcare/ActiveOffersSection';
+import BenefitsSection from '../components/wishcare/BenefitsSection';
+import SuitableForSection from '../components/wishcare/SuitableForSection';
+import WhatMakesItGreatSection from '../components/wishcare/WhatMakesItGreatSection';
+import HowToUseSection from '../components/wishcare/HowToUseSection';
+import IngredientsSection from '../components/wishcare/IngredientsSection';
+import ResultsSection from '../components/wishcare/ResultsSection';
+import PairsWithSection from '../components/wishcare/PairsWithSection';
+import FAQSection from '../components/wishcare/FAQSection';
+import { getImageUrlFromId } from '../utils/imageUtils';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +23,7 @@ const ProductDetail = () => {
       if (id) {
         setLoading(true);
         try {
+          // Fetch product with WishCare data
           const fetchedProduct = await fetchProductById(Number(id));
           setProduct(fetchedProduct);
         } catch (err) {
@@ -72,6 +83,32 @@ const ProductDetail = () => {
             />
           </div>
         </div>
+
+        {/* WishCare Sections */}
+        {product.wishCare && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Product Details</h2>
+            
+            <ActiveOffersSection wishCare={product.wishCare} />
+            <BenefitsSection wishCare={product.wishCare} />
+            <SuitableForSection wishCare={product.wishCare} />
+            <WhatMakesItGreatSection 
+              wishCare={product.wishCare} 
+              getImageUrlFromId={getImageUrlFromId} 
+            />
+            <HowToUseSection 
+              wishCare={product.wishCare} 
+              getImageUrlFromId={getImageUrlFromId} 
+            />
+            <IngredientsSection wishCare={product.wishCare} />
+            <ResultsSection 
+              wishCare={product.wishCare} 
+              getImageUrlFromId={getImageUrlFromId} 
+            />
+            <PairsWithSection wishCare={product.wishCare} />
+            <FAQSection wishCare={product.wishCare} />
+          </div>
+        )}
       </div>
     </div>
   );
