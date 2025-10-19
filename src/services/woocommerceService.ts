@@ -109,19 +109,11 @@ class WooCommerceService {
   }
 
   private async fetchProductMeta(productId: number): Promise<WishCareProductData> {
-    try {
-      const response = await fetch(this.buildAuthURL(`/products/${productId}/meta`));
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch product meta: ${response.status} ${response.statusText}`);
-      }
-      
-      const meta_data: WooCommerceAPIMetaDataItem[] = await response.json();
-      return this.parseWishCareMetaData(meta_data);
-    } catch (error) {
-      console.error('Error fetching product meta:', error);
-      return {};
-    }
+    // Meta data is included in the main product response in WooCommerce API
+    // This method is kept for compatibility but should not be called separately
+    // Meta data should be extracted from the main product response
+    console.warn('fetchProductMeta should not be called directly. Meta data is included in the product response.');
+    return {};
   }
 
   private transformWooCommerceProduct(product: WooCommerceAPIProduct, wishCareData?: WishCareProductData): Product {
@@ -171,9 +163,9 @@ class WooCommerceService {
       const product: WooCommerceAPIProduct = await response.json();
       
       let wishCareData = {};
-      if (includeWishCare) {
-        // Also fetch WishCare meta data
-        wishCareData = await this.fetchProductMeta(id);
+      if (includeWishCare && product.meta_data) {
+        // Extract WishCare meta data from the main product response
+        wishCareData = this.parseWishCareMetaData(product.meta_data);
       }
       
       return this.transformWooCommerceProduct(product, wishCareData);

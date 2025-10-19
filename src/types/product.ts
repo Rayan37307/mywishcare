@@ -27,6 +27,7 @@ export interface WooCommerceAPIProduct {
     name: string;
     slug: string;
   }>;
+  meta_data?: WooCommerceAPIMetaDataItem[];
 }
 
 // Extended product interface with WishCare data
