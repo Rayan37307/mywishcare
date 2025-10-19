@@ -15,4 +15,5 @@ export interface CartState {
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
   getCartItems: () => CartItem[];
+  calculateTotals: () => void;
 }

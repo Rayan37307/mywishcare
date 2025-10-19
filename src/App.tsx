@@ -15,6 +15,8 @@ import RefundPolicy from './pages/RefundPolicy'
 import SunCare from './pages/Suncare'
 import MobileMenu from './components/MobileMenu'
 import ProductDetail from './pages/ProductDetail'
+import Cart from './pages/Cart'
+import Checkout from './pages/Checkout'
 import LoginForm from './components/LoginForm'
 import UserProfile from './components/UserProfile'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -68,6 +70,8 @@ const App = () => {
             <Route path="/policies/shipping-policy" element={<ShippingPolicy />} />
             <Route path="/policies/refund-policy" element={<RefundPolicy />} />
             <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
             
             {/* Authentication Routes */}
             <Route path="/login" element={<LoginForm />} />

@@ -77,7 +77,13 @@ export const useCartStore = create<CartState>()(
         const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
         const totalPrice = items.reduce((sum, item) => {
           // Convert price string to number and multiply by quantity
-          const price = parseFloat(item.product.price.replace(/[^\d.-]/g, '')) || 0;
+          // Handle both string and number formats for price
+          let price: number;
+          if (typeof item.product.price === 'string') {
+            price = parseFloat(item.product.price.replace(/[^\d.-]/g, '')) || 0;
+          } else {
+            price = parseFloat(String(item.product.price)) || 0;
+          }
           return sum + (price * item.quantity);
         }, 0);
         
