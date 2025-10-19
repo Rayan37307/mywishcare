@@ -1,0 +1,189 @@
+.faq-container {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.faq-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faq-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.faq-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.faq-question {
+  padding: 1rem;
+  background-color: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.faq-question:hover {
+  background-color: #f8fafc;
+}
+
+.faq-question h3 {
+  margin: 0;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.faq-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  color: #64748b;
+  font-weight: bold;
+  transition: transform 0.3s ease, background-color 0.2s ease;
+}
+
+.faq-icon.active {
+  transform: rotate(45deg);
+  background-color: #3b82f6;
+  color: white;
+}
+
+.faq-answer {
+  padding: 0 1rem;
+  background-color: #f8fafc;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  overflow: hidden;
+}
+
+.faq-answer.open {
+  padding: 1rem;
+}
+
+.slider-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+}
+
+.slider-wrapper {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.slider-item {
+  min-width: 100%;
+}
+
+.slider-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.3s;
+}
+
+.slider-nav:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.slider-nav.prev {
+  left: 10px;
+}
+
+.slider-nav.next {
+  right: 10px;
+}
+
+.slider-indicators {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.slider-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.slider-indicator.active {
+  background: white;
+}
+
+/* Draggable slider styling */
+.draggable-slider {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.draggable-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.slide-item {
+  scroll-snap-align: start;
+  min-width: 100%;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+/* Overflow styling for images */
+.image-overflow-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.image-overflow-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.image-overflow-container:hover img {
+  transform: scale(1.05);
+}
