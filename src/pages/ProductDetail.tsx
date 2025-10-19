@@ -97,7 +97,10 @@ const ProductDetail = () => {
               wishCare={product.wishCare} 
               getImageUrlFromId={getImageUrlFromId} 
             />
-            <IngredientsSection wishCare={product.wishCare} />
+            <IngredientsSection 
+              wishCare={product.wishCare} 
+              getImageUrlFromId={getImageUrlFromId} 
+            />
             <ResultsSection 
               wishCare={product.wishCare} 
               getImageUrlFromId={getImageUrlFromId} 
@@ -108,31 +111,6 @@ const ProductDetail = () => {
         )}
           </div>
         </div>
-
-        {/* WishCare Sections - Stack below everything else */}
-        {/* {product.wishCare && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Product Details</h2>
-            
-            <ActiveOffersSection wishCare={product.wishCare} />
-            <BenefitsSection wishCare={product.wishCare} />
-            <WhatMakesItGreatSection 
-              wishCare={product.wishCare} 
-              getImageUrlFromId={getImageUrlFromId} 
-            />
-            <HowToUseSection 
-              wishCare={product.wishCare} 
-              getImageUrlFromId={getImageUrlFromId} 
-            />
-            <IngredientsSection wishCare={product.wishCare} />
-            <ResultsSection 
-              wishCare={product.wishCare} 
-              getImageUrlFromId={getImageUrlFromId} 
-            />
-            <PairsWithSection wishCare={product.wishCare} />
-            <FAQSection wishCare={product.wishCare} />
-          </div>
-        )} */}
       </div>
     </div>
   );

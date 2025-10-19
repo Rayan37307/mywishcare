@@ -51,6 +51,7 @@ export interface WishCareProductData {
   howToUse?: string;
   howToImages?: number[];
   ingredients?: string;
+  ingredientsImages?: number[];
   results?: string;
   resultsImages?: number[];
   pairsWith?: string;

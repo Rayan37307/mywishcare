@@ -2,12 +2,12 @@ import React from 'react';
 import type { WishCareProductData } from '../../types/product';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-interface HowToUseSectionProps {
+interface IngredientsSectionProps {
   wishCare?: WishCareProductData;
   getImageUrlFromId: (id: number) => Promise<string | null>;
 }
 
-const HowToUseSection: React.FC<HowToUseSectionProps> = ({
+const IngredientsSection: React.FC<IngredientsSectionProps> = ({
   wishCare,
   getImageUrlFromId,
 }) => {
@@ -17,13 +17,12 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
 
   React.useEffect(() => {
     const fetchImages = async () => {
-      if (wishCare?.howToImages?.length) {
+      if (wishCare?.ingredientsImages?.length) {
         const urls = await Promise.all(
-          wishCare.howToImages.map(async (id) => {
+          wishCare.ingredientsImages.map(async (id) => {
             try {
               return await getImageUrlFromId(id);
-            } catch (error) {
-              console.error('Error fetching image URL:', error);
+            } catch {
               return null;
             }
           })
@@ -36,21 +35,17 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
     fetchImages();
   }, [wishCare, getImageUrlFromId]);
 
-  if (
-    !wishCare?.howToUse &&
-    (!wishCare?.howToImages || wishCare.howToImages.length === 0)
-  ) {
-    return null;
-  }
+  if (loading) return null; // ✅ Only render after loading
+  if (!wishCare?.ingredients && imageUrls.length === 0) return null;
 
   return (
-    <div className="mb-8 p-6 bg-transparent rounded-lg">
+    <div className="mb-8 p-6 bg-transparent rounded-lg border border-gray-300">
       {/* Header + Toggle */}
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex justify-between items-center text-left"
       >
-        <h2 className="text-xl font-bold text-gray-800">How To Use</h2>
+        <h2 className="text-xl font-bold text-gray-800">Ingredients</h2>
         {open ? (
           <ChevronUp className="text-gray-600 transition-transform" />
         ) : (
@@ -64,11 +59,12 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
           open ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
         }`}
       >
-        {wishCare.howToUse && (
-          <p className="text-gray-700 mb-6">{wishCare.howToUse}</p>
+        {/* Ingredients Text */}
+        {wishCare.ingredients && (
+          <p className="text-gray-700 mb-6 whitespace-pre-line">{wishCare.ingredients}</p>
         )}
 
-        {/* 🔥 Horizontal scroll slider */}
+        {/* Horizontal scroll image gallery */}
         {imageUrls.length > 0 && (
           <div className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
             <div className="flex gap-6 snap-x snap-mandatory scroll-smooth pb-2">
@@ -79,7 +75,7 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
                 >
                   <img
                     src={url}
-                    alt={`How to use ${index + 1}`}
+                    alt={`Ingredient ${index + 1}`}
                     className="w-full h-auto object-cover rounded-lg transition-transform duration-300 hover:scale-[1.03]"
                   />
                 </div>
@@ -92,4 +88,4 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
   );
 };
 
-export default HowToUseSection;
+export default IngredientsSection;

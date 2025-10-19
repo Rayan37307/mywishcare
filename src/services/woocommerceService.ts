@@ -80,6 +80,14 @@ class WooCommerceService {
         case 'wishcare_ingredients':
           wishCareData.ingredients = item.value;
           break;
+        case 'wishcare_ingredients_images':
+          try {
+            wishCareData.ingredientsImages = JSON.parse(item.value);
+          } catch (e) {
+            console.warn('Failed to parse wishcare_ingredients_images:', e);
+            wishCareData.ingredientsImages = item.value;
+          }
+          break;
         case 'wishcare_results':
           wishCareData.results = item.value;
           break;
