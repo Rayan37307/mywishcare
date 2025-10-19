@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import ActiveOffersSection from '../components/wishcare/ActiveOffersSection';
 import BenefitsSection from '../components/wishcare/BenefitsSection';
-import SuitableForSection from '../components/wishcare/SuitableForSection';
 import WhatMakesItGreatSection from '../components/wishcare/WhatMakesItGreatSection';
 import HowToUseSection from '../components/wishcare/HowToUseSection';
 import IngredientsSection from '../components/wishcare/IngredientsSection';
@@ -90,7 +89,6 @@ const ProductDetail = () => {
             </div>
             <ActiveOffersSection wishCare={product.wishCare} />
             <BenefitsSection wishCare={product.wishCare} />
-            <SuitableForSection wishCare={product.wishCare} />
             <WhatMakesItGreatSection 
               wishCare={product.wishCare} 
               getImageUrlFromId={getImageUrlFromId} 
@@ -118,7 +116,6 @@ const ProductDetail = () => {
             
             <ActiveOffersSection wishCare={product.wishCare} />
             <BenefitsSection wishCare={product.wishCare} />
-            <SuitableForSection wishCare={product.wishCare} />
             <WhatMakesItGreatSection 
               wishCare={product.wishCare} 
               getImageUrlFromId={getImageUrlFromId} 
