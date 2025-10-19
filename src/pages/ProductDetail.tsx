@@ -47,7 +47,7 @@ const ProductDetail = () => {
 
   return (
     <div className='bg-white py-10'>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto max-w-7xl p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <img src={product.images[0]?.src} alt={product.name} className="w-[80%] rounded-lg" />

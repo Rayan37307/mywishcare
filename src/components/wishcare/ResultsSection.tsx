@@ -7,7 +7,10 @@ interface ResultsSectionProps {
   getImageUrlFromId: (id: number) => Promise<string | null>;
 }
 
-const ResultsSection: React.FC<ResultsSectionProps> = ({ wishCare, getImageUrlFromId }) => {
+const ResultsSection: React.FC<ResultsSectionProps> = ({
+  wishCare,
+  getImageUrlFromId,
+}) => {
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [open, setOpen] = React.useState(true);
@@ -24,18 +27,19 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ wishCare, getImageUrlFr
             }
           })
         );
-        setImageUrls(urls.filter((url): url is string => !!url));
+        setImageUrls(urls.filter((url): url is string => url !== null));
       }
       setLoading(false);
     };
+
     fetchImages();
   }, [wishCare, getImageUrlFromId]);
 
-  if (!wishCare?.results && imageUrls.length === 0) return null;
   if (loading) return null;
+  if (!wishCare?.results && imageUrls.length === 0) return null;
 
   return (
-    <div className="mb-8 p-6 bg-pink-50 rounded-lg border border-gray-300">
+    <div className="mb-8 p-6 bg-transparent rounded-lg border border-gray-300">
       {/* Header + Toggle */}
       <button
         onClick={() => setOpen(!open)}
@@ -49,23 +53,25 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ wishCare, getImageUrlFr
         )}
       </button>
 
-      {/* Content */}
+      {/* Content Section */}
       <div
         className={`transition-all duration-500 overflow-hidden ${
           open ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
         }`}
       >
+        {/* Text */}
         {wishCare.results && (
           <p className="text-gray-700 mb-6 whitespace-pre-line">{wishCare.results}</p>
         )}
 
+        {/* 🔥 Horizontal scroll image gallery */}
         {imageUrls.length > 0 && (
           <div className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
             <div className="flex gap-6 snap-x snap-mandatory scroll-smooth pb-2">
               {imageUrls.map((url, index) => (
                 <div
                   key={index}
-                  className="w-80 snap-start overflow-hidden rounded-xl flex-shrink-0"
+                  className="w-96 snap-start overflow-hidden rounded-xl flex-shrink-0"
                 >
                   <img
                     src={url}
