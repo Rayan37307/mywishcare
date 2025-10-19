@@ -81,11 +81,38 @@ const ProductDetail = () => {
               className="prose pt-10"
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
+            {product.wishCare && (
+          <div className="mt-4">
+            {/* <h2 className="text-2xl font-bold mb-6 text-gray-800">Product Details</h2>
+             */}
+            <div className='w-full mb-4'>
+              <img src="/multi.webp" alt="w-full" />
+            </div>
+            <ActiveOffersSection wishCare={product.wishCare} />
+            <BenefitsSection wishCare={product.wishCare} />
+            <SuitableForSection wishCare={product.wishCare} />
+            <WhatMakesItGreatSection 
+              wishCare={product.wishCare} 
+              getImageUrlFromId={getImageUrlFromId} 
+            />
+            <HowToUseSection 
+              wishCare={product.wishCare} 
+              getImageUrlFromId={getImageUrlFromId} 
+            />
+            <IngredientsSection wishCare={product.wishCare} />
+            <ResultsSection 
+              wishCare={product.wishCare} 
+              getImageUrlFromId={getImageUrlFromId} 
+            />
+            <PairsWithSection wishCare={product.wishCare} />
+            <FAQSection wishCare={product.wishCare} />
+          </div>
+        )}
           </div>
         </div>
 
-        {/* WishCare Sections */}
-        {product.wishCare && (
+        {/* WishCare Sections - Stack below everything else */}
+        {/* {product.wishCare && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Product Details</h2>
             
@@ -108,7 +135,7 @@ const ProductDetail = () => {
             <PairsWithSection wishCare={product.wishCare} />
             <FAQSection wishCare={product.wishCare} />
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
