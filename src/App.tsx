@@ -21,6 +21,7 @@ import LoginForm from './components/LoginForm'
 import UserProfile from './components/UserProfile'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navigation from './components/Navigation'
+import SearchPage from './pages/SearchPage'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -72,6 +73,7 @@ const App = () => {
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/search" element={<SearchPage />} />
             
             {/* Authentication Routes */}
             <Route path="/login" element={<LoginForm />} />
