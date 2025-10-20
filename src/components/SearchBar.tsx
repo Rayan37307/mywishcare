@@ -69,19 +69,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
   return (
     <div className="w-full">
       <form onSubmit={handleFormSubmit} className="relative">
-        <div className="flex items-center border border-gray-300 rounded-full overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleInputChange}
-            placeholder="Search for products..."
-            className="w-full py-3 px-4 focus:outline-none text-lg"
-            autoFocus={autoFocus}
-          />
+        <div className="flex items-center rounded-full overflow-hidden">
           <button
             type="button"
             onClick={() => onSubmit(searchTerm)}
-            className="bg-[#D4F871] px-6 py-3 flex items-center justify-center border-l border-gray-300"
+            className="pl-4 pr-2 py-3 flex items-center justify-center"
             aria-label="Search"
           >
             <svg
@@ -107,11 +99,19 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
               ></path>
             </svg>
           </button>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={handleInputChange}
+            placeholder="Search for products..."
+            className="w-full py-3 px-2 focus:outline-none text-lg uppercase"
+            autoFocus={autoFocus}
+          />
         </div>
         
-        {/* Search results dropdown */}
+        {/* Search results dropdown - Full width but aligned properly */}
         {showResults && (
-          <div className="absolute z-10 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+          <div className="absolute z-10 left-0 right-0 bg-white shadow-lg max-h-96 overflow-y-auto">
             {loading ? (
               <div className="p-4 text-center">Searching...</div>
             ) : searchResults.length > 0 ? (
@@ -119,7 +119,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
                 {searchResults.map((product) => (
                   <div
                     key={product.id}
-                    className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                    className="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
                     onClick={() => handleResultClick(product.name)}
                   >
                     <Link to={`/products/${product.id}`} className="flex items-center">
@@ -142,13 +142,13 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
             
             {/* View all results button */}
             {searchResults.length > 0 && (
-              <div className="p-3 border-t border-gray-200">
+              <div className="p-3 my-5 flex justify-center items-center">
                 <button
                   type="button"
                   onClick={() => onSubmit(searchTerm)}
-                  className="w-full py-2 bg-[#D4F871] rounded-md text-sm font-medium"
+                  className=" py-3 text-center text-sm text-white px-4 uppercase bg-black font-medium"
                 >
-                  View all results for "{searchTerm}"
+                  View all results
                 </button>
               </div>
             )}
