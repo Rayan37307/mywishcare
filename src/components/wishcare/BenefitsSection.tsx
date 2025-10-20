@@ -14,7 +14,7 @@ const BenefitsSection: React.FC<BenefitsSectionProps> = ({ wishCare }) => {
   }
 
   return (
-    <div className="mb-8 rounded-xl p-4 bg-transparent border-3 border-gray-300">
+    <div className="mb-8 rounded-xl p-4 bg-transparent border-3 border-[#E4EDFD]">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Benefits</h2>
       
       {hasBenefits && (

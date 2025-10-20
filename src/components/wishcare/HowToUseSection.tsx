@@ -1,6 +1,6 @@
-import React from 'react';
-import type { WishCareProductData } from '../../types/product';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import React from "react";
+import type { WishCareProductData } from "../../types/product";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface HowToUseSectionProps {
   wishCare?: WishCareProductData;
@@ -39,7 +39,7 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
   if (!wishCare?.howToUse && imageUrls.length === 0) return null;
 
   return (
-    <div className="mb-8 p-6 bg-transparent rounded-lg border border-gray-300">
+    <div className="mb-8 p-6 bg-transparent rounded-lg border-3 border-[#EBE4FD]">
       {/* Header + Toggle */}
       <button
         onClick={() => setOpen(!open)}
@@ -47,21 +47,23 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
       >
         <h2 className="text-xl font-bold text-gray-800">How To Use</h2>
         {open ? (
-          <ChevronUp className="text-gray-600 transition-transform" />
+          <ChevronUp className="text-white transition-transform bg-black p-1 rounded-full" />
         ) : (
-          <ChevronDown className="text-gray-600 transition-transform" />
+          <ChevronDown className="text-white transition-transform bg-black p-1 rounded-full" />
         )}
       </button>
 
       {/* Content Section */}
       <div
         className={`transition-all duration-500 overflow-hidden ${
-          open ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+          open ? "max-h-[1000px] opacity-100 mt-4" : "max-h-0 opacity-0"
         }`}
       >
         {/* How to Use Text */}
         {wishCare.howToUse && (
-          <p className="text-gray-700 mb-6 whitespace-pre-line">{wishCare.howToUse}</p>
+          <p className="text-gray-700 mb-6 whitespace-pre-line">
+            {wishCare.howToUse}
+          </p>
         )}
 
         {/* Horizontal scroll image gallery */}
@@ -71,12 +73,12 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
               {imageUrls.map((url, index) => (
                 <div
                   key={index}
-                  className="w-96 snap-start overflow-hidden rounded-xl flex-shrink-0"
+                  className="w-96 snap-start overflow-hidden flex-shrink-0"
                 >
                   <img
                     src={url}
                     alt={`How to Use ${index + 1}`}
-                    className="w-full h-auto object-cover rounded-lg transition-transform duration-300 hover:scale-[1.03]"
+                    className="w-full h-auto object-cover"
                   />
                 </div>
               ))}

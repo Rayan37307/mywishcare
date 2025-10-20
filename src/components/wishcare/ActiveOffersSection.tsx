@@ -11,12 +11,12 @@ const ActiveOffersSection: React.FC<ActiveOffersSectionProps> = ({ wishCare }) =
   }
 
   return (
-    <div className="mb-8 p-6 bg-gray-200 rounded-lg">
+    <div className="mb-8 p-3 bg-gray-200">
       <h2 className="text-xl font-bold mb-2 text-black">Active Offers</h2>
       <ul className="space-y-2">
         {wishCare.activeOffers.map((offer, index) => (
           <li key={index} className="flex items-center">
-            <img src="/pricetag.webp" className='mr-2 w-4' alt="" />
+            <img src="/pricetag.webp" className='mr-2 w-5' alt="" />
             <span className="text-black">{offer}</span>
           </li>
         ))}

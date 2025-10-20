@@ -45,7 +45,7 @@ const IngredientsSection: React.FC<IngredientsSectionProps> = ({
   if (loading) return <div className="mb-8 p-6  rounded-lg">Loading...</div>;
 
   return (
-    <div className="mb-8 p-6 rounded-lg bg-transparent border-3 border-gray-300">
+    <div className="mb-8 p-6 rounded-lg bg-transparent border-3 border-[#EBE4FD]">
       {/* Header + Toggle */}
       <button
         onClick={() => setOpen(!open)}
@@ -53,9 +53,9 @@ const IngredientsSection: React.FC<IngredientsSectionProps> = ({
       >
         <h2 className="text-xl font-bold text-gray-800">Ingredients</h2>
         {open ? (
-          <ChevronUp className="text-gray-600 transition-transform" />
+          <ChevronUp className="text-white transition-transform bg-black p-1 rounded-full" />
         ) : (
-          <ChevronDown className="text-gray-600 transition-transform" />
+          <ChevronDown className="text-white transition-transform bg-black p-1 rounded-full" />
         )}
       </button>
 
@@ -77,12 +77,12 @@ const IngredientsSection: React.FC<IngredientsSectionProps> = ({
               {imageUrls.map((url, index) => (
                 <div
                   key={index}
-                  className="w-96 snap-start overflow-hidden rounded-xl flex-shrink-0"
+                  className="w-96 snap-start overflow-hidden flex-shrink-0"
                 >
                   <img
                     src={url}
                     alt={`Ingredient ${index + 1}`}
-                    className="w-full h-auto object-cover rounded-lg transition-transform duration-300 hover:scale-[1.03]"
+                    className="w-full h-auto object-cover"
                   />
                 </div>
               ))}
