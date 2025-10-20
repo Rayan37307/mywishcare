@@ -116,7 +116,7 @@ const ProductDetail = () => {
             <img 
               src={product.images[0]?.src} 
               alt={product.name} 
-              className="w-[80%] rounded-lg mx-auto sticky top-4"
+              className={`w-[80%] rounded-lg mx-auto sticky ${showFloatingHeader ? 'top-44' : 'top-4'}`}
             />
           </div>
           
