@@ -120,11 +120,11 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
       {/* Cart Slide */}
       <CartSlide isOpen={isCartOpen} onClose={closeCart} />
       
-      {/* Search Bar - Full width overlay */}
+      {/* Search Bar - Overlay the navbar area */}
       {isSearchOpen && (
         <div 
           ref={searchContainerRef}
-          className="absolute top-full left-0 right-0 bg-white shadow-lg z-50 py-8 px-6"
+          className="absolute top-0 left-0 right-0 bg-white shadow-lg z-50 py-8"
         >
           <SearchBar 
             onSubmit={handleSearchSubmit} 

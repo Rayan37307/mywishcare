@@ -67,7 +67,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full">
       <form onSubmit={handleFormSubmit} className="relative">
         <div className="flex items-center border border-gray-300 rounded-full overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
           <input
@@ -79,7 +79,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
             autoFocus={autoFocus}
           />
           <button
-            type="submit"
+            type="button"
+            onClick={() => onSubmit(searchTerm)}
             className="bg-[#D4F871] px-6 py-3 flex items-center justify-center border-l border-gray-300"
             aria-label="Search"
           >
@@ -110,7 +111,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
         
         {/* Search results dropdown */}
         {showResults && (
-          <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+          <div className="absolute z-10 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
             {loading ? (
               <div className="p-4 text-center">Searching...</div>
             ) : searchResults.length > 0 ? (
