@@ -148,7 +148,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
                   onClick={() => onSubmit(searchTerm)}
                   className=" py-3 text-center text-sm text-white px-4 uppercase bg-black font-medium"
                 >
-                  View all results
+                  View all results 
                 </button>
               </div>
             )}
