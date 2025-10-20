@@ -1,5 +1,6 @@
 import React from "react";
 import { useCartStore } from "../store/cartStore";
+import BestSellersCard from "./BestSellersCards";
 
 interface CartSlideProps {
   isOpen: boolean;
@@ -167,6 +168,9 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                   ))}
                 </div>
               )}
+            </div>
+            <div className="flex-1">
+                <h1 className="text-center text-xl " >Trending Products</h1>
             </div>
 
             {/* Footer */}
