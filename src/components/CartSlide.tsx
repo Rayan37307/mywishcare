@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Mousewheel, FreeMode } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/mousewheel';
+import 'swiper/css/free-mode';
 import { useCartStore } from "../store/cartStore";
-import BestSellersCard from "./BestSellersCards";
+import { useProductStore } from "../store/productStore";
+import { Link } from 'react-router-dom';
 
 interface CartSlideProps {
   isOpen: boolean;
@@ -10,6 +17,14 @@ interface CartSlideProps {
 const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const { items, totalItems, totalPrice, updateQuantity, removeItem } =
     useCartStore();
+  const { bestSellingProducts, fetchBestSellingProducts } = useProductStore();
+  
+  useEffect(() => {
+    if (bestSellingProducts.length === 0) {
+      fetchBestSellingProducts();
+    }
+  }, [bestSellingProducts.length, fetchBestSellingProducts]);
+  
   const messages = [
     "Free Delivery on ₹299+",
     "5% extra off on Prepaid Orders",
@@ -91,7 +106,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
               <style jsx>{`
                 .animate-marquee {
                   display: inline-flex;
-                  animation: marquee 15s linear infinite;
+                  animation: marquee 7s linear infinite;
                 }
 
                 @keyframes marquee {
@@ -169,8 +184,51 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                 </div>
               )}
             </div>
-            <div className="flex-1">
-                <h1 className="text-center text-xl " >Trending Products</h1>
+            <div className="flex-1 pb-6 bg-[#e9e7fd] py-10 px-3">
+              <h1 className="text-center text-xl mb-4">Trending Products</h1>
+              <Swiper
+                modules={[Mousewheel, FreeMode]}
+                spaceBetween={10}               // gap between cards
+                slidesPerView={'auto'}          // allows natural horizontal scroll
+                freeMode={{ enabled: true, momentum: false }} // smooth scrolling
+                mousewheel={true}
+                className="mySwiper"
+              >
+                {bestSellingProducts.map((product) => (
+                  <SwiperSlide
+                    key={product.id}
+                    className="!w-[140px] sm:!w-[160px]"
+                  >
+                    <div className="bg-white rounded-lg overflow-hidden p-2 flex flex-col h-full">
+                      <Link to={`/products/${product.id}`} className="h-full block">
+                        <div className="w-full aspect-[3/4]">
+                          <img
+                            src={product.images[0]?.src || '/placeholder.webp'}
+                            alt={product.name}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+                        <div className="text-center flex-grow mt-2">
+                          <h3 className="text-[12px] font-medium">{product.name}</h3>
+                          <p className="text-[10px] text-black mt-1">₹{product.price}</p>
+                        </div>
+                      </Link>
+                      <button 
+                        className="w-full py-1 bg-[#D4F871] uppercase rounded-md border-1 text-[12px] border-black flex justify-center items-center gap-0.5 mt-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addItem(product, 1);
+                        }}
+                      >
+                        Add to cart 
+                        <svg aria-hidden="true" fill="none" focusable="false" width="10" viewBox="0 0 24 24">
+                          <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
 
             {/* Footer */}
@@ -181,7 +239,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                     onClick={onClose}
                     className="w-full flex justify-center px-4 py-3 text-sm font-medium text-white bg-black hover:bg-black"
                   >
-                    Checkout . ₹{totalPrice.toFixed(2)}
+                    Checkout . ₹{totalPrice.toFixed(0)}
                   </button>
                 </div>
               </div>

@@ -20,7 +20,7 @@ const AllProductsCard: React.FC<AllProductsCardProps> = ({ products = [] }) => {
         {products.map((product) => (
           <div key={product.id} className="bg-white rounded-lg overflow-hidden p-2 flex flex-col transition-all h-full">
             <Link to={`/products/${product.id}`}>
-              <div className="w-full aspect-[5/4]">
+              <div className="w-full aspect-[5/6]">
                 <img
                   src={product.images[0]?.src || '/placeholder.webp'}
                   alt={product.name}

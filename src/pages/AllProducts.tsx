@@ -11,7 +11,7 @@ const AllProducts = () => {
   }, [fetchAllProducts]);
 
   return (
-    <div>
+    <div className='px-20'>
       <ProblemCategory />
       {loading ? (
         <div className="text-center">Loading...</div>

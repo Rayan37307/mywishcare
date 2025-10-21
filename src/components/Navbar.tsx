@@ -75,11 +75,11 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
 
         {/* Middle: Logo */}
         <div className="flex items-center justify-center">
-          <img 
+          <Link to="/"><img 
             src="/logo.webp" 
             alt="MyWishCare Logo" 
             className="h-8 w-auto object-contain"
-          />
+          /></Link>
         </div>
 
         {/* Right: User, Search, Cart */}
