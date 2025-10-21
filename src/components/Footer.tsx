@@ -14,12 +14,12 @@ const Footer = () => {
             <ul className='text-[14px] space-y-2 text-gray-300'>
               <li><Link to="/collections/bestsellers">Bestsellers</Link></li>
               <li><Link to="/collections/sun-care">Sun Care</Link></li>
-              <li><Link to="/hairfall">Hairfall</Link></li>
-              <li><Link to="/acne">Acne & Acne Marks</Link></li>
-              <li><Link to="/pigmentation">Pigmentation</Link></li>
-              <li><Link to="/dull-skin">Dull Skin</Link></li>
-              <li><Link to="/detan">Detan</Link></li>
-              <li><Link to="/damaged-hair">Damaged Hair</Link></li>
+              <li><Link to="/collections/hairfall">Hairfall</Link></li>
+              <li><Link to="/collections/acne">Acne & Acne Marks</Link></li>
+              <li><Link to="/collections/pigmentation">Pigmentation</Link></li>
+              <li><Link to="/collections/dull-skin">Dull Skin</Link></li>
+              <li><Link to="/collections/detan">Detan</Link></li>
+              <li><Link to="/collections/damaged-hair">Damaged Hair</Link></li>
             </ul>
           </div>
           

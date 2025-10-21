@@ -13,6 +13,12 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import ShippingPolicy from './pages/ShippingPolicy'
 import RefundPolicy from './pages/RefundPolicy'
 import SunCare from './pages/Suncare'
+import Hairfall from './pages/Hairfall'
+import Acne from './pages/Acne'
+import Pigmentation from './pages/Pigmentation'
+import DullSkin from './pages/DullSkin'
+import Detan from './pages/Detan'
+import DamagedHair from './pages/DamagedHair'
 import MobileMenu from './components/MobileMenu'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
@@ -37,7 +43,12 @@ const App = () => {
       submenu: [
         { name: 'Best Sellers', path: '/collections/bestsellers' },
         { name: 'Sun Care', path: '/collections/sun-care' },
-        // Add more as needed
+        { name: 'Hairfall', path: '/collections/hairfall' },
+        { name: 'Acne & Acne Marks', path: '/collections/acne' },
+        { name: 'Pigmentation', path: '/collections/pigmentation' },
+        { name: 'Dull Skin', path: '/collections/dull-skin' },
+        { name: 'Detan', path: '/collections/detan' },
+        { name: 'Damaged Hair', path: '/collections/damaged-hair' },
       ],
     },
     { name: 'Contact', path: '/contact' },
@@ -64,6 +75,12 @@ const App = () => {
             <Route path="/collections" element={<Collections />} />
             <Route path="/collections/bestsellers" element={<BestSellers />} />
             <Route path="/collections/sun-care" element={<SunCare />} />
+            <Route path="/collections/hairfall" element={<Hairfall />} />
+            <Route path="/collections/acne" element={<Acne />} />
+            <Route path="/collections/pigmentation" element={<Pigmentation />} />
+            <Route path="/collections/dull-skin" element={<DullSkin />} />
+            <Route path="/collections/detan" element={<Detan />} />
+            <Route path="/collections/damaged-hair" element={<DamagedHair />} />
             <Route path="/pages/about-us" element={<About />} />
             <Route path="/collections/all-products" element={<AllProducts />} />
             <Route path="/policies/terms-of-service" element={<TermsOfService />} />
