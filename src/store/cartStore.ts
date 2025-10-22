@@ -4,6 +4,36 @@ import { persist } from 'zustand/middleware';
 import type { CartState, CartItem } from '../types/cart';
 import type { Product } from '../types/product';
 
+// Function to check if user is authenticated
+const isAuthenticated = (): boolean => {
+  return !!localStorage.getItem('wp_user');
+};
+
+// Custom storage to conditionally persist based on auth state
+const conditionalStorage = {
+  getItem: (name: string) => {
+    if (isAuthenticated()) {
+      // Don't persist when logged in - always return empty state for logged-in users
+      return JSON.stringify({ items: [] });
+    }
+    // For non-logged-in users, return the stored value
+    const value = localStorage.getItem(name);
+    return value || JSON.stringify({ items: [] });
+  },
+  setItem: (name: string, value: string) => {
+    if (!isAuthenticated()) {
+      // Only save to localStorage when not logged in
+      localStorage.setItem(name, value);
+    }
+  },
+  removeItem: (name: string) => {
+    if (!isAuthenticated()) {
+      // Only remove from localStorage when not logged in
+      localStorage.removeItem(name);
+    }
+  },
+};
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -95,6 +125,7 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'cart-storage', // name of the item in the storage (must be unique)
+      storage: conditionalStorage, // use custom storage that checks auth state
       partialize: (state) => ({ items: state.items }), // only persist items, not computed values
     }
   )
