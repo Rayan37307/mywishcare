@@ -8,6 +8,7 @@ import Features from '../components/Features'
 import DisSlider from '../components/DisSlider'
 import DisSlider1 from '../components/DisSlider1'
 import CategoryHome from '../components/CategoryHome'
+import DiscountSticker from '../components/DiscountSticker'
 
 const Home = () => {
   return (
@@ -22,6 +23,7 @@ const Home = () => {
       <DisSlider />
       <DisSlider1 />
       <CategoryHome />
+      <DiscountSticker />
     </div>
   )
 }

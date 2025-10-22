@@ -33,7 +33,16 @@ const DetanCard: React.FC<DetanCardProps> = ({ products = [] }) => {
                   className="text-[10px] text-black"
                   dangerouslySetInnerHTML={{ __html: product.short_description }}
                 />
-                <p className="text-black mb-2 mt-2">₹{product.price}</p>
+                <div className="flex flex-col items-center">
+                  {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
+                    <>
+                      <p className="text-red-500 text-sm line-through mb-1">₹{product.regular_price}</p>
+                      <p className="text-black mb-2 mt-1">₹{product.sale_price}</p>
+                    </>
+                  ) : (
+                    <p className="text-black mb-2 mt-2">₹{product.price}</p>
+                  )}
+                </div>
               </div>
             </Link>
             <button 

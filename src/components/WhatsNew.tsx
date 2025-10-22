@@ -74,7 +74,16 @@ const WhatsNew = () => {
                    className="text-[10px] text-black"
                    dangerouslySetInnerHTML={{ __html: product.short_description }}
                  />
-                 <p className="text-black mb-2 mt-2">₹{product.price}</p>
+                 <div className="flex flex-col items-center">
+                   {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
+                     <>
+                       <p className="text-red-500 text-sm line-through mb-1">₹{product.regular_price}</p>
+                       <p className="text-black mb-2 mt-1">₹{product.sale_price}</p>
+                     </>
+                   ) : (
+                     <p className="text-black mb-2 mt-2">₹{product.price}</p>
+                   )}
+                 </div>
                </div>
                <button 
                  className='w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2'

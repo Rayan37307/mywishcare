@@ -97,14 +97,24 @@ const ProductDetail = () => {
             </div>
             <div>
               <h2 className="font-bold truncate max-w-[50vw]">{product.name}</h2>
-              <div className="text-sm text-gray-600">₹{product.price}</div>
+              <div className="text-sm text-gray-600">
+                {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
+                  <div className="flex items-center">
+                    <span className="text-red-500 line-through text-xs mr-2">₹{product.regular_price}</span>
+                    <span>₹{product.sale_price}</span>
+                  </div>
+                ) : (
+                  <span>₹{product.price}</span>
+                )}
+              </div>
             </div>
           </div>
           <button 
-            className="bg-black text-white px-4 py-2 rounded uppercase text-sm font-semibold"
+            className="bg-black text-white px-4 py-3 uppercase text-sm font-semibold flex items-center justify-center gap-1"
             onClick={handleAddToCart}
           >
-            Add to Cart
+            Add to cart<svg style={{marginLeft: '6px', width: '16px', marginTop: '-3px'}} aria-hidden="true" fill="none" focusable="false" width="15" viewBox="0 0 24 24"><path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+
           </button>
         </div>
       )}
@@ -126,7 +136,16 @@ const ProductDetail = () => {
               className="text-[12px] my-3 text-black"
               dangerouslySetInnerHTML={{ __html: product.short_description }}
             />
-            <div className="text-2xl text-gray-800 mb-4">₹{product.price}</div>
+            <div className="text-2xl text-gray-800 mb-4">
+              {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
+                <div className="flex items-center">
+                  <span className="text-red-500 line-through text-sm mr-2">₹{product.regular_price}</span>
+                  <span>₹{product.sale_price}</span>
+                </div>
+              ) : (
+                <span>₹{product.price}</span>
+              )}
+            </div>
             
             {/* Add to cart section */}
             <div 
@@ -201,11 +220,18 @@ const ProductDetail = () => {
                   getImageUrlFromId={getImageUrlFromId} 
                 />
                 <PairsWithSection wishCare={product.wishCare} />
+                {/* <FAQSection wishCare={product.wishCare} /> */}
+              </div>
+            )}
+            
+          </div>
+
+        </div>
+                  {product.wishCare && (
+              <div className="mt-4">
                 <FAQSection wishCare={product.wishCare} />
               </div>
             )}
-          </div>
-        </div>
       </div>
     </div>
   );

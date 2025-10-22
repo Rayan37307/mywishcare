@@ -1,8 +1,9 @@
 import React from 'react';
 import { useCartStore } from '../store/cartStore';
+import { woocommerceService } from '../services/woocommerceService';
 
 const Checkout = () => {
-  const { items, totalPrice } = useCartStore();
+  const { items, totalPrice, clearCart } = useCartStore();
   const [formData, setFormData] = React.useState({
     firstName: '',
     lastName: '',
@@ -14,6 +15,7 @@ const Checkout = () => {
     zip: '',
     notes: ''
   });
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -23,11 +25,53 @@ const Checkout = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real implementation, this would send the order to your backend or WooCommerce
-    console.log('Order details:', { formData, items, totalPrice });
-    alert('Order submitted successfully! (This is a demo)');
+    setIsLoading(true);
+
+    const orderData = {
+      payment_method: 'cod',
+      payment_method_title: 'Cash on Delivery',
+      set_paid: false,
+      billing: {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        address_1: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postcode: formData.zip,
+        country: 'IN', // Assuming India, you might want to make this dynamic
+        email: formData.email,
+        phone: formData.phone,
+      },
+      shipping: {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        address_1: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postcode: formData.zip,
+        country: 'IN', // Assuming India
+      },
+      line_items: items.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+      })),
+      customer_note: formData.notes,
+    };
+
+    try {
+      await woocommerceService.createOrder(orderData);
+      alert('Order placed successfully!');
+      clearCart();
+      // You might want to redirect to a thank you page
+      // navigate('/thank-you');
+    } catch (error) {
+      console.error('Failed to place order:', error);
+      alert('There was an error placing your order. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (items.length === 0) {
@@ -60,6 +104,7 @@ const Checkout = () => {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -71,6 +116,7 @@ const Checkout = () => {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -84,6 +130,7 @@ const Checkout = () => {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -96,6 +143,7 @@ const Checkout = () => {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -108,6 +156,7 @@ const Checkout = () => {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded"
                   required
+                  disabled={isLoading}
                 />
               </div>
               
@@ -121,6 +170,7 @@ const Checkout = () => {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -132,6 +182,7 @@ const Checkout = () => {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -143,6 +194,7 @@ const Checkout = () => {
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -155,14 +207,16 @@ const Checkout = () => {
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded"
                   rows={4}
+                  disabled={isLoading}
                 />
               </div>
               
               <button 
                 type="submit" 
-                className="mt-6 w-full py-3 bg-black text-white uppercase"
+                className="mt-6 w-full py-3 bg-black text-white uppercase disabled:bg-gray-400"
+                disabled={isLoading}
               >
-                Place Order
+                {isLoading ? 'Placing Order...' : 'Place Order'}
               </button>
             </form>
           </div>
@@ -177,7 +231,7 @@ const Checkout = () => {
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
-                  <p>₹{(parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * item.quantity).toFixed(2)}</p>
+                  <p>₹{(parseFloat(item.product.price.replace(/[^\]d.-]/g, '')) * item.quantity).toFixed(2)}</p>
                 </div>
               ))}
               
@@ -191,10 +245,10 @@ const Checkout = () => {
                   <span>Shipping</span>
                   <span>Free</span>
                 </div>
-                
-                <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span>₹0.00</span>
+
+                <div className="border-t pt-2 mt-2 flex justify-between font-bold">
+                  <span>Payment Method</span>
+                  <span>Cash on Delivery</span>
                 </div>
                 
                 <div className="border-t pt-2 mt-2 flex justify-between font-bold">

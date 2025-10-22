@@ -2,7 +2,7 @@ import React from 'react'
 
 const TermsOfService = () => {
   return (
-    <div className='flex justify-center items-center flex-col'>
+    <div className='flex justify-center items-center flex-col py-10'>
       <br />
       <h3 className='uppercase text-3xl text-black text-center font-semibold'>TERMS of service</h3>
       <br />

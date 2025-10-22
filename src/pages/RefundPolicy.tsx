@@ -2,9 +2,9 @@ import React from 'react'
 
 const RefundPolicy = () => {
   return (
-    <div className='flex justify-center items-center flex-col'>
+    <div className='flex justify-center items-center flex-col py-10'>
       <br />
-      <h3 className='uppercase text-3xl text-black text-center font-semibold'>REFUND POLICY</h3>
+      <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>REFUND POLICY</h3>
       <br />
       <p className='text-sm max-w-4xl'>
         <div className='font-bold py-6'>Returns</div>

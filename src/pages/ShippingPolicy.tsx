@@ -2,9 +2,9 @@ import React from 'react'
 
 const ShippingPolicy = () => {
   return (
-    <div className='flex justify-center items-center flex-col'>
+    <div className='flex justify-center items-center flex-col py-10'>
       <br />
-      <h3 className='uppercase text-3xl text-black text-center font-semibold'>SHIPPING POLICY</h3>
+      <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>SHIPPING POLICY</h3>
       <br />
       <p className='text-sm max-w-4xl'>
         We ship any domestic orders within 2 business days and international orders within business days of your order date.
