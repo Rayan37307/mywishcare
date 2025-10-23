@@ -11,7 +11,7 @@ const Pigmentation = () => {
   }, [fetchBestSellingProducts]);
 
   return (
-    <div className='px-20'>
+    <div className='px-10'>
       <ProblemCategory />
       {loading ? (
         <div className="text-center">Loading...</div>

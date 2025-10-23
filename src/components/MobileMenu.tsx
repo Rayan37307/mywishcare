@@ -40,7 +40,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
       <li>
         <button
           onClick={() => onNavigate('openSubmenu', item)}
-          className="flex justify-between items-center w-full py-2 text-lg text-left hover:text-gray-600 transition-colors"
+          className="flex justify-between items-center w-full py-3 font-bold text-sm text-left hover:text-gray-600 transition-colors"
           aria-haspopup="true"
         >
           {item.name}
@@ -57,7 +57,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
     <li>
       <Link
         to={item.path}
-        className="block py-2 text-lg hover:text-gray-600 transition-colors"
+        className="block py-3 font-bold text-sm text-lg hover:text-gray-600 transition-colors"
         onClick={() => onNavigate('close')}
       >
         {item.name}
@@ -103,17 +103,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, menuItems }) =
       {/* Main Menu — hidden on small screens when submenu is open */}
       {showMainMenu && (
         <div
-          className={`fixed top-0 left-0 z-50 h-full w-full sm:w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+          className={`fixed top-0 left-0 z-50 h-full w-full sm:w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="p-6 h-full flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <span className="text-xl font-semibold">Menu</span>
               <button
                 onClick={onClose}
                 aria-label="Close menu"
-                className="p-1 rounded-md hover:bg-gray-100"
+                className="p-1 rounded-md"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -3,11 +3,11 @@ import type { Product } from '../types/product';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 
-interface BestSellersCardProps {
+interface ProductCardProps {
   products: Product[];
 }
 
-const BestSellersCard: React.FC<BestSellersCardProps> = ({ products = [] }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ products = [] }) => {
   const { addItem } = useCartStore();
   
   const handleAddToCart = (product: Product) => {
@@ -78,4 +78,4 @@ const BestSellersCard: React.FC<BestSellersCardProps> = ({ products = [] }) => {
   );
 };
 
-export default BestSellersCard;
+export default ProductCard;

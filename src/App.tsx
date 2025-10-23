@@ -51,8 +51,6 @@ const App = () => {
         { name: 'Damaged Hair', path: '/collections/damaged-hair' },
       ],
     },
-    { name: 'Contact', path: '/contact' },
-    { name: 'Cart', path: '/cart' },
   ];
 
   return (

@@ -58,7 +58,7 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
   }, [isSearchOpen]);
 
   return (
-    <nav className="bg-[#E4EDFD] py-8 px-6 relative">
+    <nav className="bg-[#E4EDFD] py-8 px-10 relative">
       <div className="flex items-center justify-between">
         {/* Left: Menu Button */}
         <div className="flex items-center">

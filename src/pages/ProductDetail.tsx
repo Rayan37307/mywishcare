@@ -86,7 +86,7 @@ const ProductDetail = () => {
     <div className='bg-white py-10'>
       {/* Floating header that appears when scrolling past the add to cart section */}
       {showFloatingHeader && (
-        <div className="fixed top-[72px] left-0 right-0 bg-white shadow-md z-50 py-3 px-4 md:px-8 flex items-center justify-between">
+        <div className="fixed top-[100px] left-0 right-0 bg-white shadow-md z-50 py-3 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-16 h-16 overflow-hidden rounded-lg mr-4">
               <img 
@@ -99,9 +99,13 @@ const ProductDetail = () => {
               <h2 className="font-bold truncate max-w-[50vw]">{product.name}</h2>
               <div className="text-sm text-gray-600">
                 {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
-                  <div className="flex items-center">
-                    <span className="text-red-500 line-through text-xs mr-2">₹{product.regular_price}</span>
-                    <span>₹{product.sale_price}</span>
+                  <div className="flex flex-col justify-center">
+                  <div className="">
+                    <span className="text-red-500 mr-4">₹{product.sale_price}</span>
+
+                    <span className="text-gray-500 line-through text-xs ">₹{product.regular_price}</span>
+                    <p className="text-[11px] text-gray-600">Inclusive of all taxes</p>
+                    </div>
                   </div>
                 ) : (
                   <span>₹{product.price}</span>
@@ -138,9 +142,12 @@ const ProductDetail = () => {
             />
             <div className="text-2xl text-gray-800 mb-4">
               {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
-                <div className="flex items-center">
-                  <span className="text-red-500 line-through text-sm mr-2">₹{product.regular_price}</span>
+                <div className="flex flex-col justify-center gap-2">
+                <div>
                   <span>₹{product.sale_price}</span>
+                  <span className="text-gray-500 line-through text-sm mr-2 ml-4">MRP ₹{product.regular_price}</span>
+                  </div>
+                  <p className="text-[13px] text-gray-600">Inclusive of all taxes</p>
                 </div>
               ) : (
                 <span>₹{product.price}</span>
@@ -152,21 +159,6 @@ const ProductDetail = () => {
               ref={addToCartRef}
               className="flex items-center gap-4 mt-4"
             >
-              <div className="flex items-center border border-gray-300 rounded">
-                <button 
-                  className="px-3 py-2 text-lg font-bold"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                >
-                  -
-                </button>
-                <span className="px-4 py-2 text-center">{quantity}</span>
-                <button 
-                  className="px-3 py-2 text-lg font-bold"
-                  onClick={() => setQuantity(quantity + 1)}
-                >
-                  +
-                </button>
-              </div>
               <button 
                 className="w-full py-3 bg-transparent uppercase flex items-center justify-center gap-2 border-1 text-[13px] border-gray-600 font-semibold"
                 onClick={handleAddToCart}
@@ -203,10 +195,10 @@ const ProductDetail = () => {
                 </div>
                 <ActiveOffersSection wishCare={product.wishCare} />
                 <BenefitsSection wishCare={product.wishCare} />
-                <WhatMakesItGreatSection 
+                {/*} <WhatMakesItGreatSection 
                   wishCare={product.wishCare} 
                   getImageUrlFromId={getImageUrlFromId} 
-                />
+                />*/}
                 <HowToUseSection 
                   wishCare={product.wishCare} 
                   getImageUrlFromId={getImageUrlFromId} 

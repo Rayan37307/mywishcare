@@ -101,6 +101,22 @@ export const useCartStore = create<CartState>()(
       
       getCartItems: () => get().items,
       
+      // Get specific cart item by product ID
+      getCartItem: (productId: number) => {
+        return get().items.find(item => item.product.id === productId) || null;
+      },
+      
+      // Check if a product is in cart
+      isInCart: (productId: number) => {
+        return get().items.some(item => item.product.id === productId);
+      },
+      
+      // Get total quantity of a specific product in cart
+      getProductQuantity: (productId: number) => {
+        const item = get().items.find(item => item.product.id === productId);
+        return item ? item.quantity : 0;
+      },
+      
       // Calculate totals helper function
       calculateTotals: () => {
         const { items } = get();
