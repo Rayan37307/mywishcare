@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import type { WishCareProductData } from "../../types/product";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -11,11 +11,10 @@ const WhatMakesItGreatSection: React.FC<WhatMakesItGreatSectionProps> = ({
   wishCare,
   getImageUrlFromId,
 }) => {
-  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [open, setOpen] = React.useState(true);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [open, setOpen] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchImages = async () => {
       if (wishCare?.whatMakesImages?.length) {
         const urls = await Promise.all(
@@ -30,7 +29,6 @@ const WhatMakesItGreatSection: React.FC<WhatMakesItGreatSectionProps> = ({
         );
         setImageUrls(urls.filter((url): url is string => url !== null));
       }
-      setLoading(false);
     };
 
     fetchImages();

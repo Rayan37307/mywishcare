@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react'
 import ProblemCategory from '../components/ProblemCategory';
 import PigmentationCard from '../components/PigmentationCard';
 import { useProductStore } from '../store/productStore';

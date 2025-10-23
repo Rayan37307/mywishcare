@@ -20,7 +20,7 @@ const BenefitsSection: React.FC<BenefitsSectionProps> = ({ wishCare }) => {
       {hasBenefits && (
         <div className="mb-4">
           <ul className="space-y-2">
-            {wishCare.benefits.map((benefit, index) => (
+            {wishCare!.benefits!.map((benefit, index) => (
               <li key={index} className="flex items-start">
                 <span className="mr-2 -mb-3 text-[20px] mt-1">✓</span>
                 <span className="text-gray-700">{benefit}</span>
@@ -34,7 +34,7 @@ const BenefitsSection: React.FC<BenefitsSectionProps> = ({ wishCare }) => {
         <div>
           <h3 className="text-lg font-semibold mb-2 text-gray-700">Suitable For</h3>
           <ul className="space-y-2">
-            {wishCare.suitableFor.map((suitable, index) => (
+            {wishCare!.suitableFor!.map((suitable, index) => (
               <li key={index} className="flex items-start">
                 <span className="mr-2 text-[20px] mt-1">✓</span>
                 <span className="text-gray-700">{suitable}</span>

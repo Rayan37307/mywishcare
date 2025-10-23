@@ -2,7 +2,7 @@
 export interface WooCommerceAPIMetaDataItem {
   id: number;
   key: string;
-  value: any;
+  value: string;
 }
 
 export interface WooCommerceAPIProduct {

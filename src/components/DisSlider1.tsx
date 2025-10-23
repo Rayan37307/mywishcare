@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const DisSlider1 = () => {
   // Assuming dis1, dis2, dis3, etc. are the image names

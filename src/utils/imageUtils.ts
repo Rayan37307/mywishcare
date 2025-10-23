@@ -1,5 +1,4 @@
 // src/utils/imageUtils.ts
-import type { Product } from '../types/product';
 
 /**
  * Fetches the image URL for a given WordPress attachment ID

@@ -1,15 +1,14 @@
-import React from 'react';
 import type { Product } from '../types/product';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 
-export type ProductCategory = 
-  | 'acne' 
-  | 'pigmentation' 
-  | 'hairfall' 
-  | 'dullSkin' 
-  | 'detan' 
-  | 'damagedHair' 
+export type ProductCategory =
+  | 'acne'
+  | 'pigmentation'
+  | 'hairfall'
+  | 'dullSkin'
+  | 'detan'
+  | 'damagedHair'
   | 'allProducts'
   | 'sunCare'
   | 'bestSellers';
@@ -20,10 +19,9 @@ interface UniversalProductCardProps {
   className?: string;
 }
 
-const UniversalProductCard: React.FC<UniversalProductCardProps> = ({ 
-  products = [], 
-  category,
-  className = "py-8" 
+const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
+  products = [],
+  className = "py-8"
 }) => {
   const { addItem, getCartItems } = useCartStore();
   
@@ -37,7 +35,8 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
   };
 
   // Format price with proper number formatting
-  const formatPrice = (price: string | number): string => {
+  const formatPrice = (price: string | number | undefined): string => {
+    if (price === undefined) return '0.00';
     if (typeof price === 'number') {
       return price.toString();
     }

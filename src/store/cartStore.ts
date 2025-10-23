@@ -14,16 +14,23 @@ const conditionalStorage = {
   getItem: (name: string) => {
     if (isAuthenticated()) {
       // Don't persist when logged in - always return empty state for logged-in users
-      return JSON.stringify({ items: [] });
+      return { items: [] };
     }
     // For non-logged-in users, return the stored value
     const value = localStorage.getItem(name);
-    return value || JSON.stringify({ items: [] });
+    if (value) {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return { items: [] };
+      }
+    }
+    return { items: [] };
   },
-  setItem: (name: string, value: string) => {
+  setItem: (name: string, value: unknown) => {
     if (!isAuthenticated()) {
       // Only save to localStorage when not logged in
-      localStorage.setItem(name, value);
+      localStorage.setItem(name, JSON.stringify(value));
     }
   },
   removeItem: (name: string) => {
@@ -142,7 +149,6 @@ export const useCartStore = create<CartState>()(
     {
       name: 'cart-storage', // name of the item in the storage (must be unique)
       storage: conditionalStorage, // use custom storage that checks auth state
-      partialize: (state) => ({ items: state.items }), // only persist items, not computed values
     }
   )
 );

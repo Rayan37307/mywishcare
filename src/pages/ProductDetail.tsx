@@ -1,27 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
 import ActiveOffersSection from '../components/wishcare/ActiveOffersSection';
 import BenefitsSection from '../components/wishcare/BenefitsSection';
-import WhatMakesItGreatSection from '../components/wishcare/WhatMakesItGreatSection';
 import HowToUseSection from '../components/wishcare/HowToUseSection';
 import IngredientsSection from '../components/wishcare/IngredientsSection';
 import ResultsSection from '../components/wishcare/ResultsSection';
 import PairsWithSection from '../components/wishcare/PairsWithSection';
 import FAQSection from '../components/wishcare/FAQSection';
 import { getImageUrlFromId } from '../utils/imageUtils';
+import type { Product } from '../types/product';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { fetchProductById, setLoading, setError } = useProductStore();
   const { addItem } = useCartStore();
-  const [product, setProduct] = React.useState<any>(null);
-  const [loading, setLoadingState] = React.useState(true);
-  const [quantity, setQuantity] = React.useState(1);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoadingState] = useState(true);
+  const quantity = 1;
   const addToCartRef = useRef<HTMLDivElement>(null);
   
-  const [showFloatingHeader, setShowFloatingHeader] = React.useState(false);
+  const [showFloatingHeader, setShowFloatingHeader] = useState(false);
 
   const handleAddToCart = () => {
     if (product) {
@@ -33,7 +33,6 @@ const ProductDetail = () => {
     // Add scroll event listener
     const handleScroll = () => {
       if (addToCartRef.current) {
-        const rect = addToCartRef.current.getBoundingClientRect();
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
         // Show floating header when scrolled past the add to cart section (considering navbar height)
         if (scrollTop > 300) { // Show after scrolling down 300px, which should be past the product details
@@ -62,7 +61,7 @@ const ProductDetail = () => {
           // Fetch product with WishCare data
           const fetchedProduct = await fetchProductById(Number(id));
           setProduct(fetchedProduct);
-        } catch (err) {
+        } catch {
           setError('Failed to fetch product');
         } finally {
           setLoading(false);

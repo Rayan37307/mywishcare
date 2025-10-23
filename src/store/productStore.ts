@@ -81,7 +81,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         products,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch products', 
         loading: false 
@@ -100,7 +100,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         whatsNewProducts: newProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch "What\'s New" products', 
         loading: false 
@@ -124,7 +124,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         bestSellingProducts: bestSelling,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch best selling products', 
         loading: false 
@@ -142,7 +142,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         routineBuilderProducts: routineBuilderProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch Routine Builder products', 
         loading: false 
@@ -157,7 +157,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const product = await woocommerceService.fetchProductById(id, true); // Include WishCare data
       set({ loading: false });
       return product;
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch product', 
         loading: false 
@@ -173,7 +173,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const products = await woocommerceService.searchProducts(query);
       set({ loading: false });
       return products;
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to search products', 
         loading: false 
@@ -191,7 +191,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         products,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch products by category', 
         loading: false 
@@ -217,7 +217,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         acneProducts: acneProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch acne products', 
         loading: false 
@@ -240,7 +240,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         pigmentationProducts: pigmentationProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch pigmentation products', 
         loading: false 
@@ -263,7 +263,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         hairfallProducts: hairfallProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch hairfall products', 
         loading: false 
@@ -286,7 +286,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         dullSkinProducts: dullSkinProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch dull skin products', 
         loading: false 
@@ -309,7 +309,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         detanProducts: detanProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch detan products', 
         loading: false 
@@ -332,7 +332,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         damagedHairProducts: damagedHairProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch damaged hair products', 
         loading: false 
@@ -356,7 +356,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         sunCareProducts: sunCareProducts,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch sun care products', 
         loading: false 
@@ -372,7 +372,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         allProducts: products,
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         error: 'Failed to fetch all products collection', 
         loading: false 

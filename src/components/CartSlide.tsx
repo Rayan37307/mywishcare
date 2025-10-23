@@ -1,10 +1,7 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Mousewheel, FreeMode } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/mousewheel';
-import 'swiper/css/free-mode';
+import { Mousewheel, FreeMode } from 'swiper/modules';
+
 import { useCartStore } from "../store/cartStore";
 import { useProductStore } from "../store/productStore";
 import { Link } from 'react-router-dom';
@@ -15,7 +12,7 @@ interface CartSlideProps {
 }
 
 const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
-  const { items, totalItems, totalPrice, updateQuantity, removeItem } =
+  const { items, totalPrice, updateQuantity, removeItem, addItem } =
     useCartStore();
   const { bestSellingProducts, fetchBestSellingProducts } = useProductStore();
   
@@ -103,7 +100,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                 {renderMessages()}
               </div>
 
-              <style jsx>{`
+              <style>{`
                 .animate-marquee {
                   display: inline-flex;
                   animation: marquee 7s linear infinite;

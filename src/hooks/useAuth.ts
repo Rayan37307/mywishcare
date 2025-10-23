@@ -89,21 +89,17 @@ export const useAuth = () => {
       const result = await wpAuthService.register(username, email, password, displayName);
 
       if (result.error) {
-        setAuthState({
-          user: null,
-          loading: false,
-          error: result.error,
-          isAuthenticated: false,
-        });
+        setAuthState(prev => ({ ...prev, loading: false, error: result.error, isAuthenticated: false }));
         return { success: false, error: result.error };
       }
 
-      setAuthState({
+      // Registration might not directly log the user in, so don't set auth state to authenticated
+      setAuthState(prev => ({
+        ...prev,
         user: result.user || null,
         loading: false,
         error: null,
-        isAuthenticated: !!result.user,
-      });
+      }));
 
       return { success: true, user: result.user };
     } catch (error) {
@@ -115,6 +111,37 @@ export const useAuth = () => {
         isAuthenticated: false,
       });
       return { success: false, error: errorMessage };
+    }
+  };
+
+  // Alternative registration that doesn't require password (just sends request)
+  const requestRegistration = async (username: string, email: string, displayName?: string) => {
+    setAuthState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const result = await wpAuthService.requestRegistration(username, email, displayName);
+
+      if (!result.success) {
+        setAuthState(prev => ({ ...prev, loading: false, error: result.message, isAuthenticated: false }));
+        return { success: false, message: result.message };
+      }
+
+      setAuthState(prev => ({
+        ...prev,
+        loading: false,
+        error: null,
+      }));
+
+      return { success: true, message: result.message };
+    } catch (error) {
+      const errorMessage = (error as Error).message || 'Registration request failed';
+      setAuthState({
+        user: null,
+        loading: false,
+        error: errorMessage,
+        isAuthenticated: false,
+      });
+      return { success: false, message: errorMessage };
     }
   };
 
@@ -156,6 +183,7 @@ export const useAuth = () => {
     ...authState,
     login,
     register,
+    requestRegistration, // Add this new method
     logout,
     updateUser,
     refetchUser: () => {

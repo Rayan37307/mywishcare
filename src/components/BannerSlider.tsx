@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const BannerSlider = () => {
   const messages = [
@@ -25,7 +25,7 @@ const BannerSlider = () => {
         {renderMessages()}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .animate-marquee {
           display: inline-flex;
           animation: marquee 25s linear infinite;

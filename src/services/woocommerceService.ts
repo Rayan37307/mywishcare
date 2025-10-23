@@ -1,5 +1,5 @@
 // src/services/woocommerceService.ts
-import type { Product, WooCommerceAPIProduct, WooCommerceAPIProductWithWishCare, WooCommerceAPIMetaDataItem, WishCareProductData, WishCareFAQ } from "../types/product";
+import type { Product, WooCommerceAPIProduct, WooCommerceAPIMetaDataItem, WishCareProductData, WishCareFAQ } from "../types/product";
 
 const WOO_API_URL = import.meta.env.VITE_WC_API_URL || 'https://your-wordpress-site.com/wp-json/wc/v3';
 const WOO_CONSUMER_KEY = import.meta.env.VITE_WC_CONSUMER_KEY || '';
@@ -33,26 +33,26 @@ class WooCommerceService {
       switch (item.key) {
         case 'wishcare_active_offers':
           try {
-            wishCareData.activeOffers = JSON.parse(item.value);
+            wishCareData.activeOffers = JSON.parse(item.value) as string[];
           } catch (e) {
             console.warn('Failed to parse wishcare_active_offers:', e);
-            wishCareData.activeOffers = item.value;
+            wishCareData.activeOffers = [item.value];
           }
           break;
         case 'wishcare_benefits':
           try {
-            wishCareData.benefits = JSON.parse(item.value);
+            wishCareData.benefits = JSON.parse(item.value) as string[];
           } catch (e) {
             console.warn('Failed to parse wishcare_benefits:', e);
-            wishCareData.benefits = item.value;
+            wishCareData.benefits = [item.value];
           }
           break;
         case 'wishcare_suitable_for':
           try {
-            wishCareData.suitableFor = JSON.parse(item.value);
+            wishCareData.suitableFor = JSON.parse(item.value) as string[];
           } catch (e) {
             console.warn('Failed to parse wishcare_suitable_for:', e);
-            wishCareData.suitableFor = item.value;
+            wishCareData.suitableFor = [item.value];
           }
           break;
         case 'wishcare_what_makes_it_great':
@@ -60,10 +60,10 @@ class WooCommerceService {
           break;
         case 'wishcare_what_makes_images':
           try {
-            wishCareData.whatMakesImages = JSON.parse(item.value);
+            wishCareData.whatMakesImages = JSON.parse(item.value) as number[];
           } catch (e) {
             console.warn('Failed to parse wishcare_what_makes_images:', e);
-            wishCareData.whatMakesImages = item.value;
+            wishCareData.whatMakesImages = [];
           }
           break;
         case 'wishcare_how_to_use':
@@ -71,10 +71,10 @@ class WooCommerceService {
           break;
         case 'wishcare_how_to_images':
           try {
-            wishCareData.howToImages = JSON.parse(item.value);
+            wishCareData.howToImages = JSON.parse(item.value) as number[];
           } catch (e) {
             console.warn('Failed to parse wishcare_how_to_images:', e);
-            wishCareData.howToImages = item.value;
+            wishCareData.howToImages = [];
           }
           break;
         case 'wishcare_ingredients':
@@ -82,10 +82,10 @@ class WooCommerceService {
           break;
         case 'wishcare_ingredients_images':
           try {
-            wishCareData.ingredientsImages = JSON.parse(item.value);
+            wishCareData.ingredientsImages = JSON.parse(item.value) as number[];
           } catch (e) {
             console.warn('Failed to parse wishcare_ingredients_images:', e);
-            wishCareData.ingredientsImages = item.value;
+            wishCareData.ingredientsImages = [];
           }
           break;
         case 'wishcare_results':
@@ -93,10 +93,10 @@ class WooCommerceService {
           break;
         case 'wishcare_results_images':
           try {
-            wishCareData.resultsImages = JSON.parse(item.value);
+            wishCareData.resultsImages = JSON.parse(item.value) as number[];
           } catch (e) {
             console.warn('Failed to parse wishcare_results_images:', e);
-            wishCareData.resultsImages = item.value;
+            wishCareData.resultsImages = [];
           }
           break;
         case 'wishcare_pairs_with':
@@ -104,10 +104,10 @@ class WooCommerceService {
           break;
         case 'wishcare_faqs':
           try {
-            wishCareData.faqs = JSON.parse(item.value);
+            wishCareData.faqs = JSON.parse(item.value) as WishCareFAQ[];
           } catch (e) {
             console.warn('Failed to parse wishcare_faqs:', e);
-            wishCareData.faqs = item.value;
+            wishCareData.faqs = [];
           }
           break;
       }
@@ -116,13 +116,7 @@ class WooCommerceService {
     return wishCareData;
   }
 
-  private async fetchProductMeta(productId: number): Promise<WishCareProductData> {
-    // Meta data is included in the main product response in WooCommerce API
-    // This method is kept for compatibility but should not be called separately
-    // Meta data should be extracted from the main product response
-    console.warn('fetchProductMeta should not be called directly. Meta data is included in the product response.');
-    return {};
-  }
+
 
   private transformWooCommerceProduct(product: WooCommerceAPIProduct, wishCareData?: WishCareProductData): Product {
     return {
@@ -216,7 +210,7 @@ class WooCommerceService {
       return [];
     }
   }
-  async createOrder(orderData: any): Promise<any> {
+  async createOrder(orderData: unknown): Promise<unknown> {
     try {
       const response = await fetch(this.buildAuthURL('/orders'), {
         method: 'POST',

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import ProblemCategory from '../components/ProblemCategory';
 import DamagedHairCard from '../components/DamagedHairCard';
 import { useProductStore } from '../store/productStore';

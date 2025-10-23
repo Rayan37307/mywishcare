@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Route, Routes, Navigate } from 'react-router-dom'
+import { useState } from 'react'
+import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Topbar from './components/Topbar'
 import Header from './components/Header'
@@ -26,7 +26,7 @@ import Checkout from './pages/Checkout'
 import LoginForm from './components/LoginForm'
 import UserProfile from './components/UserProfile'
 import ProtectedRoute from './components/ProtectedRoute'
-import Navigation from './components/Navigation'
+
 import SearchPage from './pages/SearchPage'
 
 const App = () => {

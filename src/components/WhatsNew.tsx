@@ -1,12 +1,9 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Mousewheel, FreeMode } from 'swiper/modules';
+import { Mousewheel, FreeMode } from 'swiper/modules';
+import type { Product } from '../types/product';
 
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/mousewheel';
-import 'swiper/css/free-mode';
+
 import { Link } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
@@ -15,7 +12,7 @@ const WhatsNew = () => {
   const { whatsNewProducts, loading, error, fetchWhatsNewProducts } = useProductStore();
   const { addItem } = useCartStore();
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addItem(product, 1);
   };
 
@@ -107,7 +104,7 @@ const WhatsNew = () => {
 </Swiper>
 
 
-      <style jsx>{`
+      <style>{`
         .swiper-button-next,
         .swiper-button-prev {
           background-color: #fff;

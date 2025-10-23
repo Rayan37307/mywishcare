@@ -16,10 +16,12 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
   const [open, setOpen] = React.useState(true);
 
   React.useEffect(() => {
+    if (!wishCare) return;
+
     const fetchImages = async () => {
-      if (wishCare?.howToImages?.length) {
+      if (wishCare.howToImages?.length) {
         const urls = await Promise.all(
-          wishCare.howToImages.map(async (id) => {
+          wishCare.howToImages.map(async (id: number) => {
             try {
               return await getImageUrlFromId(id);
             } catch {
@@ -35,8 +37,8 @@ const HowToUseSection: React.FC<HowToUseSectionProps> = ({
     fetchImages();
   }, [wishCare, getImageUrlFromId]);
 
-  if (loading) return null; // ✅ Only render after loading
-  if (!wishCare?.howToUse && imageUrls.length === 0) return null;
+  if (!wishCare || loading) return null;
+  if (!wishCare.howToUse && imageUrls.length === 0) return null;
 
   return (
     <div className="mb-8 p-6 bg-transparent rounded-lg border-3 border-[#EBE4FD]">

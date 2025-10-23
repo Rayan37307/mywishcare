@@ -39,7 +39,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
     return (
       <li>
         <button
-          onClick={() => onNavigate('openSubmenu', item)}
+          onClick={() => onNavigate('openSubmenu', item as MenuItemWithSubmenu)}
           className="flex justify-between items-center w-full py-3 font-bold text-sm text-left hover:text-gray-600 transition-colors"
           aria-haspopup="true"
         >
@@ -56,7 +56,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
   return (
     <li>
       <Link
-        to={item.path}
+        to={(item as MenuItemWithLink).path}
         className="block py-3 font-bold text-sm text-lg hover:text-gray-600 transition-colors"
         onClick={() => onNavigate('close')}
       >

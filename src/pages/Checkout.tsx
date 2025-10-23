@@ -1,28 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { woocommerceService } from '../services/woocommerceService';
+import { useAuth } from '../hooks/useAuth';
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCartStore();
-  const [formData, setFormData] = React.useState({
+  const { user, isAuthenticated } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
     firstName: '',
     lastName: '',
-    email: '',
-    phone: '',
-    address: '',
+    address1: '',
+    address2: '',
     city: '',
     state: '',
-    zip: '',
+    postalCode: '',
+    phone: '',
+    countryCode: 'IN',
+    zone: '',
+    marketingOptIn: true,
+    saveShippingInfo: false,
+    billingAddressSame: true,
+    paymentMethod: 'cod',
     notes: ''
   });
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // Pre-populate form fields if user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email,
+        firstName: user.displayName.split(' ')[0] || user.username,
+        lastName: user.displayName.split(' ').slice(1).join(' ') || '',
+      }));
+    }
+  }, [isAuthenticated, user]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement;
+      setFormData(prev => ({
+        ...prev,
+        [name]: target.checked
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,28 +59,30 @@ const Checkout = () => {
     setIsLoading(true);
 
     const orderData = {
-      payment_method: 'cod',
-      payment_method_title: 'Cash on Delivery',
+      payment_method: formData.paymentMethod,
+      payment_method_title: formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay Secure',
       set_paid: false,
       billing: {
         first_name: formData.firstName,
         last_name: formData.lastName,
-        address_1: formData.address,
+        address_1: formData.address1,
+        address_2: formData.address2,
         city: formData.city,
-        state: formData.state,
-        postcode: formData.zip,
-        country: 'IN', // Assuming India, you might want to make this dynamic
+        state: formData.zone,
+        postcode: formData.postalCode,
+        country: formData.countryCode,
         email: formData.email,
         phone: formData.phone,
       },
       shipping: {
         first_name: formData.firstName,
         last_name: formData.lastName,
-        address_1: formData.address,
+        address_1: formData.address1,
+        address_2: formData.address2,
         city: formData.city,
-        state: formData.state,
-        postcode: formData.zip,
-        country: 'IN', // Assuming India
+        state: formData.zone,
+        postcode: formData.postalCode,
+        country: formData.countryCode,
       },
       line_items: items.map(item => ({
         product_id: item.product.id,
@@ -92,131 +123,403 @@ const Checkout = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-xl font-bold mb-4">Shipping Information</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1">First Name *</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
+            <form id="checkoutForm" onSubmit={handleSubmit} className="space-y-8">
+              {/* Contact Section */}
+              <section aria-label="Contact" className="border-b pb-8">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 id="contact" className="text-xl font-bold">Contact</h2>
+                  {isAuthenticated ? (
+                    <div className="text-sm">
+                      Signed in as <span className="font-medium">{user?.email}</span>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          // Implement logout or change account
+                        }}
+                        className="ml-2 text-blue-600 hover:underline"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  ) : (
+                    <a href="/login" className="text-blue-600 hover:underline text-sm">
+                      Sign in
+                    </a>
+                  )}
+                </div>
+                
+                <div className="mb-4">
+                  <label htmlFor="email" className="block text-sm font-medium mb-1">
+                    Email or mobile phone number
+                  </label>
+                  <input 
+                    id="email" 
+                    name="email" 
+                    placeholder="Email or mobile phone number" 
+                    required 
+                    type="text" 
+                    inputMode="text" 
+                    aria-required="true" 
+                    value={formData.email}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded"
-                    required
-                    disabled={isLoading}
+                    autoComplete="shipping email" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div>
-                  <label className="block mb-1">Last Name *</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
+                
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    id="marketing_opt_in" 
+                    name="marketingOptIn" 
+                    checked={formData.marketingOptIn}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded"
-                    required
-                    disabled={isLoading}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="marketing_opt_in" className="text-sm text-gray-700">
+                    Email me with news and offers
+                  </label>
+                </div>
+              </section>
+              
+              {/* Delivery Section */}
+              <section aria-label="Delivery" className="border-b pb-8">
+                <h2 id="deliveryAddress" className="text-xl font-bold mb-6">Delivery</h2>
+                
+                <div className="mb-4">
+                  <label htmlFor="Select960" className="block text-sm font-medium mb-1">
+                    Country/Region
+                  </label>
+                  <div className="relative">
+                    <select 
+                      name="countryCode" 
+                      id="Select960" 
+                      required 
+                      value={formData.countryCode}
+                      onChange={handleChange}
+                      autoComplete="shipping country" 
+                      className="w-full px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    >
+                      <option value="IN">India</option>
+                      {/* Add more options as needed */}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label htmlFor="TextField4443" className="block text-sm font-medium mb-1">
+                      First name
+                    </label>
+                    <input 
+                      id="TextField4443" 
+                      name="firstName" 
+                      placeholder="First name" 
+                      required 
+                      type="text" 
+                      aria-required="true" 
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      autoComplete="shipping given-name" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="TextField4444" className="block text-sm font-medium mb-1">
+                      Last name
+                    </label>
+                    <input 
+                      id="TextField4444" 
+                      name="lastName" 
+                      placeholder="Last name" 
+                      required 
+                      type="text" 
+                      aria-required="true" 
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      autoComplete="shipping family-name" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <label htmlFor="shipping-address1" className="block text-sm font-medium mb-1">
+                    Address
+                  </label>
+                  <input 
+                    id="shipping-address1" 
+                    name="address1" 
+                    placeholder="Address" 
+                    required 
+                    type="text" 
+                    aria-autocomplete="list" 
+                    aria-expanded="false" 
+                    aria-required="true" 
+                    aria-labelledby="shipping-address1-label" 
+                    aria-haspopup="listbox" 
+                    role="combobox" 
+                    value={formData.address1}
+                    onChange={handleChange}
+                    autoComplete="shipping address-line1" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-              </div>
-              
-              <div className="mt-4">
-                <label className="block mb-1">Email *</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <div className="mt-4">
-                <label className="block mb-1">Phone *</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <div className="mt-4">
-                <label className="block mb-1">Address *</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <div>
-                  <label className="block mb-1">City *</label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
+                
+                <div className="mb-4">
+                  <label htmlFor="TextField4445" className="block text-sm font-medium mb-1">
+                    Apartment, suite, etc. (optional)
+                  </label>
+                  <input 
+                    id="TextField4445" 
+                    name="address2" 
+                    placeholder="Apartment, suite, etc. (optional)" 
+                    type="text" 
+                    aria-required="false" 
+                    value={formData.address2}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded"
-                    required
-                    disabled={isLoading}
+                    autoComplete="shipping address-line2" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div>
-                  <label className="block mb-1">State *</label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state}
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="md:col-span-2">
+                    <label htmlFor="TextField4446" className="block text-sm font-medium mb-1">
+                      City
+                    </label>
+                    <input 
+                      id="TextField4446" 
+                      name="city" 
+                      placeholder="City" 
+                      required 
+                      type="text" 
+                      aria-required="true" 
+                      value={formData.city}
+                      onChange={handleChange}
+                      autoComplete="shipping address-level2" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="Select961" className="block text-sm font-medium mb-1">
+                      State
+                    </label>
+                    <div className="relative">
+                      <select 
+                        name="zone" 
+                        id="Select961" 
+                        required 
+                        value={formData.zone}
+                        onChange={handleChange}
+                        autoComplete="shipping address-level1" 
+                        className="w-full px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                      >
+                        <option value="" hidden disabled>&nbsp;</option>
+                        <option value="AN">Andaman and Nicobar Islands</option>
+                        <option value="AP">Andhra Pradesh</option>
+                        <option value="AR">Arunachal Pradesh</option>
+                        <option value="AS">Assam</option>
+                        <option value="BR">Bihar</option>
+                        <option value="CH">Chandigarh</option>
+                        <option value="CG">Chhattisgarh</option>
+                        <option value="DN">Dadra and Nagar Haveli</option>
+                        <option value="DD">Daman and Diu</option>
+                        <option value="DL">Delhi</option>
+                        <option value="GA">Goa</option>
+                        <option value="GJ">Gujarat</option>
+                        <option value="HR">Haryana</option>
+                        <option value="HP">Himachal Pradesh</option>
+                        <option value="JK">Jammu and Kashmir</option>
+                        <option value="JH">Jharkhand</option>
+                        <option value="KA">Karnataka</option>
+                        <option value="KL">Kerala</option>
+                        <option value="LA">Ladakh</option>
+                        <option value="LD">Lakshadweep</option>
+                        <option value="MP">Madhya Pradesh</option>
+                        <option value="MH">Maharashtra</option>
+                        <option value="MN">Manipur</option>
+                        <option value="ML">Meghalaya</option>
+                        <option value="MZ">Mizoram</option>
+                        <option value="NL">Nagaland</option>
+                        <option value="OR">Odisha</option>
+                        <option value="PY">Puducherry</option>
+                        <option value="PB">Punjab</option>
+                        <option value="RJ">Rajasthan</option>
+                        <option value="SK">Sikkim</option>
+                        <option value="TN">Tamil Nadu</option>
+                        <option value="TS">Telangana</option>
+                        <option value="TR">Tripura</option>
+                        <option value="UP">Uttar Pradesh</option>
+                        <option value="UK">Uttarakhand</option>
+                        <option value="WB">West Bengal</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="TextField4447" className="block text-sm font-medium mb-1">
+                      PIN code
+                    </label>
+                    <input 
+                      id="TextField4447" 
+                      name="postalCode" 
+                      placeholder="PIN code" 
+                      required 
+                      type="text" 
+                      inputMode="numeric" 
+                      aria-required="true" 
+                      value={formData.postalCode}
+                      onChange={handleChange}
+                      autoComplete="shipping postal-code" 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <label htmlFor="TextField4448" className="block text-sm font-medium mb-1">
+                    Phone
+                  </label>
+                  <input 
+                    id="TextField4448" 
+                    name="phone" 
+                    placeholder="Phone" 
+                    required 
+                    type="tel" 
+                    aria-required="true" 
+                    value={formData.phone}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded"
-                    required
-                    disabled={isLoading}
+                    autoComplete="shipping tel" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div>
-                  <label className="block mb-1">ZIP Code *</label>
-                  <input
-                    type="text"
-                    name="zip"
-                    value={formData.zip}
+                
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    id="save_shipping_information" 
+                    name="saveShippingInfo" 
+                    checked={formData.saveShippingInfo}
                     onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded"
-                    required
-                    disabled={isLoading}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
+                  <label htmlFor="save_shipping_information" className="text-sm text-gray-700">
+                    Save this information for next time
+                  </label>
                 </div>
-              </div>
+              </section>
               
-              <div className="mt-4">
-                <label className="block mb-1">Order Notes (Optional)</label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                  rows={4}
-                  disabled={isLoading}
-                />
-              </div>
+              {/* Payment Section */}
+              <section aria-label="Payment" className="border-b pb-8">
+                <h2 id="payment" className="text-xl font-bold mb-4">Payment</h2>
+                <p className="text-sm text-gray-600 mb-6">Select EXTRA 5% OFF on your preferred mode of payment once redirected to Razorpay Gateway</p>
+                
+                <div className="space-y-4">
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
+                      <input 
+                        type="radio" 
+                        id="basic-Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)" 
+                        name="paymentMethod" 
+                        value="razorpay"
+                        checked={formData.paymentMethod === 'razorpay'}
+                        onChange={handleChange}
+                        aria-label="Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)" 
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <div className="flex flex-col">
+                        <label htmlFor="basic-Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)" className="font-medium">
+                          Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)
+                        </label>
+                        <div className="flex space-x-2 mt-1">
+                          <img alt="upi" src="/cdn/shopifycloud/checkout-web/assets/c1/assets/upi.CmgCfll8.svg" width="38" height="24" className="h-6" />
+                          <img alt="visa" src="/cdn/shopifycloud/checkout-web/assets/c1/assets/visa.sxIq5Dot.svg" width="38" height="24" className="h-6" />
+                          <img alt="master" src="/cdn/shopifycloud/checkout-web/assets/c1/assets/master.CzeoQWmc.svg" width="38" height="24" className="h-6" />
+                          <span className="text-xs text-gray-500 flex items-center">+18 payment methods</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
+                      <input 
+                        type="radio" 
+                        id="basic-cod" 
+                        name="paymentMethod" 
+                        value="cod"
+                        checked={formData.paymentMethod === 'cod'}
+                        onChange={handleChange}
+                        aria-label="Cash On Delivery (CoD) - Extra 5% OFF on Payment through RazorPay " 
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor="basic-cod" className="font-medium">
+                        Cash On Delivery (CoD) - Extra 5% OFF on Payment through RazorPay
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-3">Billing address</h3>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="radio" 
+                        id="billing_address_selector-shipping_address" 
+                        name="billingAddressSame" 
+                        value="true"
+                        checked={formData.billingAddressSame}
+                        onChange={() => setFormData(prev => ({...prev, billingAddressSame: true}))}
+                        aria-label="Same as shipping address" 
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor="billing_address_selector-shipping_address">
+                        Same as shipping address
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="radio" 
+                        id="billing_address_selector-custom_billing_address" 
+                        name="billingAddressSame" 
+                        value="false"
+                        checked={!formData.billingAddressSame}
+                        onChange={() => setFormData(prev => ({...prev, billingAddressSame: false}))}
+                        aria-label="Use a different billing address" 
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor="billing_address_selector-custom_billing_address">
+                        Use a different billing address
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </section>
               
               <button 
+                aria-busy="false" 
+                aria-live="polite" 
+                id="checkout-pay-button" 
                 type="submit" 
-                className="mt-6 w-full py-3 bg-black text-white uppercase disabled:bg-gray-400"
+                form="checkoutForm"
+                className="w-full py-4 bg-black text-white font-bold uppercase hover:bg-gray-800 disabled:bg-gray-400 transition-colors duration-200"
                 disabled={isLoading}
               >
-                {isLoading ? 'Placing Order...' : 'Place Order'}
+                {isLoading ? 'Processing...' : `Pay ₹${totalPrice.toFixed(2)}`}
               </button>
             </form>
           </div>
@@ -224,18 +527,18 @@ const Checkout = () => {
           <div>
             <h2 className="text-xl font-bold mb-4">Order Summary</h2>
             
-            <div className="border p-4 rounded">
+            <div className="border p-4 rounded-lg">
               {items.map((item) => (
-                <div key={item.product.id} className="flex justify-between py-2 border-b">
+                <div key={item.product.id} className="flex justify-between py-3 border-b">
                   <div>
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
-                  <p>₹{(parseFloat(item.product.price.replace(/[^\]d.-]/g, '')) * item.quantity).toFixed(2)}</p>
+                  <p>₹{(parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * item.quantity).toFixed(2)}</p>
                 </div>
               ))}
               
-              <div className="mt-4 space-y-2">
+              <div className="space-y-3 mt-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span>₹{totalPrice.toFixed(2)}</span>
@@ -246,15 +549,28 @@ const Checkout = () => {
                   <span>Free</span>
                 </div>
 
-                <div className="border-t pt-2 mt-2 flex justify-between font-bold">
+                <div className="flex justify-between font-semibold pt-2 border-t">
                   <span>Payment Method</span>
-                  <span>Cash on Delivery</span>
+                  <span>{formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay Secure'}</span>
                 </div>
                 
-                <div className="border-t pt-2 mt-2 flex justify-between font-bold">
+                <div className="flex justify-between font-bold pt-2 border-t text-lg">
                   <span>Total</span>
                   <span>₹{totalPrice.toFixed(2)}</span>
                 </div>
+              </div>
+              
+              <div className="mt-6">
+                <label className="block text-sm font-medium mb-2">Order Notes (Optional)</label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
+                  placeholder="Special instructions for delivery"
+                  disabled={isLoading}
+                />
               </div>
             </div>
           </div>

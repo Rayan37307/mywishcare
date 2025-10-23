@@ -16,10 +16,12 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
   const [open, setOpen] = React.useState(true);
 
   React.useEffect(() => {
+    if (!wishCare) return;
+
     const fetchImages = async () => {
-      if (wishCare?.resultsImages?.length) {
+      if (wishCare.resultsImages?.length) {
         const urls = await Promise.all(
-          wishCare.resultsImages.map(async (id) => {
+          wishCare.resultsImages.map(async (id: number) => {
             try {
               return await getImageUrlFromId(id);
             } catch {
@@ -27,6 +29,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
             }
           })
         );
+
         setImageUrls(urls.filter((url): url is string => url !== null));
       }
       setLoading(false);
@@ -35,8 +38,8 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
     fetchImages();
   }, [wishCare, getImageUrlFromId]);
 
-  if (loading) return null;
-  if (!wishCare?.results && imageUrls.length === 0) return null;
+  if (!wishCare || loading) return null;
+  if (!wishCare.results && imageUrls.length === 0) return null;
 
   return (
     <div className="mb-8 p-6 bg-transparent rounded-lg border-3 border-[#EBE4FD]">
