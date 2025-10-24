@@ -29,7 +29,7 @@ export interface WooCommerceAPIProduct {
   }>;
   meta_data?: WooCommerceAPIMetaDataItem[];
 }
-
+``
 // Extended product interface with WishCare data
 export interface WooCommerceAPIProductWithWishCare extends WooCommerceAPIProduct {
   meta_data: WooCommerceAPIMetaDataItem[];

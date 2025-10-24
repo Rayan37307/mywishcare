@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import CartSlide from './CartSlide';
 import SearchBar from './SearchBar';
@@ -12,8 +12,10 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
   const { totalItems } = useCartStore();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const toggleCart = () => {
@@ -39,6 +41,25 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
     }
   };
 
+  // Handle scroll effect only on homepage - change effect after passing 1.5 times the viewport height
+  useEffect(() => {
+    const handleScroll = () => {
+      if (location.pathname === '/') {
+        setIsScrolled(window.scrollY > window.innerHeight * 1.5);
+      } else {
+        setIsScrolled(true); // Always solid on non-home pages
+      }
+    };
+
+    // Set initial state based on current path and scroll
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [location.pathname]);
+
   // Close search when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,8 +77,17 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
     };
   }, [isSearchOpen]);
 
+  // Determine navbar classes based on scroll state and page
+  const isHome = location.pathname === '/';
+  const navbarClasses = [
+    "py-8 px-10 relative transition-all duration-500 ease-in-out backdrop-saturate-200",
+    isHome && !isScrolled
+      ? "bg-[#E4EDFD]/20 backdrop-blur-3xl border-b border-white/25"
+      : "bg-[#E4EDFD]/90 border-b border-gray-200"
+  ].filter(Boolean).join(' ');
+
   return (
-    <nav className="bg-[#E4EDFD] py-8 px-10 relative">
+    <nav className={navbarClasses}>
       <div className="flex items-center justify-between">
         {/* Left: Menu Button */}
         <div className="flex items-center">

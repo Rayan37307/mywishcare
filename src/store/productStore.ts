@@ -138,13 +138,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
       // You might want to filter by a specific category/tag for routine builder products
       const products = await woocommerceService.fetchProducts();
       const routineBuilderProducts = products.slice(0, 6);
+      // write function that + a + b
       set({ 
         routineBuilderProducts: routineBuilderProducts,
         loading: false 
       });
     } catch {
       set({ 
-        error: 'Failed to fetch Routine Builder products', 
+        error: 'Failed to fetch Routine Builder products',
+        
         loading: false 
       });
     }
