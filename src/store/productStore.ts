@@ -27,6 +27,7 @@ interface ProductState {
   damagedHairProducts: Product[];
   sunCareProducts: Product[];
   allProducts: Product[];
+  slugToIdMap: Record<string, number>; // Map from slug to product ID for efficient lookup
   loading: boolean;
   error: string | null;
   fetchAllProducts: () => Promise<void>;
@@ -37,6 +38,7 @@ interface ProductState {
   setError: (error: string | null) => void;
   // Add individual product methods
   fetchProductById: (id: number) => Promise<Product | null>;
+  fetchProductBySlug: (slug: string) => Promise<Product | null>;
   // Add search functionality
   searchProducts: (query: string) => Promise<Product[]>;
   // Add category filtering
@@ -160,6 +162,42 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ loading: false });
       return product;
     } catch {
+      set({ 
+        error: 'Failed to fetch product', 
+        loading: false 
+      });
+      return null;
+    }
+  },
+
+  fetchProductBySlug: async (slug: string) => {
+    set({ loading: true, error: null });
+    try {
+      console.log(`Fetching product by slug: ${slug}`);
+      // First try to find product by slug
+      let product = await woocommerceService.findProductBySlug(slug);
+      
+      // If not found and slug is numeric, try fetching by ID
+      if (!product && /^\d+$/.test(slug)) {
+        const productId = parseInt(slug, 10);
+        console.log(`Trying to fetch product by ID: ${productId}`);
+        product = await woocommerceService.fetchProductById(productId, true);
+      }
+      
+      if (product) {
+        console.log(`Successfully fetched product:`, product);
+        set({ loading: false });
+        return product;
+      } else {
+        console.log(`Product not found for slug/ID: ${slug}`);
+        set({ 
+          error: 'Product not found', 
+          loading: false 
+        });
+        return null;
+      }
+    } catch (error) {
+      console.error('Error in fetchProductBySlug:', error);
       set({ 
         error: 'Failed to fetch product', 
         loading: false 

@@ -116,6 +116,196 @@ function custom_user_registration($request) {
 
 3. **Save your changes** to the `functions.php` file
 
+## Step 6: Add OTP Authentication Endpoints
+
+1. **Add the following code to the bottom of your `functions.php` file** (after the registration code):
+```php
+// OTP Authentication endpoints for React app
+add_action('rest_api_init', function () {
+    // Endpoint to send OTP
+    register_rest_route('otp/v1', '/send', array(
+        'methods' => 'POST',
+        'callback' => 'send_otp_endpoint',
+        'permission_callback' => '__return_true',
+    ));
+    
+    // Endpoint to verify OTP
+    register_rest_route('otp/v1', '/verify', array(
+        'methods' => 'POST',
+        'callback' => 'verify_otp_endpoint',
+        'permission_callback' => '__return_true',
+    ));
+});
+
+// Function to generate a random 6-digit OTP
+function generate_otp() {
+    return str_pad(rand(100000, 999999), 6, '0', STR_PAD_LEFT);
+}
+
+// Function to store OTP temporarily using WordPress transients
+function store_otp($email, $otp, $expires_in = 300) { // 5 minutes default expiry
+    $otp_key = 'otp_' . md5($email);
+    $otp_data = array(
+        'otp' => $otp,
+        'email' => $email,
+        'created_at' => time()
+    );
+    set_transient($otp_key, $otp_data, $expires_in);
+}
+
+// Function to retrieve stored OTP
+function retrieve_otp($email) {
+    $otp_key = 'otp_' . md5($email);
+    return get_transient($otp_key);
+}
+
+// Function to delete OTP after use
+function delete_otp($email) {
+    $otp_key = 'otp_' . md5($email);
+    delete_transient($otp_key);
+}
+
+// Endpoint to send OTP
+function send_otp_endpoint($request) {
+    $params = $request->get_params();
+    $email = sanitize_email($params['email']);
+    
+    // Validate email
+    if (empty($email) || !is_email($email)) {
+        return new WP_Error('invalid_email', 'Please provide a valid email address', array('status' => 400));
+    }
+    
+    // Generate OTP
+    $otp = generate_otp();
+    
+    // Store OTP temporarily
+    store_otp($email, $otp);
+    
+    // Send OTP via email
+    $subject = 'Your OTP for MyWishCare';
+    $message = "Your one-time password (OTP) for MyWishCare is: {$otp}\n\nThis OTP is valid for 5 minutes.";
+    $headers = array('Content-Type: text/plain; charset=UTF-8');
+    
+    $sent = wp_mail($email, $subject, $message, $headers);
+    
+    if ($sent) {
+        return array(
+            'success' => true,
+            'message' => 'OTP sent successfully to your email'
+        );
+    } else {
+        return new WP_Error('email_failed', 'Failed to send OTP email', array('status' => 500));
+    }
+}
+
+// Endpoint to verify OTP and authenticate user
+function verify_otp_endpoint($request) {
+    $params = $request->get_params();
+    $email = sanitize_email($params['email']);
+    $provided_otp = sanitize_text_field($params['otp']);
+    
+    // Validate input
+    if (empty($email) || empty($provided_otp)) {
+        return new WP_Error('missing_fields', 'Email and OTP are required', array('status' => 400));
+    }
+    
+    // Retrieve stored OTP
+    $stored_otp_data = retrieve_otp($email);
+    
+    if (!$stored_otp_data) {
+        return new WP_Error('otp_not_found', 'Invalid or expired OTP', array('status' => 400));
+    }
+    
+    // Check if OTP has expired (5 minutes)
+    $otp_age = time() - $stored_otp_data['created_at'];
+    if ($otp_age > 300) { // 5 minutes = 300 seconds
+        delete_otp($email); // Clean up expired OTP
+        return new WP_Error('otp_expired', 'OTP has expired, please request a new one', array('status' => 400));
+    }
+    
+    // Verify OTP
+    if ($provided_otp != $stored_otp_data['otp']) {
+        return new WP_Error('invalid_otp', 'Invalid OTP provided', array('status' => 400));
+    }
+    
+    // OTP is valid, clean it up
+    delete_otp($email);
+    
+    // Check if user exists, if not create one
+    $user = get_user_by('email', $email);
+    
+    if (!$user) {
+        // Generate a random password for the new user
+        $random_password = wp_generate_password();
+        
+        // Create new user with email as username
+        $user_id = wp_create_user($email, $random_password, $email);
+        
+        if (is_wp_error($user_id)) {
+            return $user_id; // Return WP_Error if creation fails
+        }
+        
+        // Update display name to match email
+        wp_update_user(array(
+            'ID' => $user_id,
+            'display_name' => explode('@', $email)[0], // Use part before @ as display name
+            'first_name' => explode('@', $email)[0]
+        ));
+        
+        $user = get_user_by('id', $user_id);
+    }
+    
+    // Generate JWT token using JWT Authentication for WP REST API plugin
+    if (!defined('JWT_AUTH_SECRET_KEY') || !class_exists('JWT_Auth_Public')) {
+        return new WP_Error('jwt_not_configured', 'JWT Authentication is not properly configured', array('status' => 500));
+    }
+    
+    // Use existing JWT plugin functionality to generate token
+    $issued_at = time();
+    $expiration_time = apply_filters('jwt_auth_token_expiration', $issued_at + (12 * 60 * 60), $user); // 12 hours default
+    
+    $token = array(
+        'iss' => get_bloginfo('url'), // Issuer
+        'iat' => $issued_at,          // Issued at
+        'nbf' => $issued_at,          // Not before
+        'exp' => $expiration_time,    // Expire
+        'data' => array(
+            'user' => array(
+                'id' => $user->ID,
+            ),
+        ),
+    );
+    
+    // Encode the token
+    try {
+        if (class_exists('Firebase\JWT\JWT')) {
+            $jwt = Firebase\JWT\JWT::encode($token, JWT_AUTH_SECRET_KEY, 'HS256');
+        } else {
+            $jwt = JWT::encode($token, JWT_AUTH_SECRET_KEY, 'HS256');
+        }
+    } catch (Exception $e) {
+        return new WP_Error('jwt_encoding_error', 'Error encoding JWT: ' . $e->getMessage(), array('status' => 500));
+    }
+    
+    // Get user data to return
+    $user_data = array(
+        'id' => $user->ID,
+        'username' => $user->user_login,
+        'email' => $user->user_email,
+        'name' => $user->display_name,
+        'roles' => $user->roles
+    );
+    
+    return array(
+        'token' => $jwt,
+        'user' => $user_data,
+        'expires_in' => $expiration_time - $issued_at
+    );
+}
+```
+
+4. **Save your changes** to the `functions.php` file
+
 ## Step 6: Configure Server Settings (if needed)
 
 ### For Apache servers:

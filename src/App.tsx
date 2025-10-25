@@ -98,7 +98,9 @@ const App = () => {
             <Route path="/policies/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/policies/shipping-policy" element={<ShippingPolicy />} />
             <Route path="/policies/refund-policy" element={<RefundPolicy />} />
+            <Route path="/products/:id/:slug" element={<ProductDetail />} />
             <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/products/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/search" element={<SearchPage />} />

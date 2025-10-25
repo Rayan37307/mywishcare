@@ -8,6 +8,7 @@ export interface WooCommerceAPIMetaDataItem {
 export interface WooCommerceAPIProduct {
   id: number;
   name: string;
+  slug: string; // Add slug field
   price: string;
   regular_price: string;
   sale_price: string;
@@ -62,6 +63,7 @@ export interface WishCareProductData {
 export interface Product {
   id: number;
   name: string;
+  slug: string; // Add slug field
   price: string;
   regular_price?: string;
   sale_price?: string;
