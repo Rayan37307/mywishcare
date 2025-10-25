@@ -85,7 +85,7 @@ const ProductDetail = () => {
     <div className='bg-white py-10'>
       {/* Floating header that appears when scrolling past the add to cart section */}
       {showFloatingHeader && (
-        <div className="fixed top-[100px] left-0 right-0 bg-white shadow-md z- py-3 px-4 md:px-8 flex items-center justify-between">
+        <div className="fixed top-[100px] z-20 left-0 right-0 bg-white shadow-md py-3 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-16 h-16 overflow-hidden rounded-lg mr-4">
               <img 
@@ -124,15 +124,57 @@ const ProductDetail = () => {
       
       {/* Main content */}
       <div className={`container mx-auto max-w-7xl p-4 ${showFloatingHeader ? 'pt-20' : ''}`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <img 
-              src={product.images[0]?.src} 
-              alt={product.name} 
-              className={`w-[80%] rounded-lg mx-auto sticky ${showFloatingHeader ? 'top-64' : 'top-4'}`}
-            />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          {/* Image Gallery Column - Left Side */}
+<div className="md:col-span-2 flex flex-col md:sticky md:top-56 self-start h-fit">
+  <div className="flex justify-center items-start gap-4">
+    
+    {/* Thumbnails - Left Side */}
+    <div className="flex flex-col gap-3">
+      {product.images.map((image, index) => (
+        <div
+          key={index}
+          className="w-16 h-16 overflow-hidden rounded cursor-pointer border-2 border-transparent hover:border-gray-400 thumb-container"
+          onClick={() => {
+            const mainImage = document.getElementById('mainImage') as HTMLImageElement;
+            if (mainImage) {
+              mainImage.src = image.src;
+              const containers = document.querySelectorAll('.thumb-container');
+              containers.forEach((container, i) => {
+                if (i === index) {
+                  container.classList.add('border-gray-800');
+                  container.classList.remove('border-transparent');
+                } else {
+                  container.classList.remove('border-gray-800');
+                  container.classList.add('border-transparent');
+                }
+              });
+            }
+          }}
+        >
+          <img
+            src={image.src}
+            alt={`Thumbnail ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ))}
+    </div>
+
+    {/* Main Image - Right of Thumbnails */}
+    <div className="flex-1 flex justify-center">
+      <img
+        id="mainImage"
+        src={product.images[0]?.src}
+        alt={product.name}
+        className="max-w-full rounded-lg object-cover"
+      />
+    </div>
+  </div>
+</div>
+
           
-          <div>
+          <div className="md:col-span-3">
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <p
               className="text-[12px] my-3 text-black"
@@ -186,17 +228,11 @@ const ProductDetail = () => {
             />
             {product.wishCare && (
               <div className="mt-4">
-                {/* <h2 className="text-2xl font-bold mb-6 text-gray-800">Product Details</h2>
-                 */}
                 <div className='w-full mb-4'>
                   <img src="/multi.webp" alt="w-full" />
                 </div>
                 <ActiveOffersSection wishCare={product.wishCare} />
                 <BenefitsSection wishCare={product.wishCare} />
-                {/*} <WhatMakesItGreatSection 
-                  wishCare={product.wishCare} 
-                  getImageUrlFromId={getImageUrlFromId} 
-                />*/}
                 <HowToUseSection 
                   wishCare={product.wishCare} 
                   getImageUrlFromId={getImageUrlFromId} 
@@ -210,19 +246,20 @@ const ProductDetail = () => {
                   getImageUrlFromId={getImageUrlFromId} 
                 />
                 <PairsWithSection wishCare={product.wishCare} />
-                {/* <FAQSection wishCare={product.wishCare} /> */}
               </div>
             )}
             
           </div>
 
         </div>
-                  {product.wishCare && (
-              <div className="mt-4">
-                <FAQSection wishCare={product.wishCare} />
-              </div>
-            )}
+        
+        {product.wishCare && (
+          <div className="mt-4">
+            <FAQSection wishCare={product.wishCare} />
+          </div>
+        )}
       </div>
+    </div>
   );
 };
 
