@@ -139,9 +139,10 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                         </h3>
                         <div className="text-sm text-gray-500">
                           {item.product.sale_price && item.product.sale_price !== '' && item.product.sale_price !== item.product.regular_price ? (
-                            <div className="flex items-center">
-                              <span className="text-red-500 line-through text-xs mr-2">₹{item.product.regular_price}</span>
-                              <span>₹{item.product.sale_price}</span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-red-500">₹{item.product.sale_price}</span>
+                              <span className=" line-through text-gray-600 text-xs mr-2">₹{item.product.regular_price}</span>
+                              
                             </div>
                           ) : (
                             <span>₹{item.product.price}</span>
@@ -165,23 +166,16 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                           >
                             +
                           </button>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">
-                          ₹
-                          {(
-                            parseFloat(
-                              item.product.price.replace(/[^\d.-]/g, "")
-                            ) * item.quantity
-                          ).toFixed(2)}
-                        </p>
-                        <button
-                          className="mt-1 text-red-600 hover:text-red-800 text-sm"
+                          <button
+                          className="mt-1 text-gray-600 underline text-sm ml-5"
                           onClick={() => removeItem(item.product.id)}
                         >
                           Remove
                         </button>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        
                       </div>
                     </div>
                   ))}
