@@ -28,7 +28,7 @@ const BannerSlider = () => {
       <style>{`
         .animate-marquee {
           display: inline-flex;
-          animation: marquee 25s linear infinite;
+          animation: marquee 40s linear infinite;
         }
 
         @keyframes marquee {
