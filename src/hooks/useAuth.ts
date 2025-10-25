@@ -32,6 +32,7 @@ export const useAuth = () => {
           isAuthenticated: isAuthenticated,
         });
       } catch (error) {
+        console.error('Auth status check error:', error);
         setAuthState({
           user: null,
           loading: false,
@@ -93,12 +94,13 @@ export const useAuth = () => {
         return { success: false, error: result.error };
       }
 
-      // Registration might not directly log the user in, so don't set auth state to authenticated
+      // Registration successful - user data returned
       setAuthState(prev => ({
         ...prev,
         user: result.user || null,
         loading: false,
         error: null,
+        isAuthenticated: !!result.user, // Set to true if user object is returned
       }));
 
       return { success: true, user: result.user };
@@ -183,7 +185,7 @@ export const useAuth = () => {
     ...authState,
     login,
     register,
-    requestRegistration, // Add this new method
+    requestRegistration,
     logout,
     updateUser,
     refetchUser: () => {

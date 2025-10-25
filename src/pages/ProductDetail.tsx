@@ -85,7 +85,7 @@ const ProductDetail = () => {
     <div className='bg-white py-10'>
       {/* Floating header that appears when scrolling past the add to cart section */}
       {showFloatingHeader && (
-        <div className="fixed top-[100px] left-0 right-0 bg-white shadow-md z-50 py-3 px-4 md:px-8 flex items-center justify-between">
+        <div className="fixed top-[100px] left-0 right-0 bg-white shadow-md z- py-3 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-16 h-16 overflow-hidden rounded-lg mr-4">
               <img 
@@ -125,11 +125,10 @@ const ProductDetail = () => {
       {/* Main content */}
       <div className={`container mx-auto max-w-7xl p-4 ${showFloatingHeader ? 'pt-20' : ''}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
             <img 
               src={product.images[0]?.src} 
               alt={product.name} 
-              className={`w-[80%] rounded-lg mx-auto sticky ${showFloatingHeader ? 'top-44' : 'top-4'}`}
+              className={`w-[80%] rounded-lg mx-auto sticky ${showFloatingHeader ? 'top-64' : 'top-4'}`}
             />
           </div>
           
@@ -224,7 +223,6 @@ const ProductDetail = () => {
               </div>
             )}
       </div>
-    </div>
   );
 };
 

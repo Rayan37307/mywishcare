@@ -39,12 +39,16 @@ const LoginForm: React.FC<LoginFormProps> = ({
           alert('Registration successful! Please login with your credentials.');
           setIsLogin(true);
         }
+        // Error is already displayed through the error state in the form
       } else {
         // Request registration (for cases where full registration isn't enabled)
         const result = await requestRegistration(username, email, displayName);
         if (result.success) {
           alert('Registration request submitted! An administrator will review your request and contact you by email.');
           setIsLogin(true); // Switch back to login after request
+        } else {
+          // Show error message if request fails
+          alert(result.message || 'Registration request failed. Please contact the administrator directly.');
         }
       }
     }
@@ -189,8 +193,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
             </div>
             <p className="mt-1 text-xs text-gray-500">
               {registrationMethod === 'full' 
-                ? 'Create account directly (if enabled)' 
-                : 'Request administrator to create an account for you'}
+                ? 'Attempt to create account directly (may require admin approval)' 
+                : 'Send request to administrator for account creation'}
             </p>
           </div>
         )}

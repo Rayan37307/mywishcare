@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
+import { useCartStore } from './store/cartStore'
 import Home from './pages/Home'
 import Topbar from './components/Topbar'
 import Header from './components/Header'
@@ -26,14 +27,19 @@ import Checkout from './pages/Checkout'
 import LoginForm from './components/LoginForm'
 import UserProfile from './components/UserProfile'
 import ProtectedRoute from './components/ProtectedRoute'
+import CartSlide from './components/CartSlide'
 
 import SearchPage from './pages/SearchPage'
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
+
+  const toggleCart = () => setIsCartOpen(!isCartOpen);
+  const closeCart = () => setIsCartOpen(false);
 
   const menuItems = [
     { name: 'Home', path: '/' },
@@ -51,8 +57,11 @@ const App = () => {
         { name: 'Damaged Hair', path: '/collections/damaged-hair' },
       ],
     },
+    {name: 'Our bestsellers hairgrowth serum 💫', path: '/collections/bestsellers/13'},
+    {name: 'Head to sun toe protection 🌞', path: '/collections/sun-care'},
   ];
 
+  // Pass the cart functions down to components that need them
   return (
     <div className="relative bg-[#E4EDFD]">
       {/* ✅ Reusable Mobile Menu */}
@@ -66,7 +75,11 @@ const App = () => {
       <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
         {/* <Navigation /> */}
         <Topbar />
-        <Header toggleMenu={toggleMenu} />
+        <Header 
+          toggleMenu={toggleMenu} 
+          toggleCart={toggleCart} 
+          isMenuOpen={isMenuOpen}
+        />
         <div className="">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -104,6 +117,9 @@ const App = () => {
         </div>
         <Footer />
       </div>
+      
+      {/* Cart Slide - Positioned at app level to avoid navbar constraints */}
+      <CartSlide isOpen={isCartOpen} onClose={closeCart} />
     </div>
   );
 };

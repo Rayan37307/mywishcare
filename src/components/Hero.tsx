@@ -11,7 +11,7 @@ const Hero = () => {
   ]
 
   return (
-    <div className='w-full'>
+    <div className='w-full -mt-24'>
       {/* Video Section */}
       <div className='w-full flex justify-center items-center mb-8'>
         <div className='w-full'>

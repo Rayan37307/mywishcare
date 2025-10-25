@@ -1,30 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
-import CartSlide from './CartSlide';
 import SearchBar from './SearchBar';
 
 interface NavbarProps {
   toggleMenu?: () => void;
+  toggleCart?: () => void;
+  isMenuOpen?: boolean;
 }
 
-const Navbar = ({ toggleMenu }: NavbarProps) => {
+const Navbar = ({ toggleMenu, toggleCart }: NavbarProps) => {
   const { totalItems } = useCartStore();
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
   const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  const toggleCart = () => {
-    setIsCartOpen(!isCartOpen);
-  };
-
-  const closeCart = () => {
-    setIsCartOpen(false);
-  };
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
@@ -45,7 +37,7 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
   useEffect(() => {
     const handleScroll = () => {
       if (location.pathname === '/') {
-        setIsScrolled(window.scrollY > window.innerHeight * 1.5);
+        setIsScrolled(window.scrollY > window.innerHeight * 0.5);
       } else {
         setIsScrolled(true); // Always solid on non-home pages
       }
@@ -80,10 +72,10 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
   // Determine navbar classes based on scroll state and page
   const isHome = location.pathname === '/';
   const navbarClasses = [
-    "py-8 px-10 relative transition-all duration-500 ease-in-out backdrop-saturate-200",
+    "py-8 px-10 relative transition-all duration-500 ease-in-out",
     isHome && !isScrolled
-      ? "bg-[#E4EDFD]/20 backdrop-blur-3xl border-b border-white/25"
-      : "bg-[#E4EDFD]/90 border-b border-gray-200"
+      ? "bg-transparent backdrop-blur-[20px]"
+      : "bg-[#E4EDFD]"
   ].filter(Boolean).join(' ');
 
   return (
@@ -103,11 +95,11 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
         </div>
 
         {/* Middle: Logo */}
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center pl-24">
           <Link to="/"><img 
             src="/logo.webp" 
             alt="MyWishCare Logo" 
-            className="h-8 w-auto object-contain"
+            className="h-8  w-auto object-contain"
           /></Link>
         </div>
 
@@ -146,14 +138,11 @@ const Navbar = ({ toggleMenu }: NavbarProps) => {
         </div>
       </div>
       
-      {/* Cart Slide */}
-      <CartSlide isOpen={isCartOpen} onClose={closeCart} />
-      
       {/* Search Bar - Full width overlay */}
       {isSearchOpen && (
         <div 
           ref={searchContainerRef}
-          className="fixed top-0 left-0 right-0 bg-white shadow-lg z-50 py-8 -mx-6 px-6"
+          className="fixed top-0 left-0 right-0 bg-white shadow-lg z-[8000] py-8 -mx-6 px-6"
         >
           <SearchBar 
             onSubmit={handleSearchSubmit} 

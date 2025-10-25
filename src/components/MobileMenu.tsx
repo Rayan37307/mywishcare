@@ -103,7 +103,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, menuItems }) =
       {/* Main Menu — hidden on small screens when submenu is open */}
       {showMainMenu && (
         <div
-          className={`fixed top-0 left-0 z-50 h-full w-full sm:w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+          className={`fixed top-0 left-0 z-40 h-full w-full sm:w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -120,7 +120,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, menuItems }) =
               </button>
             </div>
 
-            <ul className="space-y-1 flex-1 overflow-y-auto">
+            <ul className="space-y-1 flex-1 overflow-y-auto uppercase">
               {menuItems.map((item, index) => (
                 <MenuItem
                   key={index}
@@ -157,7 +157,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, menuItems }) =
               {isLargeScreen && <h2 className="text-lg font-medium ml-2">{currentSubmenu.name}</h2>}
             </div>
 
-            <ul className="space-y-1 flex-1">
+            <ul className="space-y-1 flex-1 uppercase">
               {currentSubmenu!.submenu.map((subItem, idx) => (
                 <li key={idx}>
                   <Link

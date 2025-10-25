@@ -34,13 +34,61 @@ class WordPressAuthService {
 
       const data = await response.json();
       
+      // Ensure user data is properly structured
+      let user: User;
+      if (data.user) {
+        // Use the user object from the response
+        user = {
+          id: data.user.id || data.user.ID,
+          username: data.user.username || data.user.slug,
+          email: data.user.email || data.user.user_email,
+          displayName: data.user.name || data.user.display_name,
+          roles: data.user.roles || data.user.roles || [],
+        };
+      } else {
+        // Fallback: fetch user data separately if not included in token response
+        const userResponse = await fetch(`${this.apiURL}/wp-json/wp/v2/users/me`, {
+          headers: {
+            'Authorization': `Bearer ${data.token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          user = {
+            id: userData.id,
+            username: userData.slug,
+            email: userData.email,
+            displayName: userData.name,
+            roles: userData.roles || [],
+          };
+        } else {
+          throw new Error('Could not retrieve user information after login');
+        }
+      }
+      
       // Store JWT token and user info
       const tokenPayload = this.parseJwt(data.token);
-      localStorage.setItem('wp_jwt_token', data.token);
-      localStorage.setItem('wp_jwt_expires_at', (Date.now() + (data.expires_in * 1000 - JWT_EXPIRY_BUFFER)).toString());
-      localStorage.setItem('wp_user', JSON.stringify(data.user));
       
-      return { user: data.user, token: data.token };
+      // Calculate expiration time based on expires_in from the response
+      let expiresAt;
+      if (data.expires_in && typeof data.expires_in === 'number') {
+        expiresAt = Date.now() + (data.expires_in * 1000 - JWT_EXPIRY_BUFFER);
+      } else {
+        // Fallback: use token's exp claim if available or default to 7 days
+        if (tokenPayload && tokenPayload.exp) {
+          expiresAt = tokenPayload.exp * 1000 - JWT_EXPIRY_BUFFER;
+        } else {
+          expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
+        }
+      }
+      
+      localStorage.setItem('wp_jwt_token', data.token);
+      localStorage.setItem('wp_jwt_expires_at', expiresAt.toString());
+      localStorage.setItem('wp_user', JSON.stringify(user));
+      
+      return { user, token: data.token };
     } catch (error) {
       console.error('Login error:', error);
       return { error: (error as Error).message || 'Login failed' };
@@ -87,11 +135,10 @@ class WordPressAuthService {
   }
 
   // Register new user - since WordPress doesn't have a built-in register endpoint,
-  // we'll need to use a contact form plugin or a custom endpoint
+  // we'll need to use a custom endpoint or handle registration differently
   async register(username: string, email: string, password: string, displayName?: string): Promise<{ user?: User; error?: string }> {
     try {
-      // Check if a custom registration endpoint exists
-      // If not, we'll return an error directing the user to contact admin
+      // First, check if the custom registration endpoint exists
       const response = await fetch(`${this.apiURL}/wp-json/custom/v1/register`, {
         method: 'POST',
         headers: {
@@ -106,26 +153,58 @@ class WordPressAuthService {
       });
 
       if (!response.ok) {
-        // If the custom endpoint doesn't exist, we'll need to handle this differently
+        // If the custom endpoint doesn't exist, check if registration is enabled in WordPress
         if (response.status === 404) {
-          // Check if registration is enabled in WordPress settings
-          const optionsResponse = await fetch(`${this.apiURL}/wp-json/wp/v2/settings`);
-          if (optionsResponse.ok) {
-            const optionsData = await optionsResponse.json();
-            if (optionsData.default_ping_status === 'open' && optionsData.users_can_register) {
-              // WordPress allows registration, but we need to create a user via REST API
-              // This requires proper permissions (admin authentication)
-              throw new Error('Registration requires administrator privileges. Please contact site administrator.');
+          try {
+            // Try to check WordPress registration settings
+            const optionsResponse = await fetch(`${this.apiURL}/wp-json/wp/v2/settings`, {
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            });
+            
+            if (optionsResponse.ok) {
+              const optionsData = await optionsResponse.json();
+              
+              // Check if user registration is allowed
+              if (optionsData.users_can_register) {
+                // WordPress allows registration, but we need to use the admin-based approach
+                // which requires authentication with admin credentials
+                return {
+                  error: 'Self-registration is not configured. An administrator is required to create accounts. Please contact the site administrator or use the contact form if available.'
+                };
+              } else {
+                // Registration is disabled at WordPress level
+                return {
+                  error: 'User registration is currently disabled on this site. Please contact the administrator.'
+                };
+              }
             } else {
-              // Registration is disabled at WordPress level
-              throw new Error('User registration is disabled on this site. Please contact the administrator.');
+              // If we can't access settings, provide a general error
+              return {
+                error: 'Registration is not available at this time. The registration functionality may not be properly configured. Please contact the site administrator.'
+              };
             }
-          } else {
-            throw new Error('Registration endpoint not found. Please contact site administrator.');
+          } catch (settingsError) {
+            console.error('Error checking registration settings:', settingsError);
+            // If settings request fails (possibly due to authentication), return helpful message
+            return {
+              error: 'Registration is not available. The registration endpoint could not be found. Please contact the site administrator for assistance.'
+            };
           }
         } else {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Registration failed: ${response.status}`);
+          // Handle other HTTP errors
+          let errorMessage = `Registration failed: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } catch (e) {
+            // If we can't parse error response, use the status-based message
+          }
+          
+          throw new Error(errorMessage);
         }
       }
 
@@ -139,32 +218,75 @@ class WordPressAuthService {
         roles: userData.roles || [],
       };
 
+      // After successful registration, try to log the user in automatically
+      // This will store the JWT token and user info in localStorage
+      // First, try to log in with the new credentials
+      try {
+        const loginResponse = await fetch(`${this.apiURL}/wp-json/jwt-auth/v1/token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username,
+            password,
+          }),
+        });
+
+        if (loginResponse.ok) {
+          const loginData = await loginResponse.json();
+          
+          // Store JWT token and user info to automatically log the user in
+          const tokenPayload = this.parseJwt(loginData.token);
+          
+          // Calculate expiration time based on expires_in from the response
+          let expiresAt;
+          if (loginData.expires_in && typeof loginData.expires_in === 'number') {
+            expiresAt = Date.now() + (loginData.expires_in * 1000 - JWT_EXPIRY_BUFFER);
+          } else {
+            // Fallback: use token's exp claim if available or default to 7 days
+            if (tokenPayload && tokenPayload.exp) {
+              expiresAt = tokenPayload.exp * 1000 - JWT_EXPIRY_BUFFER;
+            } else {
+              expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000); // 7 days
+            }
+          }
+          
+          localStorage.setItem('wp_jwt_token', loginData.token);
+          localStorage.setItem('wp_jwt_expires_at', expiresAt.toString());
+          localStorage.setItem('wp_user', JSON.stringify(user));
+        }
+      } catch (loginError) {
+        console.error('Auto-login after registration failed:', loginError);
+        // Even if auto-login fails, we still return the user data from registration
+      }
+
       return { user };
     } catch (error) {
       console.error('Registration error:', error);
       
-      // More user-friendly error message for registration issues
-      if ((error as Error).message.includes('404') || (error as Error).message.includes('endpoint not found')) {
-        return { 
-          error: 'Self-registration is not available on this site. Please contact the administrator to create an account, or use the contact form if available.' 
+      // Check if this is a network error or similar
+      if (error instanceof TypeError) {
+        return {
+          error: 'Unable to connect to the registration service. Please check your internet connection and try again.'
         };
       }
       
-      return { error: (error as Error).message || 'Registration failed' };
+      return { 
+        error: (error as Error).message || 'An unexpected error occurred during registration. Please try again later.' 
+      };
     }
   }
 
   // Alternative registration method using contact form or admin assistance
   async requestRegistration(username: string, email: string, displayName?: string): Promise<{ success: boolean; message: string }> {
-    // This would depend on your WordPress setup
-    // Common approaches: 
-    // 1. Send an email to admin using a contact form plugin
-    // 2. Create a custom endpoint that sends registration requests
-    // 3. Redirect to a contact form
+    // In a real implementation, this would send a registration request
+    // to an endpoint that notifies the administrator
     
+    // For now, provide a clear instruction to the user
     return {
       success: false,
-      message: 'Self-registration is not enabled. Please contact the site administrator to create an account, or use the contact form if available.'
+      message: 'Self-registration is not enabled. An administrator will need to create your account. Please contact the site administrator directly or use any available contact form.'
     };
   }
 
@@ -185,21 +307,33 @@ class WordPressAuthService {
 
     // Check if JWT token is expired
     const expiresAt = localStorage.getItem('wp_jwt_expires_at');
-    if (expiresAt && Date.now() > parseInt(expiresAt, 10)) {
+    if (expiresAt && !isNaN(parseInt(expiresAt, 10)) && Date.now() > parseInt(expiresAt, 10)) {
       this.logout(); // Clean up expired tokens
       return false;
     }
 
-    return !!localStorage.getItem('wp_user');
+    // Check if user data exists and is valid
+    const userStr = localStorage.getItem('wp_user');
+    if (!userStr || userStr === 'undefined' || userStr === 'null') {
+      return false;
+    }
+
+    try {
+      const user = JSON.parse(userStr);
+      return user && typeof user === 'object' && user.id;
+    } catch {
+      return false;
+    }
   }
 
   // Get current user
   getCurrentUser(): User | null {
     const userStr = localStorage.getItem('wp_user');
-    if (!userStr) return null;
+    if (!userStr || userStr === 'undefined' || userStr === 'null') return null;
 
     try {
-      return JSON.parse(userStr);
+      const user = JSON.parse(userStr);
+      return user && typeof user === 'object' && user.id ? user : null;
     } catch {
       return null;
     }
@@ -277,9 +411,9 @@ class WordPressAuthService {
       
       const user: User = {
         id: updatedUser.id,
-        username: updatedUser.slug,
+        username: updatedUser.slug || updatedUser.username,
         email: updatedUser.email,
-        displayName: updatedUser.name,
+        displayName: updatedUser.name || updatedUser.display_name,
         roles: updatedUser.roles || [],
       };
 

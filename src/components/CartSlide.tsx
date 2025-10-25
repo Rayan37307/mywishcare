@@ -50,7 +50,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
     >
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 transition-opacity duration-300 ${
+        className={`absolute inset-0 transition-opacity duration-500 ease-out ${
           isOpen ? "opacity-100" : "opacity-0"
         }`}
         onClick={onClose}
@@ -60,8 +60,8 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
       <div className="absolute inset-y-0 right-0 max-w-full flex">
         <div className="relative w-screen max-w-md">
           <div
-            className={`h-full flex flex-col bg-white shadow-xl transform transition-transform duration-300 ease-in-out ${
-              isOpen ? "translate-x-0" : "translate-x-full"
+            className={`h-full flex flex-col bg-white shadow-xl transform transition-all duration-500 ease-out ${
+              isOpen ? "translate-x-0 translate-y-0 scale-100" : "translate-x-full translate-y-0 scale-95"
             }`}
           >
             {/* Header */}
