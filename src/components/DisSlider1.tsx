@@ -1,39 +1,33 @@
 import { useState, useEffect } from 'react';
 
 const DisSlider1 = () => {
-  // Assuming dis1, dis2, dis3, etc. are the image names
-  // Adjust these image names based on your actual files
-  const images = [
-    "/dis11.webp",
-    "/dis12.webp", 
-  ];
+  const images = ["/dis11.webp", "/dis12.webp"];
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 3000); // Change image every 3 seconds
+    }, 3000);
 
-    return () => clearInterval(interval); // Clean up interval on unmount
+    return () => clearInterval(interval);
   }, [images.length]);
 
   return (
-    <div className="relative w-full h-auto">
-      {images.map((image, index) => (
-        <div
-          key={index}
-          className={`absolute inset-0 transition-opacity duration-2000 ease-in-out ${
-            index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
-        >
+    <div className="w-full h-auto overflow-hidden">
+      <div className="grid w-full">
+        {images.map((image, index) => (
           <img
+            key={index}
             src={image}
             alt={`Advertisement ${index + 1}`}
-            className="w-full h-auto object-cover"
+            className={`w-full h-auto object-cover transition-opacity duration-2000 ease-in-out ${
+              index === currentIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ gridArea: '1 / 1 / 2 / 2' }} // All images occupy the same grid cell
           />
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

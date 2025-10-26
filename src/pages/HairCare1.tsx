@@ -1,14 +1,17 @@
 import { useEffect } from 'react'
 import ProblemCategory from '../components/ProblemCategory';
-import BestSellersCard from '../components/BestSellersCards';
+import ProductsGrid from '../components/ProductsGrid';
 import { useProductOperations } from '../hooks/useProductOperations';
+import { useCartOperations } from '../hooks/useCartOperations';
 
-const SunCare = () => {
+const HairCare1 = () => {
   const { 
     fetchBestSellingProducts, 
     loading, 
     getProductsByCollection 
   } = useProductOperations();
+  
+  const { addToCart } = useCartOperations();
   
   const bestSellingProducts = getProductsByCollection('bestSellers');
 
@@ -22,10 +25,10 @@ const SunCare = () => {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : (
-        <BestSellersCard products={bestSellingProducts} />
+        <ProductsGrid products={bestSellingProducts} onAddToCart={addToCart} />
       )}
     </div>
   );
 };
 
-export default SunCare;
+export default HairCare1;

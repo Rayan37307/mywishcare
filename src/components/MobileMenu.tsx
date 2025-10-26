@@ -40,7 +40,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
       <li>
         <button
           onClick={() => onNavigate('openSubmenu', item as MenuItemWithSubmenu)}
-          className="flex justify-between items-center w-full py-3 font-bold text-sm text-left hover:text-gray-600 transition-colors"
+          className="flex justify-between items-center w-full py-3 font-regular text-sm text-left hover:text-gray-600 transition-colors"
           aria-haspopup="true"
         >
           {item.name}
@@ -57,7 +57,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
     <li>
       <Link
         to={(item as MenuItemWithLink).path}
-        className="block py-3 font-bold text-sm text-lg hover:text-gray-600 transition-colors"
+        className="block py-3 font-regular text-sm text-lg hover:text-gray-600 transition-colors"
         onClick={() => onNavigate('close')}
       >
         {item.name}
@@ -120,7 +120,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, menuItems }) =
               </button>
             </div>
 
-            <ul className="space-y-1 flex-1 overflow-y-auto uppercase">
+            <ul className="space-y-3 flex-1 overflow-y-auto uppercase">
               {menuItems.map((item, index) => (
                 <MenuItem
                   key={index}
@@ -154,7 +154,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, menuItems }) =
                 </svg>
                 {!isLargeScreen && <span className="ml-2">Back to Menu</span>}
               </button>
-              {isLargeScreen && <h2 className="text-lg font-medium ml-2">{currentSubmenu.name}</h2>}
+              {isLargeScreen && <h2 className="text-lg font-regular ml-2">{currentSubmenu.name}</h2>}
             </div>
 
             <ul className="space-y-1 flex-1 uppercase">

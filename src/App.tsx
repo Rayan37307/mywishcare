@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import { useCartStore } from './store/cartStore'
+
+// Contexts
+import { ThemeProvider } from './contexts/ThemeContext';
+import { ProductProvider } from './contexts/ProductContext';
+
+// Page imports
 import Home from './pages/Home'
-import Topbar from './components/Topbar'
-import Header from './components/Header'
-import Footer from './components/Footer'
 import Collections from './pages/Collections'
 import BestSellers from './pages/BestSellers'
 import About from './pages/About'
@@ -20,16 +22,32 @@ import Pigmentation from './pages/Pigmentation'
 import DullSkin from './pages/DullSkin'
 import Detan from './pages/Detan'
 import DamagedHair from './pages/DamagedHair'
-import MobileMenu from './components/MobileMenu'
+import LipBalm from './pages/LipBalm'
+import HairCare1 from './pages/HairCare1'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
+import SearchPage from './pages/SearchPage'
+
+// Component imports
+import Topbar from './components/Topbar'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import MobileMenu from './components/MobileMenu'
 import LoginForm from './components/LoginForm'
 import UserProfile from './components/UserProfile'
 import ProtectedRoute from './components/ProtectedRoute'
 import CartSlide from './components/CartSlide'
 
-import SearchPage from './pages/SearchPage'
+// Constants
+import { ROUTES } from './constants/routes'
+
+// Menu item types
+interface MenuItemType {
+  name: string;
+  path?: string;
+  submenu?: MenuItemType[];
+}
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -41,88 +59,99 @@ const App = () => {
   const toggleCart = () => setIsCartOpen(!isCartOpen);
   const closeCart = () => setIsCartOpen(false);
 
-  const menuItems = [
-    { name: 'Home', path: '/' },
-    { name: 'All Products', path: '/collections/all-products' },
+  const menuItems: MenuItemType[] = [
+    { name: 'Home', path: ROUTES.HOME },
+    { name: 'All Products', path: ROUTES.COLLECTIONS_ALL },
     {
       name: 'Shop By Category',
       submenu: [
-        { name: 'Best Sellers', path: '/collections/bestsellers' },
-        { name: 'Sun Care', path: '/collections/sun-care' },
-        { name: 'Hairfall', path: '/collections/hairfall' },
-        { name: 'Acne & Acne Marks', path: '/collections/acne' },
-        { name: 'Pigmentation', path: '/collections/pigmentation' },
-        { name: 'Dull Skin', path: '/collections/dull-skin' },
-        { name: 'Detan', path: '/collections/detan' },
-        { name: 'Damaged Hair', path: '/collections/damaged-hair' },
+        { name: 'Best Sellers', path: ROUTES.COLLECTIONS_BESTSELLERS },
+        { name: 'Sun Care', path: ROUTES.COLLECTIONS_SUN_CARE },
+        { name: 'Lip Balm', path: ROUTES.COLLECTIONS_LIP_BALM },
+        { name: 'Hairfall', path: ROUTES.COLLECTIONS_HAIRFALL },
+        { name: 'Hair Care 1', path: ROUTES.COLLECTIONS_HAIR_CARE_1 },
+        { name: 'Acne & Acne Marks', path: ROUTES.COLLECTIONS_ACNE },
+        { name: 'Pigmentation', path: ROUTES.COLLECTIONS_PIGMENTATION },
+        { name: 'Dull Skin', path: ROUTES.COLLECTIONS_DULL_SKIN },
+        { name: 'Detan', path: ROUTES.COLLECTIONS_DETAN },
+        { name: 'Damaged Hair', path: ROUTES.COLLECTIONS_DAMAGED_HAIR },
       ],
     },
-    {name: 'Our bestsellers hairgrowth serum 💫', path: '/collections/bestsellers/13'},
-    {name: 'Head to sun toe protection 🌞', path: '/collections/sun-care'},
+    { name: 'Our bestsellers hairgrowth serum 💫', path: '/collections/bestsellers/13' },
+    { name: 'lip balm sunscreens - trending 🚀', path: '/collections/bestsellers/13' },
+    { name: 'Head to sun toe protection 🌞', path: ROUTES.COLLECTIONS_SUN_CARE },
+    {name: 'BestSellers', path: ROUTES.COLLECTIONS_BESTSELLERS},
+    {name: 'New launches', path: ROUTES?.COLLECTIONS_WHATS_NEW},
   ];
 
   // Pass the cart functions down to components that need them
   return (
-    <div className="relative bg-[#E4EDFD]">
-      {/* ✅ Reusable Mobile Menu */}
-      <MobileMenu
-        isOpen={isMenuOpen}
-        onClose={closeMenu}
-        menuItems={menuItems}
-      />
+    <ThemeProvider>
+      <ProductProvider>
+        <div className="relative bg-[#E4EDFD]">
+          {/* ✅ Reusable Mobile Menu */}
+          <MobileMenu
+            isOpen={isMenuOpen}
+            onClose={closeMenu}
+            menuItems={menuItems}
+          />
 
-      {/* Main Content */}
-      <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
-        {/* <Navigation /> */}
-        <Topbar />
-        <Header 
-          toggleMenu={toggleMenu} 
-          toggleCart={toggleCart} 
-          isMenuOpen={isMenuOpen}
-        />
-        <div className="">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collections/bestsellers" element={<BestSellers />} />
-            <Route path="/collections/sun-care" element={<SunCare />} />
-            <Route path="/collections/hairfall" element={<Hairfall />} />
-            <Route path="/collections/acne" element={<Acne />} />
-            <Route path="/collections/pigmentation" element={<Pigmentation />} />
-            <Route path="/collections/dull-skin" element={<DullSkin />} />
-            <Route path="/collections/detan" element={<Detan />} />
-            <Route path="/collections/damaged-hair" element={<DamagedHair />} />
-            <Route path="/pages/about-us" element={<About />} />
-            <Route path="/collections/all-products" element={<AllProducts />} />
-            <Route path="/policies/terms-of-service" element={<TermsOfService />} />
-            <Route path="/policies/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/policies/shipping-policy" element={<ShippingPolicy />} />
-            <Route path="/policies/refund-policy" element={<RefundPolicy />} />
-            <Route path="/products/:id/:slug" element={<ProductDetail />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/products/:slug" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/search" element={<SearchPage />} />
-            
-            {/* Authentication Routes */}
-            <Route path="/login" element={<LoginForm />} />
-            <Route 
-              path="/profile" 
-              element={
-                <ProtectedRoute>
-                  <UserProfile />
-                </ProtectedRoute>
-              } 
+          {/* Main Content */}
+          <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
+            {/* <Navigation /> */}
+            <Topbar />
+            <Header 
+              toggleMenu={toggleMenu} 
+              toggleCart={toggleCart} 
+              isMenuOpen={isMenuOpen}
             />
-          </Routes>
+            <div className="">
+              <Routes>
+                <Route path={ROUTES.HOME} element={<Home />} />
+                <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
+                <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<BestSellers />} />
+                <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<SunCare />} />
+                <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<LipBalm />} />
+                <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Hairfall />} />
+                <Route path={ROUTES.COLLECTIONS_ACNE} element={<Acne />} />
+                <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Pigmentation />} />
+                <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<DullSkin />} />
+                <Route path={ROUTES.COLLECTIONS_DETAN} element={<Detan />} />
+                <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<DamagedHair />} />
+                <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<HairCare1 />} />
+                <Route path={ROUTES.PAGES_ABOUT} element={<About />} />
+                <Route path={ROUTES.COLLECTIONS_ALL} element={<AllProducts />} />
+                <Route path={ROUTES.POLICIES_TERMS} element={<TermsOfService />} />
+                <Route path={ROUTES.POLICIES_PRIVACY} element={<PrivacyPolicy />} />
+                <Route path={ROUTES.POLICIES_SHIPPING} element={<ShippingPolicy />} />
+                <Route path={ROUTES.POLICIES_REFUND} element={<RefundPolicy />} />
+                <Route path={ROUTES.PRODUCT_DETAIL_ID_SLUG} element={<ProductDetail />} />
+                <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetail />} />
+                <Route path={ROUTES.PRODUCT_DETAIL_SLUG} element={<ProductDetail />} />
+                <Route path={ROUTES.CART} element={<Cart />} />
+                <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
+                <Route path={ROUTES.SEARCH} element={<SearchPage />} />
+                
+                {/* Authentication Routes */}
+                <Route path={ROUTES.LOGIN} element={<LoginForm />} />
+                <Route 
+                  path={ROUTES.PROFILE} 
+                  element={
+                    <ProtectedRoute>
+                      <UserProfile />
+                    </ProtectedRoute>
+                  } 
+                />
+              </Routes>
+            </div>
+            <Footer />
+          </div>
+          
+          {/* Cart Slide - Positioned at app level to avoid navbar constraints */}
+          <CartSlide isOpen={isCartOpen} onClose={closeCart} />
         </div>
-        <Footer />
-      </div>
-      
-      {/* Cart Slide - Positioned at app level to avoid navbar constraints */}
-      <CartSlide isOpen={isCartOpen} onClose={closeCart} />
-    </div>
+      </ProductProvider>
+    </ThemeProvider>
   );
 };
 

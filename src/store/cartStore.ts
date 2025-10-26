@@ -3,10 +3,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { CartState, CartItem } from '../types/cart';
 import type { Product } from '../types/product';
+import { APP_CONSTANTS } from '../constants/app';
 
 // Function to check if user is authenticated
 const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem('wp_user');
+  return !!localStorage.getItem(APP_CONSTANTS.USER_STORAGE_KEY);
 };
 
 // Custom storage to conditionally persist based on auth state
@@ -147,7 +148,7 @@ export const useCartStore = create<CartState>()(
       }
     }),
     {
-      name: 'cart-storage', // name of the item in the storage (must be unique)
+      name: APP_CONSTANTS.CART_STORAGE_KEY, // name of the item in the storage (must be unique)
       storage: conditionalStorage, // use custom storage that checks auth state
     }
   )

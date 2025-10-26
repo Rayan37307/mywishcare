@@ -46,9 +46,9 @@ const BestSellers = () => {
 
   return (
     <div className="py-8">
-      <div className='flex gap-4'>
-        <h2 className="text-3xl font-bold mb-8 text-left">Best Sellers</h2>
-        <Link to='/collections/bestsellers'>View All <ArrowRightIcon/></Link>
+      <div className='flex gap-4 items-center'>
+        <h2 className="text-3xl font-bold mb-8 text-left pt-7">Best Sellers</h2>
+        <Link to='/collections/bestsellers' className="flex gap-2 items-center justify-center">View All <ArrowRightIcon/></Link>
         </div>
      <Swiper
   modules={[Mousewheel, FreeMode]}

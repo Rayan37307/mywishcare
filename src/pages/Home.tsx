@@ -12,7 +12,7 @@ import DiscountSticker from '../components/DiscountSticker'
 
 const Home = () => {
   return (
-    <div className='container mx-auto max-w-7xl'>
+    <div className='container mx-auto max-w-7xl max-lg:px-10'>
       <Hero />
       <BestSellers />
       <BannerSlider />

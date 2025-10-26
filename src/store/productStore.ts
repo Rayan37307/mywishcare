@@ -2,16 +2,17 @@
 import { create } from 'zustand';
 import { woocommerceService } from '../services/woocommerceService';
 import type { Product } from '../types/product';
+import { COLLECTIONS } from '../constants/app';
 
 export type CollectionType = 
-  | 'acne' 
-  | 'pigmentation' 
-  | 'hairfall' 
-  | 'dullSkin' 
-  | 'detan' 
-  | 'damagedHair' 
+  | typeof COLLECTIONS.ACNE 
+  | typeof COLLECTIONS.PIGMENTATION
+  | typeof COLLECTIONS.HAIRFALL 
+  | typeof COLLECTIONS.DULL_SKIN
+  | typeof COLLECTIONS.DETAN
+  | typeof COLLECTIONS.DAMAGED_HAIR
   | 'allProducts'
-  | 'sunCare'
+  | typeof COLLECTIONS.SUN_CARE
   | 'bestSellers';
 
 interface ProductState {
@@ -423,19 +424,19 @@ export const useProductStore = create<ProductState>((set, get) => ({
   getProductsByCollection: (collection: CollectionType) => {
     const state = get();
     switch(collection) {
-      case 'acne':
+      case COLLECTIONS.ACNE:
         return state.acneProducts;
-      case 'pigmentation':
+      case COLLECTIONS.PIGMENTATION:
         return state.pigmentationProducts;
-      case 'hairfall':
+      case COLLECTIONS.HAIRFALL:
         return state.hairfallProducts;
-      case 'dullSkin':
+      case COLLECTIONS.DULL_SKIN:
         return state.dullSkinProducts;
-      case 'detan':
+      case COLLECTIONS.DETAN:
         return state.detanProducts;
-      case 'damagedHair':
+      case COLLECTIONS.DAMAGED_HAIR:
         return state.damagedHairProducts;
-      case 'sunCare':
+      case COLLECTIONS.SUN_CARE:
         return state.sunCareProducts;
       case 'allProducts':
         return state.allProducts;

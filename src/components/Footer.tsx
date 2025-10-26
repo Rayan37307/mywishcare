@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
+// Constants
+import { ROUTES } from '../constants/routes'
+
 const Footer = () => {
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
@@ -32,14 +35,16 @@ const Footer = () => {
             toggleSection={toggleSection}
           >
             <ul className="text-[14px] space-y-2 text-gray-300">
-              <li><Link to="/collections/bestsellers">Bestsellers</Link></li>
-              <li><Link to="/collections/sun-care">Sun Care</Link></li>
-              <li><Link to="/collections/hairfall">Hairfall</Link></li>
-              <li><Link to="/collections/acne">Acne & Acne Marks</Link></li>
-              <li><Link to="/collections/pigmentation">Pigmentation</Link></li>
-              <li><Link to="/collections/dull-skin">Dull Skin</Link></li>
-              <li><Link to="/collections/detan">Detan</Link></li>
-              <li><Link to="/collections/damaged-hair">Damaged Hair</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_BESTSELLERS}>Bestsellers</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_SUN_CARE}>Sun Care</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_LIP_BALM}>Lip Balm</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_HAIRFALL}>Hairfall</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_HAIR_CARE_1}>Hair Care 1</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_ACNE}>Acne & Acne Marks</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_PIGMENTATION}>Pigmentation</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_DULL_SKIN}>Dull Skin</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_DETAN}>Detan</Link></li>
+              <li><Link to={ROUTES.COLLECTIONS_DAMAGED_HAIR}>Damaged Hair</Link></li>
             </ul>
           </FooterSection>
 
@@ -51,10 +56,10 @@ const Footer = () => {
             toggleSection={toggleSection}
           >
             <ul className="text-[14px] space-y-2 text-gray-300">
-              <li><Link to="/policies/terms-of-service">Terms Of Service</Link></li>
-              <li><Link to="/policies/privacy-policy">Privacy Policy</Link></li>
-              <li><Link to="/policies/shipping-policy">Shipping Policy</Link></li>
-              <li><Link to="/policies/refund-policy">Refund Policy</Link></li>
+              <li><Link to={ROUTES.POLICIES_TERMS}>Terms Of Service</Link></li>
+              <li><Link to={ROUTES.POLICIES_PRIVACY}>Privacy Policy</Link></li>
+              <li><Link to={ROUTES.POLICIES_SHIPPING}>Shipping Policy</Link></li>
+              <li><Link to={ROUTES.POLICIES_REFUND}>Refund Policy</Link></li>
             </ul>
           </FooterSection>
 
@@ -66,7 +71,7 @@ const Footer = () => {
             toggleSection={toggleSection}
           >
             <ul className="text-[14px] space-y-2 text-gray-300">
-              <li><Link to="/pages/about-us">About Us</Link></li>
+              <li><Link to={ROUTES.PAGES_ABOUT}>About Us</Link></li>
             </ul>
           </FooterSection>
 

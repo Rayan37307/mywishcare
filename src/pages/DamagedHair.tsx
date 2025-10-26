@@ -1,10 +1,16 @@
 import { useEffect } from 'react';
 import ProblemCategory from '../components/ProblemCategory';
 import DamagedHairCard from '../components/DamagedHairCard';
-import { useProductStore } from '../store/productStore';
+import { useProductOperations } from '../hooks/useProductOperations';
 
 const DamagedHair = () => {
-  const { bestSellingProducts, fetchBestSellingProducts, loading } = useProductStore();
+  const { 
+    fetchBestSellingProducts, 
+    loading, 
+    getProductsByCollection 
+  } = useProductOperations();
+  
+  const bestSellingProducts = getProductsByCollection('bestSellers');
 
   useEffect(() => {
     fetchBestSellingProducts();

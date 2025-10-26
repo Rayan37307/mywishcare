@@ -121,7 +121,7 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
     >
       ✕
     </button>
-      <div className="bg-gradient-to-b from-gray-900/20 via-[#EBE4FD] to-[#EBE4FD] p-6 backdrop-blur-[50px] rounded-lg w-full max-w-5xl h-[400px] overflow-hidden flex flex-col md:flex-row">
+      <div className="bg-gradient-to-b from-gray-900/20 via-[#EBE4FD] to-[#EBE4FD] p-6 backdrop-blur-[50px] rounded-lg w-full max-w-5xl h-auto overflow-hidden flex flex-col md:flex-row max-md:mx-7">
         {/* Left Image */}
         <div className="w-full md:w-2/3 flex items-center justify-center">
           <img
@@ -136,7 +136,7 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Right Form */}
-        <div className="w-full md:w-1/3 px-4 flex flex-col justify-center rounded-lg bg-[#EBE4FD]">
+        <div className="w-full md:w-1/3 px-4 flex flex-col justify-center rounded-lg pt-5 bg-[#EBE4FD]">
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>
           )}

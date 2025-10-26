@@ -7,6 +7,7 @@ import type { Product } from '../types/product';
 import { Link } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
+import { ArrowRightIcon } from 'lucide-react';
 
 const RoutineBuilder = () => {
   const { routineBuilderProducts, loading, error, fetchRoutineBuilderProducts } = useProductStore();
@@ -42,7 +43,10 @@ const RoutineBuilder = () => {
 
   return (
     <div className="py-8">
-      <h2 className="text-3xl font-bold mb-8 text-left">Routine Builder</h2>
+       <div className='flex gap-4 items-center'>
+        <h2 className="text-3xl font-bold mb-8 text-left pt-7">Routine Builder</h2>
+        <Link to='/collections/routinebuilder' className="flex gap-2 items-center justify-center">View All <ArrowRightIcon/></Link>
+        </div>
      <Swiper
   modules={[Mousewheel, FreeMode]}
   spaceBetween={20}               // gap between cards

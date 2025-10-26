@@ -3,7 +3,7 @@ import ProblemCategory from '../components/ProblemCategory';
 import BestSellersCard from '../components/BestSellersCards';
 import { useProductOperations } from '../hooks/useProductOperations';
 
-const SunCare = () => {
+const LipBalm = () => {
   const { 
     fetchBestSellingProducts, 
     loading, 
@@ -28,4 +28,4 @@ const SunCare = () => {
   );
 };
 
-export default SunCare;
+export default LipBalm;

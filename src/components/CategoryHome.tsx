@@ -12,10 +12,10 @@ const CategoryHome = () => {
   ];
 
   return (
-    <div className="w-full flex items-center justify-center pt-[450px] bg-white">
+    <div className="w-full flex items-center justify-center bg-white">
       <div className="w-full p-4">
         {/* Responsive grid layout */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-4">
           {categories.map((category) => (
             <Link 
               to={`/collections/${category.link}`}

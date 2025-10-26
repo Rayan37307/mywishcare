@@ -1,10 +1,16 @@
 import { useEffect } from 'react'
 import ProblemCategory from '../components/ProblemCategory';
 import PigmentationCard from '../components/PigmentationCard';
-import { useProductStore } from '../store/productStore';
+import { useProductOperations } from '../hooks/useProductOperations';
 
 const Pigmentation = () => {
-  const { bestSellingProducts, fetchBestSellingProducts, loading } = useProductStore();
+  const { 
+    fetchBestSellingProducts, 
+    loading, 
+    getProductsByCollection 
+  } = useProductOperations();
+  
+  const bestSellingProducts = getProductsByCollection('bestSellers');
 
   useEffect(() => {
     fetchBestSellingProducts();
