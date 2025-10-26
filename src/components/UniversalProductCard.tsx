@@ -76,8 +76,8 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
                 <div className="flex items-center justify-center gap-2 py-2">
                   {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
                     <>
-                      <p className="text-gray-500 text-[13px] leading-[20px] line-through mb-1">₹{formatPrice(product.regular_price)}</p>
-                      <p className="text-gray-800 text-lg mb-2 mt-1">₹{formatPrice(product.sale_price)}</p>
+                      <p className="text-gray-500 text-[11px] leading-[20px] line-through mb-1">₹{formatPrice(product.regular_price)}</p>
+                      <p className="text-gray-800 text-[17px] font-semibold mb-2 mt-1">₹{formatPrice(product.sale_price)}</p>
                     </>
                   ) : (
                     <p className="text-black mb-2 mt-2">₹{formatPrice(product.price)}</p>

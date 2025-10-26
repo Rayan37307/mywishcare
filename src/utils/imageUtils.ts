@@ -5,16 +5,23 @@
  * @param id The attachment ID
  * @returns The image URL or null if not found
  */
+// Get the proper API base URL for media
+const getMediaApiUrl = (endpoint: string): string => {
+  const envApiUrl = import.meta.env.VITE_WP_API_URL || '/wp-json';
+  
+  // Ensure the URL ends with /wp-json
+  let baseUrl = envApiUrl;
+  if (!baseUrl.includes('/wp-json')) {
+    baseUrl = baseUrl.endsWith('/') ? `${baseUrl}wp-json` : `${baseUrl}/wp-json`;
+  }
+  
+  return `${baseUrl}${endpoint}`;
+};
+
 export const getImageUrlFromId = async (id: number): Promise<string | null> => {
   try {
-    // Get the base URL from the environment variable
-    const baseURL = import.meta.env.VITE_WC_API_URL || 'https://your-wordpress-site.com/wp-json/wc/v3';
-    
-    // Extract the actual site URL from the API URL
-    const siteURL = baseURL.replace('/wp-json/wc/v3', '');
-    
-    // Fetch the attachment details
-    const response = await fetch(`${siteURL}/wp-json/wp/v2/media/${id}`);
+    // Fetch the attachment details using the proper API URL
+    const response = await fetch(getMediaApiUrl(`/wp/v2/media/${id}`));
     
     if (!response.ok) {
       console.error(`Failed to fetch media: ${response.status} ${response.statusText}`);

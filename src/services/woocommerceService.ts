@@ -1,228 +1,523 @@
-// src/services/woocommerceService.ts
-import type { Product, WooCommerceAPIProduct, WooCommerceAPIMetaDataItem, WishCareProductData, WishCareFAQ } from "../types/product";
+import { apiService } from './apiService';
 
-const WOO_API_URL = import.meta.env.VITE_WC_API_URL || 'https://your-wordpress-site.com/wp-json/wc/v3';
-const WOO_CONSUMER_KEY = import.meta.env.VITE_WC_CONSUMER_KEY || '';
-const WOO_CONSUMER_SECRET = import.meta.env.VITE_WC_CONSUMER_SECRET || '';
+// Define the Order type within this file
+export interface Order {
+  id: number;
+  status: string;
+  date_created: string;
+  total: string;
+  currency: string;
+  billing: {
+    first_name: string;
+    last_name: string;
+    address_1: string;
+    address_2: string;
+    city: string;
+    state: string;
+    postcode: string;
+    country: string;
+    email: string;
+    phone: string;
+  };
+  shipping: {
+    first_name: string;
+    last_name: string;
+    address_1: string;
+    address_2: string;
+    city: string;
+    state: string;
+    postcode: string;
+    country: string;
+  };
+  line_items: Array<{
+    id: number;
+    name: string;
+    product_id: number;
+    variation_id: number;
+    quantity: number;
+    tax_class: string;
+    subtotal: string;
+    total: string;
+    sku: string;
+    price: number;
+  }>;
+  shipping_lines: Array<{
+    id: number;
+    method_title: string;
+    method_id: string;
+    total: string;
+  }>;
+  payment_method: string;
+  payment_method_title: string;
+  customer_note: string;
+}
 
-const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxwYXRoIGQ9Ik0yMiAydi0yYTIgMiAwIDAgMC0yLTJIMTRhMiAyIDAgMCAwLTIgMnYySDRhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE2YTIgMiAwIDAgMCAyLTJWMnptLTQgMTZINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyeiIgLz4KPC9zdmc+';
+// Define the Product type
+export interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  permalink: string;
+  date_created: string;
+  date_modified: string;
+  type: string;
+  status: string;
+  featured: boolean;
+  catalog_visibility: string;
+  description: string;
+  short_description: string;
+  sku: string;
+  price: string;
+  regular_price: string;
+  sale_price: string;
+  date_on_sale_from: string | null;
+  date_on_sale_to: string | null;
+  price_html: string;
+  on_sale: boolean;
+  purchasable: boolean;
+  total_sales: number;
+  virtual: boolean;
+  downloadable: boolean;
+  downloads: any[];
+  download_limit: number;
+  download_expiry: number;
+  external_url: string;
+  button_text: string;
+  tax_status: string;
+  tax_class: string;
+  manage_stock: boolean;
+  stock_quantity: number | null;
+  stock_status: string;
+  backorders: string;
+  backorders_allowed: boolean;
+  backordered: boolean;
+  sold_individually: boolean;
+  weight: string;
+  dimensions: {
+    length: string;
+    width: string;
+    height: string;
+  };
+  shipping_required: boolean;
+  shipping_taxable: boolean;
+  shipping_class: string;
+  shipping_class_id: number;
+  reviews_allowed: boolean;
+  average_rating: string;
+  rating_count: number;
+  related_ids: number[];
+  upsell_ids: number[];
+  cross_sell_ids: number[];
+  parent_id: number;
+  purchase_note: string;
+  categories: Array<{
+    id: number;
+    name: string;
+    slug: string;
+  }>;
+  tags: any[];
+  images: Array<{
+    id: number;
+    date_created: string;
+    date_created_gmt: string;
+    date_modified: string;
+    date_modified_gmt: string;
+    src: string;
+    name: string;
+    alt: string;
+  }>;
+  attributes: any[];
+  default_attributes: any[];
+  variations: any[];
+  grouped_products: any[];
+  menu_order: number;
+  meta_data: Array<{
+    id: number;
+    key: string;
+    value: string;
+  }>;
+  wishCare?: {
+    activeOffers?: string[];
+    benefits?: string[];
+    suitableFor?: string[];
+    whatMakesItGreat?: string;
+    whatMakesImages?: string[];
+    howToUse?: string;
+    howToImages?: string[];
+    ingredients?: string;
+    ingredientsImages?: string[];
+    results?: string;
+    resultsImages?: string[];
+    pairsWith?: string;
+    faqs?: Array<{
+      q: string;
+      a: string;
+    }>;
+  };
+}
 
 class WooCommerceService {
-  private apiURL: string;
+  private apiBase: string;
   private consumerKey: string;
   private consumerSecret: string;
-
+  
   constructor() {
-    this.apiURL = WOO_API_URL;
-    this.consumerKey = WOO_CONSUMER_KEY;
-    this.consumerSecret = WOO_CONSUMER_SECRET;
+    // Get the base WooCommerce API URL from environment variables
+    const envApiUrl = import.meta.env.VITE_WC_API_URL || import.meta.env.VITE_WP_API_URL;
+    this.consumerKey = import.meta.env.VITE_WC_CONSUMER_KEY || 'ck_23112f91dee60de7b243c658e5f4ddbb5250b745';
+    this.consumerSecret = import.meta.env.VITE_WC_CONSUMER_SECRET || 'cs_bb75d74565ffe29d3f47ea79948397214d7fb18a';
+    
+    // Construct the WooCommerce API base URL
+    if (envApiUrl) {
+      // Check if the URL already includes /wc/v3 (full WooCommerce API endpoint)
+      if (envApiUrl.includes('/wp-json/wc/v3')) {
+        this.apiBase = envApiUrl;
+      } else if (envApiUrl.includes('/wp-json')) {
+        // If it includes /wp-json but not /wc/v3, add /wc/v3
+        if (envApiUrl.endsWith('/')) {
+          this.apiBase = `${envApiUrl}wc/v3`;
+        } else {
+          this.apiBase = `${envApiUrl}/wc/v3`;
+        }
+      } else if (envApiUrl.endsWith('/')) {
+        // If it ends with a slash, append wp-json/wc/v3
+        this.apiBase = `${envApiUrl}wp-json/wc/v3`;
+      } else {
+        // Otherwise, append /wp-json/wc/v3
+        this.apiBase = `${envApiUrl}/wp-json/wc/v3`;
+      }
+    } else {
+      // Default to relative path for production
+      this.apiBase = '/wp-json/wc/v3';
+    }
+    
+    console.log('WooCommerceService initialized with:');
+    console.log('- API Base:', this.apiBase);
+    console.log('- Consumer Key:', this.consumerKey.substring(0, 10) + '...');
+    console.log('- Consumer Secret:', this.consumerSecret.substring(0, 10) + '...');
   }
 
   private buildAuthURL(endpoint: string): string {
-    const separator = endpoint.includes('?') ? '&' : '?';
-    if (!this.consumerKey || !this.consumerSecret) {
-      return `${this.apiURL}${endpoint}`;
-    }
-    return `${this.apiURL}${endpoint}${separator}consumer_key=${this.consumerKey}&consumer_secret=${this.consumerSecret}`;
-  }
-
-  private parseWishCareMetaData(meta_data: WooCommerceAPIMetaDataItem[]): WishCareProductData {
-    const wishCareData: WishCareProductData = {};
-
-    meta_data.forEach(item => {
-      switch (item.key) {
-        case 'wishcare_active_offers':
-          try {
-            wishCareData.activeOffers = JSON.parse(item.value) as string[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_active_offers:', e);
-            wishCareData.activeOffers = [item.value];
-          }
-          break;
-        case 'wishcare_benefits':
-          try {
-            wishCareData.benefits = JSON.parse(item.value) as string[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_benefits:', e);
-            wishCareData.benefits = [item.value];
-          }
-          break;
-        case 'wishcare_suitable_for':
-          try {
-            wishCareData.suitableFor = JSON.parse(item.value) as string[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_suitable_for:', e);
-            wishCareData.suitableFor = [item.value];
-          }
-          break;
-        case 'wishcare_what_makes_it_great':
-          wishCareData.whatMakesItGreat = item.value;
-          break;
-        case 'wishcare_what_makes_images':
-          try {
-            wishCareData.whatMakesImages = JSON.parse(item.value) as number[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_what_makes_images:', e);
-            wishCareData.whatMakesImages = [];
-          }
-          break;
-        case 'wishcare_how_to_use':
-          wishCareData.howToUse = item.value;
-          break;
-        case 'wishcare_how_to_images':
-          try {
-            wishCareData.howToImages = JSON.parse(item.value) as number[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_how_to_images:', e);
-            wishCareData.howToImages = [];
-          }
-          break;
-        case 'wishcare_ingredients':
-          wishCareData.ingredients = item.value;
-          break;
-        case 'wishcare_ingredients_images':
-          try {
-            wishCareData.ingredientsImages = JSON.parse(item.value) as number[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_ingredients_images:', e);
-            wishCareData.ingredientsImages = [];
-          }
-          break;
-        case 'wishcare_results':
-          wishCareData.results = item.value;
-          break;
-        case 'wishcare_results_images':
-          try {
-            wishCareData.resultsImages = JSON.parse(item.value) as number[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_results_images:', e);
-            wishCareData.resultsImages = [];
-          }
-          break;
-        case 'wishcare_pairs_with':
-          wishCareData.pairsWith = item.value;
-          break;
-        case 'wishcare_faqs':
-          try {
-            wishCareData.faqs = JSON.parse(item.value) as WishCareFAQ[];
-          } catch (e) {
-            console.warn('Failed to parse wishcare_faqs:', e);
-            wishCareData.faqs = [];
-          }
-          break;
+    // Ensure endpoint starts with /
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
+    // Build the full URL with WooCommerce API base
+    let baseURL = this.apiBase;
+    
+    // If the endpoint is already a complete WooCommerce endpoint (e.g., /products, /orders),
+    // and our API base doesn't already contain /wc/v3, we need to ensure it's included.
+    // But if our API base already includes /wc/v3, we should just append the endpoint.
+    if (baseURL.endsWith('/wc/v3')) {
+      // Our base already has /wc/v3, so just append the endpoint directly
+      const fullURL = `${baseURL}${normalizedEndpoint}`;
+      
+      // Add authentication parameters
+      const separator = fullURL.includes('?') ? '&' : '?';
+      const authURL = `${fullURL}${separator}consumer_key=${this.consumerKey}&consumer_secret=${this.consumerSecret}`;
+      
+      console.log(`Building WooCommerce authenticated URL: ${authURL}`);
+      return authURL;
+    } else {
+      // If our base doesn't end with /wc/v3, add it
+      if (baseURL.endsWith('/')) {
+        baseURL = `${baseURL}wc/v3`;
+      } else {
+        baseURL = `${baseURL}/wc/v3`;
       }
-    });
-
-    return wishCareData;
+      
+      // Append the endpoint
+      const fullURL = `${baseURL}${normalizedEndpoint}`;
+      
+      // Add authentication parameters
+      const separator = fullURL.includes('?') ? '&' : '?';
+      const authURL = `${fullURL}${separator}consumer_key=${this.consumerKey}&consumer_secret=${this.consumerSecret}`;
+      
+      console.log(`Building WooCommerce authenticated URL: ${authURL}`);
+      return authURL;
+    }
   }
 
-
-
-  private transformWooCommerceProduct(product: WooCommerceAPIProduct, wishCareData?: WishCareProductData): Product {
-    return {
-      id: product.id,
-      name: product.name,
-      price: product.price || '0.00',
-      regular_price: product.regular_price,
-      sale_price: product.sale_price,
-      images: product.images && product.images.length > 0 
-        ? product.images.map(img => ({ src: img.src, alt: img.alt })) 
-        : [{ src: PLACEHOLDER_IMAGE }],
-      description: product.description || 'No description available',
-      short_description: product.short_description || product.description || 'No description available',
-      stock_quantity: product.stock_quantity,
-      stock_status: product.stock_status,
-      categories: product.categories || [],
-      wishCare: wishCareData,
-    };
+  // Not needed for WooCommerce API as we use query parameters for auth
+  // Keeping this for consistency with other services
+  private getAuthHeaders(): Record<string, string> {
+    return { 'Content-Type': 'application/json' };
   }
 
+  // Product Methods
   async fetchProducts(): Promise<Product[]> {
     try {
-      const response = await fetch(this.buildAuthURL('/products'));
+      const endpoint = this.buildAuthURL('/products');
+      console.log(`Fetching products from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Products API response status: ${response.status}`);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Products API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
-      
-      const products: WooCommerceAPIProduct[] = await response.json();
-      
-      return products.map(product => this.transformWooCommerceProduct(product));
+
+      const products: Product[] = await response.json();
+      console.log(`Successfully fetched ${products.length} products`);
+      return products;
     } catch (error) {
       console.error('Error fetching products:', error);
-      return [];
+      throw error;
     }
   }
 
-  async fetchProductById(id: number, includeWishCare: boolean = true): Promise<Product | null> {
+  async fetchProductById(id: number, includeWishCareData: boolean = false): Promise<Product | null> {
     try {
-      const response = await fetch(this.buildAuthURL(`/products/${id}`));
+      const endpoint = this.buildAuthURL(`/products/${id}`);
+      console.log(`Fetching product ${id} from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Product API response status: ${response.status}`);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch product: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Product API error response: ${errorText}`);
+        if (response.status === 404) {
+          console.log(`Product ${id} not found`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const product: Product = await response.json();
+      console.log(`Successfully fetched product ${id}:`, product.name);
+      
+      // Parse WishCare metadata if requested
+      if (includeWishCareData && product.meta_data) {
+        const wishCareData: any = {};
+        product.meta_data.forEach(meta => {
+          switch (meta.key) {
+            case 'wishcare_active_offers':
+              try {
+                wishCareData.activeOffers = JSON.parse(meta.value);
+              } catch {
+                wishCareData.activeOffers = [meta.value];
+              }
+              break;
+            case 'wishcare_benefits':
+              try {
+                wishCareData.benefits = JSON.parse(meta.value);
+              } catch {
+                wishCareData.benefits = [meta.value];
+              }
+              break;
+            case 'wishcare_suitable_for':
+              try {
+                wishCareData.suitableFor = JSON.parse(meta.value);
+              } catch {
+                wishCareData.suitableFor = [meta.value];
+              }
+              break;
+            case 'wishcare_what_makes_it_great':
+              wishCareData.whatMakesItGreat = meta.value;
+              break;
+            case 'wishcare_what_makes_images':
+              try {
+                wishCareData.whatMakesImages = JSON.parse(meta.value);
+              } catch {
+                wishCareData.whatMakesImages = [];
+              }
+              break;
+            case 'wishcare_how_to_use':
+              wishCareData.howToUse = meta.value;
+              break;
+            case 'wishcare_how_to_images':
+              try {
+                wishCareData.howToImages = JSON.parse(meta.value);
+              } catch {
+                wishCareData.howToImages = [];
+              }
+              break;
+            case 'wishcare_ingredients':
+              wishCareData.ingredients = meta.value;
+              break;
+            case 'wishcare_ingredients_images':
+              try {
+                wishCareData.ingredientsImages = JSON.parse(meta.value);
+              } catch {
+                wishCareData.ingredientsImages = [];
+              }
+              break;
+            case 'wishcare_results':
+              wishCareData.results = meta.value;
+              break;
+            case 'wishcare_results_images':
+              try {
+                wishCareData.resultsImages = JSON.parse(meta.value);
+              } catch {
+                wishCareData.resultsImages = [];
+              }
+              break;
+            case 'wishcare_pairs_with':
+              wishCareData.pairsWith = meta.value;
+              break;
+            case 'wishcare_faqs':
+              try {
+                wishCareData.faqs = JSON.parse(meta.value);
+              } catch {
+                wishCareData.faqs = [];
+              }
+              break;
+          }
+        });
+        product.wishCare = wishCareData;
       }
       
-      const product: WooCommerceAPIProduct = await response.json();
-      
-      let wishCareData = {};
-      if (includeWishCare && product.meta_data) {
-        // Extract WishCare meta data from the main product response
-        wishCareData = this.parseWishCareMetaData(product.meta_data);
-      }
-      
-      return this.transformWooCommerceProduct(product, wishCareData);
+      return product;
     } catch (error) {
       console.error('Error fetching product:', error);
-      return null;
+      throw error;
     }
   }
 
-  async fetchProductsByCategory(categoryId: number): Promise<Product[]> {
+  async findProductBySlug(slug: string): Promise<Product | null> {
     try {
-      const response = await fetch(this.buildAuthURL(`/products?category=${categoryId}`));
+      const url = this.buildAuthURL(`/products?slug=${slug}`);
+      console.log(`Finding product by slug "${slug}" from: ${url}`);
+      
+      const response = await fetch(url);
+      
+      console.log(`Find product by slug API response status: ${response.status}`);
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Find product by slug API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
-      
-      const products: WooCommerceAPIProduct[] = await response.json();
-      
-      return products.map(product => this.transformWooCommerceProduct(product));
+
+      const products: Product[] = await response.json();
+      console.log(`Found ${products.length} products with slug "${slug}"`);
+      return products.length > 0 ? products[0] : null;
     } catch (error) {
-      console.error('Error fetching products by category:', error);
-      return [];
+      console.error('Error finding product by slug:', error);
+      throw error;
     }
   }
 
   async searchProducts(searchTerm: string): Promise<Product[]> {
     try {
-      const response = await fetch(this.buildAuthURL(`/products?search=${encodeURIComponent(searchTerm)}`));
+      const encodedSearchTerm = encodeURIComponent(searchTerm);
+      const endpoint = this.buildAuthURL(`/products?search=${encodedSearchTerm}`);
+      console.log(`Searching products with term "${searchTerm}" from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Search products API response status: ${response.status}`);
       
       if (!response.ok) {
-        throw new Error(`Failed to search products: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Search products API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
-      
-      const products: WooCommerceAPIProduct[] = await response.json();
-      
-      return products.map(product => this.transformWooCommerceProduct(product));
+
+      const products: Product[] = await response.json();
+      console.log(`Found ${products.length} products matching "${searchTerm}"`);
+      return products;
     } catch (error) {
       console.error('Error searching products:', error);
-      return [];
+      throw error;
     }
   }
-  async createOrder(orderData: unknown): Promise<unknown> {
+
+  async fetchProductsByCategory(categoryId: number): Promise<Product[]> {
     try {
-      const response = await fetch(this.buildAuthURL('/orders'), {
+      const endpoint = this.buildAuthURL(`/products?category=${categoryId}`);
+      console.log(`Fetching products by category ${categoryId} from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Products by category API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Products by category API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const products: Product[] = await response.json();
+      console.log(`Found ${products.length} products in category ${categoryId}`);
+      return products;
+    } catch (error) {
+      console.error('Error fetching products by category:', error);
+      throw error;
+    }
+  }
+
+  // Order Methods
+  async getCustomerOrders(customerId: number): Promise<Order[]> {
+    try {
+      const endpoint = this.buildAuthURL(`/orders?customer=${customerId}&per_page=50`);
+      console.log(`Fetching customer orders from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Customer orders API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Customer orders API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const orders: Order[] = await response.json();
+      return orders.sort((a, b) => 
+        new Date(b.date_created).getTime() - new Date(a.date_created).getTime()
+      );
+    } catch (error) {
+      console.error('Error fetching customer orders:', error);
+      throw error;
+    }
+  }
+
+  async getOrderById(orderId: number, customerId: number): Promise<Order> {
+    try {
+      const endpoint = this.buildAuthURL(`/orders/${orderId}?customer=${customerId}`);
+      console.log(`Fetching order ${orderId} from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Order API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Order API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching order:', error);
+      throw error;
+    }
+  }
+
+  async createOrder(orderData: Partial<Order>): Promise<Order> {
+    try {
+      const endpoint = this.buildAuthURL('/orders');
+      console.log(`Creating order at endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(orderData),
       });
-
+      
+      console.log(`Create order API response status: ${response.status}`);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to create order: ${errorData.message}`);
+        const errorText = await response.text();
+        console.error(`Create order API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       return await response.json();

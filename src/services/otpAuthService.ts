@@ -2,20 +2,51 @@
 import type { User } from "../types/user";
 import { wpAuthService } from "./authService";
 
-const WP_API_URL = import.meta.env.VITE_WP_API_URL || 'https://your-wordpress-site.com/wp-json';
+// Get the proper API base URL
+const getApiBaseUrl = () => {
+  const envApiUrl = import.meta.env.VITE_WP_API_URL;
+  
+  if (envApiUrl) {
+    // Make sure it ends with /wp-json if it's a custom URL
+    if (envApiUrl.includes('/wp-json')) {
+      return envApiUrl.replace('/wp-json', ''); // Remove wp-json to get base URL
+    } else {
+      return envApiUrl.endsWith('/') ? envApiUrl.slice(0, -1) : envApiUrl;
+    }
+  }
+  
+  // Default to relative path for local/relative API access (empty string for relative)
+  return '';
+};
 
 class OTPAuthService {
   private apiURL: string;
 
   constructor() {
-    this.apiURL = WP_API_URL.replace('/wp-json', '');
+    this.apiURL = getApiBaseUrl();
+  }
+
+  // Helper function to build API URL
+  private buildApiUrl(endpoint: string): string {
+    if (!this.apiURL) {
+      // If apiURL is empty (for relative paths), return the endpoint directly
+      return `/wp-json${endpoint}`;
+    }
+    
+    // If apiURL already contains wp-json, just append the endpoint
+    if (this.apiURL.includes('/wp-json')) {
+      return `${this.apiURL}${endpoint}`;
+    }
+    
+    // Otherwise append /wp-json and the endpoint
+    return `${this.apiURL.endsWith('/') ? this.apiURL : `${this.apiURL}/`}wp-json${endpoint}`;
   }
 
   // Send OTP to email
   async sendOTP(email: string): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
       // Use WordPress OTP endpoint to send OTP
-      const response = await fetch(`${this.apiURL}/wp-json/otp/v1/send`, {
+      const response = await fetch(this.buildApiUrl('/otp/v1/send'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +80,7 @@ class OTPAuthService {
   async verifyOTP(email: string, otp: string): Promise<{ user?: User; token?: string; error?: string }> {
     try {
       // Use WordPress OTP endpoint to verify OTP and get JWT token
-      const response = await fetch(`${this.apiURL}/wp-json/otp/v1/verify`, {
+      const response = await fetch(this.buildApiUrl('/otp/v1/verify'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

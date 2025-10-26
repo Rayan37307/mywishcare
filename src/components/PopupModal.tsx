@@ -24,7 +24,6 @@ const PopupModal: React.FC<PopupModalProps> = ({ isOpen, onClose }) => {
         {/* Content Area */}
         <div className="flex-1 flex justify-center">
           <div className="w-full h-full rounded-lg flex justify-start items-center flex-col">
-            <img src="/dissticker.jpeg" alt="" className="w-full rounded-lg h-auto" />
             <div>
               <p className="text-center font-black text-gray-600 text-4xl mt-5">
                 Super Sunday Sale

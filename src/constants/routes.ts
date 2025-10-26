@@ -27,4 +27,6 @@ export const ROUTES = {
   SEARCH: '/search',
   LOGIN: '/login',
   PROFILE: '/profile',
+  API_DEBUG: '/debug/api',
+  TEST_PAGE: '/test',
 } as const;

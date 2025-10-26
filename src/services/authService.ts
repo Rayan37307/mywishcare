@@ -2,21 +2,48 @@
 // Simple WordPress authentication service that can be easily removed later
 import type { User } from "../types/user";
 
-const WP_API_URL = import.meta.env.VITE_WP_API_URL || 'https://your-wordpress-site.com/wp-json';
 const JWT_EXPIRY_BUFFER = 5 * 60 * 1000; // 5 minutes before expiry for refresh
 
 class WordPressAuthService {
   private apiURL: string;
 
   constructor() {
-    this.apiURL = WP_API_URL.replace('/wp-json', ''); // Remove /wp-json suffix for auth endpoints
+    // Get the base WordPress API URL from environment variables
+    const envApiUrl = import.meta.env.VITE_WP_API_URL;
+    
+    if (envApiUrl) {
+      // If it already includes /wp-json, use it directly
+      if (envApiUrl.includes('/wp-json')) {
+        this.apiURL = envApiUrl;
+      } else {
+        // Otherwise append /wp-json
+        this.apiURL = envApiUrl.endsWith('/') ? `${envApiUrl}wp-json` : `${envApiUrl}/wp-json`;
+      }
+    } else {
+      // Default to relative path for production
+      this.apiURL = '/wp-json';
+    }
+    
+    console.log('WordPressAuthService initialized with API URL:', this.apiURL);
+  }
+
+  // Helper function to build API URL
+  private buildApiUrl(endpoint: string): string {
+    // Ensure endpoint starts with /
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
+    // Build the full URL
+    const fullUrl = `${this.apiURL}${normalizedEndpoint}`;
+    
+    console.log(`Building API URL: ${fullUrl}`);
+    return fullUrl;
   }
 
   // Login using WordPress REST API
   async login(username: string, password: string): Promise<{ user?: User; token?: string; error?: string }> {
     try {
       // WordPress JWT Authentication
-      const response = await fetch(`${this.apiURL}/wp-json/jwt-auth/v1/token`, {
+      const response = await fetch(this.buildApiUrl('/jwt-auth/v1/token'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +74,7 @@ class WordPressAuthService {
         };
       } else {
         // Fallback: fetch user data separately if not included in token response
-        const userResponse = await fetch(`${this.apiURL}/wp-json/wp/v2/users/me`, {
+        const userResponse = await fetch(this.buildApiUrl('/wp/v2/users/me'), {
           headers: {
             'Authorization': `Bearer ${data.token}`,
             'Content-Type': 'application/json',
@@ -101,7 +128,7 @@ class WordPressAuthService {
       // Using WordPress Application Passwords
       const credentials = btoa(`${username}:${password}`);
       
-      const response = await fetch(`${this.apiURL}/wp-json/wp/v2/users/me`, {
+      const response = await fetch(this.buildApiUrl('/wp/v2/users/me'), {
         method: 'GET',
         headers: {
           'Authorization': `Basic ${credentials}`,
@@ -139,7 +166,7 @@ class WordPressAuthService {
   async register(username: string, email: string, password: string, displayName?: string): Promise<{ user?: User; error?: string }> {
     try {
       // First, check if the custom registration endpoint exists
-      const response = await fetch(`${this.apiURL}/wp-json/custom/v1/register`, {
+      const response = await fetch(this.buildApiUrl('/custom/v1/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +184,7 @@ class WordPressAuthService {
         if (response.status === 404) {
           try {
             // Try to check WordPress registration settings
-            const optionsResponse = await fetch(`${this.apiURL}/wp-json/wp/v2/settings`, {
+            const optionsResponse = await fetch(this.buildApiUrl('/wp/v2/settings'), {
               headers: {
                 'Content-Type': 'application/json',
               }
@@ -222,7 +249,7 @@ class WordPressAuthService {
       // This will store the JWT token and user info in localStorage
       // First, try to log in with the new credentials
       try {
-        const loginResponse = await fetch(`${this.apiURL}/wp-json/jwt-auth/v1/token`, {
+        const loginResponse = await fetch(this.buildApiUrl('/jwt-auth/v1/token'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -397,7 +424,7 @@ class WordPressAuthService {
   // Update user profile
   async updateUser(userId: number, userData: Partial<User>): Promise<{ user?: User; error?: string }> {
     try {
-      const response = await fetch(`${this.apiURL}/wp-json/wp/v2/users/${userId}`, {
+      const response = await fetch(this.buildApiUrl(`/wp/v2/users/${userId}`), {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(userData),

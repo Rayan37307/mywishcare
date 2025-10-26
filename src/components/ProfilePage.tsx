@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-
-interface Order {
-  id: number;
-  date: string;
-  total: string;
-  status: string;
-  items: number;
-}
+import { useOrder } from '../contexts/OrderContext';
 
 interface CartItem {
   product: {
@@ -21,7 +14,33 @@ interface CartItem {
 
 const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, logout, updateUser } = useAuth();
+  const { orders, loading: ordersLoading, error: ordersError, fetchOrders } = useOrder();
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'cart'>('profile');
+  
+  // Check for hash in URL to determine active tab
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === '#orders') {
+        setActiveTab('orders');
+      } else if (hash === '#cart') {
+        setActiveTab('cart');
+      } else if (hash === '#profile') {
+        setActiveTab('profile');
+      }
+    };
+
+    // Check on initial load
+    handleHashChange();
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [editData, setEditData] = useState({
@@ -43,7 +62,6 @@ const ProfilePage: React.FC = () => {
 
   // Cart data from localStorage
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
 
   // Load cart items from localStorage
   useEffect(() => {
@@ -58,12 +76,12 @@ const ProfilePage: React.FC = () => {
       const cartData = localStorage.getItem('cart-storage');
       console.log('Raw cart data from localStorage:', cartData); // Debug log
       
-      if (cartData) {
+      if (cartData && cartData !== 'undefined') {
         try {
           const parsedData = JSON.parse(cartData);
           console.log('Parsed cart data:', parsedData); // Debug log
           
-          if (parsedData.state && parsedData.state.items) {
+          if (parsedData && parsedData.state && parsedData.state.items) {
             setCartItems(parsedData.state.items);
             console.log('Set cart items:', parsedData.state.items); // Debug log
           } else {
@@ -75,16 +93,9 @@ const ProfilePage: React.FC = () => {
           setCartItems([]);
         }
       } else {
-        console.log('No cart data found in localStorage'); // Debug log
+        console.log('No cart data found in localStorage or data is undefined'); // Debug log
         setCartItems([]);
       }
-
-      // Load orders (simulated for now - would come from API in real implementation)
-      setOrders([
-        { id: 1, date: '2024-01-15', total: '$89.99', status: 'Completed', items: 2 },
-        { id: 2, date: '2024-02-20', total: '$156.49', status: 'Shipped', items: 3 },
-        { id: 3, date: '2024-03-05', total: '$45.99', status: 'Processing', items: 1 },
-      ]);
     } catch (error) {
       console.error('Error in useEffect:', error);
     }
@@ -318,7 +329,16 @@ const ProfilePage: React.FC = () => {
                   </p>
                 </div>
 
-                {orders.length === 0 ? (
+                {ordersLoading ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+                  </div>
+                ) : ordersError ? (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong className="font-bold">Error: </strong>
+                    <span className="block sm:inline">{ordersError}</span>
+                  </div>
+                ) : orders.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-gray-500">No orders found.</p>
                   </div>
@@ -327,33 +347,38 @@ const ProfilePage: React.FC = () => {
                     <ul className="divide-y divide-gray-200">
                       {orders.map((order) => (
                         <li key={order.id}>
-                          <div className="px-4 py-4 sm:px-6">
+                          <div 
+                            className="px-4 py-4 sm:px-6 hover:bg-gray-50 cursor-pointer"
+                            onClick={() => console.log('View order details', order.id)}
+                          >
                             <div className="flex items-center justify-between">
                               <div className="text-sm font-medium text-indigo-600 truncate">
                                 Order #{order.id}
                               </div>
                               <div className="ml-2 flex-shrink-0 flex">
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                                  order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                                  order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' :
+                                  order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                                  order.status === 'on-hold' ? 'bg-orange-100 text-orange-800' :
+                                  order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                  order.status === 'refunded' ? 'bg-purple-100 text-purple-800' :
                                   'bg-gray-100 text-gray-800'
                                 }`}>
-                                  {order.status}
+                                  {order.status.replace('-', ' ').toUpperCase()}
                                 </span>
                               </div>
                             </div>
                             <div className="mt-2 sm:flex sm:justify-between">
                               <div className="sm:flex">
                                 <div className="mr-6 text-sm text-gray-500">
-                                  Date: {new Date(order.date).toLocaleDateString()}
+                                  {new Date(order.date_created).toLocaleDateString()}
                                 </div>
                                 <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                  Items: {order.items}
+                                  Items: {order.line_items.reduce((sum, item) => sum + item.quantity, 0)}
                                 </div>
                               </div>
                               <div className="mt-2 flex items-center text-sm text-gray-900 font-medium sm:mt-0">
-                                {order.total}
+                                {order.total} {order.currency}
                               </div>
                             </div>
                           </div>
