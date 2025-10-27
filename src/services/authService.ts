@@ -1,6 +1,7 @@
 // src/services/authService.ts
 // Simple WordPress authentication service that can be easily removed later
 import type { User } from "../types/user";
+import { APP_CONSTANTS } from "../constants/app";
 
 const JWT_EXPIRY_BUFFER = 5 * 60 * 1000; // 5 minutes before expiry for refresh
 
@@ -111,9 +112,9 @@ class WordPressAuthService {
         }
       }
       
-      localStorage.setItem('wp_jwt_token', data.token);
+      localStorage.setItem(APP_CONSTANTS.JWT_TOKEN_STORAGE_KEY, data.token);
       localStorage.setItem('wp_jwt_expires_at', expiresAt.toString());
-      localStorage.setItem('wp_user', JSON.stringify(user));
+      localStorage.setItem(APP_CONSTANTS.USER_STORAGE_KEY, JSON.stringify(user));
       
       return { user, token: data.token };
     } catch (error) {
@@ -151,8 +152,8 @@ class WordPressAuthService {
       };
 
       // Store user data
-      localStorage.setItem('wp_user', JSON.stringify(user));
-      localStorage.setItem('wp_auth_token', credentials); // Store the basic auth credentials
+      localStorage.setItem(APP_CONSTANTS.USER_STORAGE_KEY, JSON.stringify(user));
+      localStorage.setItem(APP_CONSTANTS.AUTH_TOKEN_STORAGE_KEY, credentials); // Store the basic auth credentials
 
       return { user, token: credentials };
     } catch (error) {
@@ -279,9 +280,9 @@ class WordPressAuthService {
             }
           }
           
-          localStorage.setItem('wp_jwt_token', loginData.token);
+          localStorage.setItem(APP_CONSTANTS.JWT_TOKEN_STORAGE_KEY, loginData.token);
           localStorage.setItem('wp_jwt_expires_at', expiresAt.toString());
-          localStorage.setItem('wp_user', JSON.stringify(user));
+          localStorage.setItem(APP_CONSTANTS.USER_STORAGE_KEY, JSON.stringify(user));
         }
       } catch (loginError) {
         console.error('Auto-login after registration failed:', loginError);
@@ -319,10 +320,18 @@ class WordPressAuthService {
 
   // Logout
   logout(): void {
-    localStorage.removeItem('wp_user');
-    localStorage.removeItem('wp_auth_token');
-    localStorage.removeItem('wp_jwt_token');
+    localStorage.removeItem(APP_CONSTANTS.USER_STORAGE_KEY);
+    localStorage.removeItem(APP_CONSTANTS.AUTH_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(APP_CONSTANTS.JWT_TOKEN_STORAGE_KEY);
     localStorage.removeItem('wp_jwt_expires_at');
+    
+    // Dispatch a storage event to notify other tabs/components about the logout
+    // This will trigger the useEffect in OrderContext to clear orders
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'wp_jwt_token',
+      oldValue: 'token-present',
+      newValue: null,
+    }));
   }
 
   // Check if user is authenticated
@@ -340,7 +349,7 @@ class WordPressAuthService {
     }
 
     // Check if user data exists and is valid
-    const userStr = localStorage.getItem('wp_user');
+    const userStr = localStorage.getItem(APP_CONSTANTS.USER_STORAGE_KEY);
     if (!userStr || userStr === 'undefined' || userStr === 'null') {
       return false;
     }
@@ -355,7 +364,7 @@ class WordPressAuthService {
 
   // Get current user
   getCurrentUser(): User | null {
-    const userStr = localStorage.getItem('wp_user');
+    const userStr = localStorage.getItem(APP_CONSTANTS.USER_STORAGE_KEY);
     if (!userStr || userStr === 'undefined' || userStr === 'null') return null;
 
     try {
@@ -369,20 +378,20 @@ class WordPressAuthService {
   // Get auth token
   getToken(): string | null {
     // Check if JWT token is expired before returning it
-    const jwtToken = localStorage.getItem('wp_jwt_token');
+    const jwtToken = localStorage.getItem(APP_CONSTANTS.JWT_TOKEN_STORAGE_KEY);
     const expiresAt = localStorage.getItem('wp_jwt_expires_at');
     
     if (jwtToken && expiresAt) {
       if (Date.now() > parseInt(expiresAt, 10)) {
         // JWT token is expired, remove it
-        localStorage.removeItem('wp_jwt_token');
+        localStorage.removeItem(APP_CONSTANTS.JWT_TOKEN_STORAGE_KEY);
         localStorage.removeItem('wp_jwt_expires_at');
         return null;
       }
       return jwtToken;
     }
     
-    return localStorage.getItem('wp_auth_token') || null;
+    return localStorage.getItem(APP_CONSTANTS.AUTH_TOKEN_STORAGE_KEY) || null;
   }
 
   // Parse JWT to extract expiry time
@@ -445,7 +454,7 @@ class WordPressAuthService {
       };
 
       // Update stored user data
-      localStorage.setItem('wp_user', JSON.stringify(user));
+      localStorage.setItem(APP_CONSTANTS.USER_STORAGE_KEY, JSON.stringify(user));
 
       return { user };
     } catch (error) {

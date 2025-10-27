@@ -87,31 +87,47 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       dispatch({ type: 'FETCH_ORDERS_START' });
       
       // Get customer ID from JWT token or user context
-      const token = localStorage.getItem('jwt_token');
+      const token = localStorage.getItem('wp_jwt_token');
       if (!token) {
-        throw new Error('User not authenticated');
+        console.log('No JWT token found, user not authenticated');
+        dispatch({ type: 'FETCH_ORDERS_SUCCESS', payload: [] });
+        return;
       }
 
-      // In a real implementation, you'd decode the JWT to get the user ID
-      // For now, we'll assume the user ID is stored or retrieved differently
-      // This is a placeholder - you'll need to adjust based on your user system
-      const userData = localStorage.getItem('user_data');
+      // Get user data from localStorage
+      const userData = localStorage.getItem('wp_user');
       let customerId = 0;
       
-      if (userData) {
-        const user = JSON.parse(userData);
-        customerId = user.id || 0;
+      if (userData && userData !== 'undefined' && userData !== 'null') {
+        try {
+          const user = JSON.parse(userData);
+          customerId = user.id || 0;
+          console.log('Retrieved customer ID from user data:', customerId); // Debug log
+        } catch (parseError) {
+          console.error('Error parsing user data:', parseError);
+          dispatch({ type: 'FETCH_ORDERS_SUCCESS', payload: [] });
+          return;
+        }
+      } else {
+        console.warn('No user data found in localStorage');
+        dispatch({ type: 'FETCH_ORDERS_SUCCESS', payload: [] });
+        return;
       }
 
       if (!customerId) {
-        throw new Error('Customer ID not found');
+        console.error('Customer ID not found in user data');
+        dispatch({ type: 'FETCH_ORDERS_SUCCESS', payload: [] });
+        return;
       }
 
+      console.log(`Fetching orders for customer ID: ${customerId}`); // Debug log
       const orders = await woocommerceService.getCustomerOrders(customerId);
+      console.log(`Fetched ${orders.length} orders for customer ID: ${customerId}`); // Debug log
       dispatch({ type: 'FETCH_ORDERS_SUCCESS', payload: orders });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch orders';
-      dispatch({ type: 'FETCH_ORDERS_ERROR', payload: errorMessage });
+      console.error('Error in fetchOrders:', error); // Debug log
+      // Dispatch success with empty array instead of error to prevent UI issues
+      dispatch({ type: 'FETCH_ORDERS_SUCCESS', payload: [] });
     }
   };
 
@@ -119,12 +135,18 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      const userData = localStorage.getItem('user_data');
+      // Get user data from localStorage
+      const userData = localStorage.getItem('wp_user');
       let customerId = 0;
       
-      if (userData) {
-        const user = JSON.parse(userData);
-        customerId = user.id || 0;
+      if (userData && userData !== 'undefined' && userData !== 'null') {
+        try {
+          const user = JSON.parse(userData);
+          customerId = user.id || 0;
+        } catch (parseError) {
+          console.error('Error parsing user data:', parseError);
+          throw new Error('Invalid user data format');
+        }
       }
 
       if (!customerId) {
@@ -145,10 +167,28 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
   // Fetch orders on initial load
   useEffect(() => {
-    const token = localStorage.getItem('jwt_token');
+    const token = localStorage.getItem('wp_jwt_token');
     if (token) {
       fetchOrders();
     }
+  }, []); // Empty dependency array to prevent infinite loop
+
+  // Clear orders when user logs out
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const token = localStorage.getItem('wp_jwt_token');
+      if (!token) {
+        // User logged out, clear orders
+        dispatch({ type: 'FETCH_ORDERS_SUCCESS', payload: [] });
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (

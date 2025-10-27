@@ -14,8 +14,10 @@ interface CartItem {
 
 const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, logout, updateUser } = useAuth();
-  const { orders, loading: ordersLoading, error: ordersError, fetchOrders } = useOrder();
+  const { orders, loading: ordersLoading, error: ordersError, fetchOrders, fetchOrder } = useOrder();
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'cart'>('profile');
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   
   // Check for hash in URL to determine active tab
   useEffect(() => {
@@ -76,7 +78,7 @@ const ProfilePage: React.FC = () => {
       const cartData = localStorage.getItem('cart-storage');
       console.log('Raw cart data from localStorage:', cartData); // Debug log
       
-      if (cartData && cartData !== 'undefined') {
+      if (cartData && cartData !== 'undefined' && cartData !== 'null') {
         try {
           const parsedData = JSON.parse(cartData);
           console.log('Parsed cart data:', parsedData); // Debug log
@@ -93,11 +95,12 @@ const ProfilePage: React.FC = () => {
           setCartItems([]);
         }
       } else {
-        console.log('No cart data found in localStorage or data is undefined'); // Debug log
+        console.log('No cart data found in localStorage or data is undefined/null'); // Debug log
         setCartItems([]);
       }
     } catch (error) {
       console.error('Error in useEffect:', error);
+      setCartItems([]); // Set empty array on any error
     }
   }, [isAuthenticated, user]);
 
@@ -145,8 +148,21 @@ const ProfilePage: React.FC = () => {
     }, 0);
   }, [cartItems]);
 
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      console.log('User not authenticated or user data is null'); // Debug log
+    }
+  }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Fetch orders when the component mounts and user is authenticated
+      console.log('Profile page mounted with authenticated user, fetching orders');
+      fetchOrders();
+    }
+  }, [isAuthenticated, user]); // Removed fetchOrders from dependencies to prevent infinite loop
+
   if (!isAuthenticated || !user) {
-    console.log('User not authenticated or user data is null'); // Debug log
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
@@ -322,11 +338,20 @@ const ProfilePage: React.FC = () => {
             {/* Orders Tab */}
             {activeTab === 'orders' && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900">Order History</h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    View your past orders and their status.
-                  </p>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-medium text-gray-900">Order History</h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      View your past orders and their status.
+                    </p>
+                  </div>
+                  <button
+                    onClick={fetchOrders} // Use the fetchOrders function to manually refresh
+                    disabled={ordersLoading}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    {ordersLoading ? 'Refreshing...' : 'Refresh Orders'}
+                  </button>
                 </div>
 
                 {ordersLoading ? (
@@ -341,6 +366,7 @@ const ProfilePage: React.FC = () => {
                 ) : orders.length === 0 ? (
                   <div className="text-center py-12">
                     <p className="text-gray-500">No orders found.</p>
+                    <p className="text-sm text-gray-500 mt-2">Your orders will appear here after you place them.</p>
                   </div>
                 ) : (
                   <div className="bg-white shadow overflow-hidden sm:rounded-md">
@@ -349,7 +375,19 @@ const ProfilePage: React.FC = () => {
                         <li key={order.id}>
                           <div 
                             className="px-4 py-4 sm:px-6 hover:bg-gray-50 cursor-pointer"
-                            onClick={() => console.log('View order details', order.id)}
+                            onClick={async () => {
+                              try {
+                                // Try to fetch the full order details
+                                await fetchOrder(order.id);
+                                setSelectedOrder(order);
+                                setShowOrderModal(true);
+                              } catch (error) {
+                                console.error('Error fetching order details:', error);
+                                // If fetchOrder fails, just show the partial order data we already have
+                                setSelectedOrder(order);
+                                setShowOrderModal(true);
+                              }
+                            }}
                           >
                             <div className="flex items-center justify-between">
                               <div className="text-sm font-medium text-indigo-600 truncate">
@@ -455,6 +493,101 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Order Detail Modal */}
+      {showOrderModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start">
+                <h3 className="text-lg font-medium text-gray-900">Order Details</h3>
+                <button 
+                  onClick={() => setShowOrderModal(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <span className="text-2xl">&times;</span>
+                </button>
+              </div>
+              
+              <div className="mt-4 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Order ID</p>
+                    <p className="font-medium">#{selectedOrder.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Date</p>
+                    <p className="font-medium">{new Date(selectedOrder.date_created).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <p className={`font-medium ${
+                      selectedOrder.status === 'completed' ? 'text-green-600' :
+                      selectedOrder.status === 'processing' ? 'text-yellow-600' :
+                      selectedOrder.status === 'on-hold' ? 'text-orange-600' :
+                      selectedOrder.status === 'cancelled' ? 'text-red-600' :
+                      selectedOrder.status === 'refunded' ? 'text-purple-600' :
+                      'text-gray-600'
+                    }`}>
+                      {selectedOrder.status.replace('-', ' ').toUpperCase()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Total</p>
+                    <p className="font-medium">{selectedOrder.total} {selectedOrder.currency}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="text-md font-medium mt-4">Items</h4>
+                  <ul className="mt-2 space-y-2">
+                    {selectedOrder.line_items?.map((item: any, index: number) => (
+                      <li key={index} className="flex justify-between text-sm">
+                        <span>{item.name} (Qty: {item.quantity})</span>
+                        <span>{item.total}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                  <div>
+                    <h4 className="text-md font-medium">Billing Address</h4>
+                    <p className="text-sm mt-1">
+                      {selectedOrder.billing?.first_name} {selectedOrder.billing?.last_name}<br />
+                      {selectedOrder.billing?.address_1}<br />
+                      {selectedOrder.billing?.address_2 && (
+                        <>
+                          {selectedOrder.billing.address_2}<br />
+                        </>
+                      )}
+                      {selectedOrder.billing?.city}, {selectedOrder.billing?.state} {selectedOrder.billing?.postcode}<br />
+                      {selectedOrder.billing?.country}<br />
+                      {selectedOrder.billing?.email}<br />
+                      {selectedOrder.billing?.phone}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-md font-medium">Shipping Address</h4>
+                    <p className="text-sm mt-1">
+                      {selectedOrder.shipping?.first_name} {selectedOrder.shipping?.last_name}<br />
+                      {selectedOrder.shipping?.address_1}<br />
+                      {selectedOrder.shipping?.address_2 && (
+                        <>
+                          {selectedOrder.shipping.address_2}<br />
+                        </>
+                      )}
+                      {selectedOrder.shipping?.city}, {selectedOrder.shipping?.state} {selectedOrder.shipping?.postcode}<br />
+                      {selectedOrder.shipping?.country}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

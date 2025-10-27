@@ -7,6 +7,7 @@ export interface Order {
   date_created: string;
   total: string;
   currency: string;
+  customer_id: number; // Add customer_id field
   billing: {
     first_name: string;
     last_name: string;
@@ -164,26 +165,47 @@ class WooCommerceService {
   constructor() {
     // Get the base WooCommerce API URL from environment variables
     const envApiUrl = import.meta.env.VITE_WC_API_URL || import.meta.env.VITE_WP_API_URL;
-    this.consumerKey = import.meta.env.VITE_WC_CONSUMER_KEY || 'ck_23112f91dee60de7b243c658e5f4ddbb5250b745';
-    this.consumerSecret = import.meta.env.VITE_WC_CONSUMER_SECRET || 'cs_bb75d74565ffe29d3f47ea79948397214d7fb18a';
+    this.consumerKey = import.meta.env.VITE_WC_CONSUMER_KEY || '__MISSING_CONSUMER_KEY__';
+    this.consumerSecret = import.meta.env.VITE_WC_CONSUMER_SECRET || '__MISSING_CONSUMER_SECRET__';
+    
+    // Check if the environment variables were actually provided (not using fallback defaults)
+    const hasSetConsumerKey = 'VITE_WC_CONSUMER_KEY' in import.meta.env && import.meta.env.VITE_WC_CONSUMER_KEY !== '__MISSING_CONSUMER_KEY__';
+    const hasSetConsumerSecret = 'VITE_WC_CONSUMER_SECRET' in import.meta.env && import.meta.env.VITE_WC_CONSUMER_SECRET !== '__MISSING_CONSUMER_SECRET__';
+    
+    // Check if using fallback default credentials
+    const usingFallbackForConsumerKey = !hasSetConsumerKey;
+    const usingFallbackForConsumerSecret = !hasSetConsumerSecret;
+    
+    if (usingFallbackForConsumerKey || usingFallbackForConsumerSecret) {
+      console.warn('⚠️  WARNING: WooCommerce API credentials not configured. Please set VITE_WC_CONSUMER_KEY and VITE_WC_CONSUMER_SECRET in your .env file.');
+    }
     
     // Construct the WooCommerce API base URL
     if (envApiUrl) {
-      // Check if the URL already includes /wc/v3 (full WooCommerce API endpoint)
+      // If the URL already includes /wp-json/wc/v3, use it as is
       if (envApiUrl.includes('/wp-json/wc/v3')) {
         this.apiBase = envApiUrl;
-      } else if (envApiUrl.includes('/wp-json')) {
-        // If it includes /wp-json but not /wc/v3, add /wc/v3
+      } 
+      // If it includes /wc/v3 but not /wp-json, add wp-json part
+      else if (envApiUrl.includes('/wc/v3')) {
+        if (envApiUrl.startsWith('/wp-json')) {
+          this.apiBase = envApiUrl;
+        } else {
+          this.apiBase = `/wp-json${envApiUrl}`;
+        }
+      }
+      // If it includes /wp-json but not /wc/v3, add /wc/v3
+      else if (envApiUrl.includes('/wp-json')) {
         if (envApiUrl.endsWith('/')) {
           this.apiBase = `${envApiUrl}wc/v3`;
         } else {
           this.apiBase = `${envApiUrl}/wc/v3`;
         }
-      } else if (envApiUrl.endsWith('/')) {
-        // If it ends with a slash, append wp-json/wc/v3
+      } 
+      // Otherwise, construct the full path
+      else if (envApiUrl.endsWith('/')) {
         this.apiBase = `${envApiUrl}wp-json/wc/v3`;
       } else {
-        // Otherwise, append /wp-json/wc/v3
         this.apiBase = `${envApiUrl}/wp-json/wc/v3`;
       }
     } else {
@@ -193,8 +215,9 @@ class WooCommerceService {
     
     console.log('WooCommerceService initialized with:');
     console.log('- API Base:', this.apiBase);
-    console.log('- Consumer Key:', this.consumerKey.substring(0, 10) + '...');
-    console.log('- Consumer Secret:', this.consumerSecret.substring(0, 10) + '...');
+    console.log('- Consumer Key (first 10):', this.consumerKey.substring(0, 10) + '...');
+    console.log('- Consumer Secret (first 10):', this.consumerSecret.substring(0, 10) + '...');
+    console.log('- Using default credentials:', usingFallbackForConsumerKey || usingFallbackForConsumerSecret);
   }
 
   private buildAuthURL(endpoint: string): string {
@@ -235,6 +258,38 @@ class WooCommerceService {
       console.log(`Building WooCommerce authenticated URL: ${authURL}`);
       return authURL;
     }
+  }
+
+  // Build URL for authenticated user requests (use JWT token)
+  private buildUserAuthURL(endpoint: string): string {
+    // Ensure endpoint starts with /
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
+    // Build the full URL with WooCommerce API base
+    let baseURL = this.apiBase;
+    
+    if (baseURL.endsWith('/wc/v3')) {
+      return `${baseURL}${normalizedEndpoint}`;
+    } else {
+      if (baseURL.endsWith('/')) {
+        baseURL = `${baseURL}wc/v3`;
+      } else {
+        baseURL = `${baseURL}/wc/v3`;
+      }
+      return `${baseURL}${normalizedEndpoint}`;
+    }
+  }
+
+  // Get auth headers for authenticated requests
+  private getUserAuthHeaders(): Record<string, string> {
+    const token = localStorage.getItem('wp_jwt_token');
+    if (token) {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+    }
+    return { 'Content-Type': 'application/json' };
   }
 
   // Not needed for WooCommerce API as we use query parameters for auth
@@ -454,8 +509,24 @@ class WooCommerceService {
   // Order Methods
   async getCustomerOrders(customerId: number): Promise<Order[]> {
     try {
+      // Check if WooCommerce is properly configured with customer ID
+      if (!customerId || customerId <= 0) {
+        console.warn('Customer ID is invalid for fetching orders:', customerId);
+        return [];
+      }
+      
+      // Check if we have valid API credentials before making the call
+      const hasValidCredentials = this.consumerKey && this.consumerKey !== '__MISSING_CONSUMER_KEY__' &&
+                                  this.consumerSecret && this.consumerSecret !== '__MISSING_CONSUMER_SECRET__';
+      
+      if (!hasValidCredentials) {
+        console.warn('WooCommerce API credentials not properly configured. Cannot fetch customer orders.');
+        return [];
+      }
+      
       const endpoint = this.buildAuthURL(`/orders?customer=${customerId}&per_page=50`);
       console.log(`Fetching customer orders from endpoint: ${endpoint}`);
+      console.log(`Using customer ID: ${customerId}`);
       
       const response = await fetch(endpoint);
       
@@ -464,16 +535,19 @@ class WooCommerceService {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Customer orders API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        // Return empty array instead of throwing to prevent errors in UI
+        return [];
       }
 
       const orders: Order[] = await response.json();
+      console.log(`Fetched ${orders.length} orders for customer ${customerId}`); // Debug log
       return orders.sort((a, b) => 
         new Date(b.date_created).getTime() - new Date(a.date_created).getTime()
       );
     } catch (error) {
       console.error('Error fetching customer orders:', error);
-      throw error;
+      // Return empty array instead of throwing to prevent UI errors
+      return [];
     }
   }
 
@@ -503,6 +577,7 @@ class WooCommerceService {
     try {
       const endpoint = this.buildAuthURL('/orders');
       console.log(`Creating order at endpoint: ${endpoint}`);
+      console.log(`Order data:`, orderData); // Debug log
       
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -520,7 +595,9 @@ class WooCommerceService {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log(`Created order result:`, result); // Debug log
+      return result;
     } catch (error) {
       console.error('Error creating order:', error);
       throw error;

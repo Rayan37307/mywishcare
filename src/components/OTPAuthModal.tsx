@@ -8,119 +8,7 @@ interface OTPAuthModalProps {
   onClose: () => void;
 }
 
-// Function to get the API base URL with proper handling
-const getApiUrl = (endpoint: string): string => {
-  // Use the environment variable if available
-  const envApiUrl = import.meta.env.VITE_WP_API_URL;
-  
-  if (envApiUrl) {
-    // If it already includes /wp-json, use it directly
-    if (envApiUrl.includes('/wp-json')) {
-      // Ensure endpoint starts with /
-      const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-      return `${envApiUrl}${normalizedEndpoint}`;
-    } else {
-      // Otherwise append /wp-json and the endpoint
-      const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-      return `${envApiUrl.endsWith('/') ? envApiUrl : envApiUrl + '/'}wp-json${normalizedEndpoint}`;
-    }
-  }
-  
-  // Default to relative /wp-json for production
-  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return `/wp-json${normalizedEndpoint}`;
-};
 
-// WordPress REST API auth service using correct endpoints from your setup
-const wpAuthService = {
-  login: async (email: string, password: string) => {
-    try {
-      // Using the JWT authentication endpoint from your setup
-      const response = await fetch(getApiUrl('/jwt-auth/v1/token'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: email, // WordPress can accept email as username
-          password: password,
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok && data.token) {
-        // Store token in localStorage
-        localStorage.setItem('jwt_token', data.token);
-        // Store user data correctly
-        if (data.user) {
-          localStorage.setItem('user_data', JSON.stringify(data.user));
-          return { success: true, user: data.user, token: data.token };
-        } else {
-          // If user data is not in data.user, try to fetch it
-          try {
-            const userResponse = await fetch(getApiUrl('/wp/v2/users/me'), {
-              headers: {
-                'Authorization': `Bearer ${data.token}`,
-                'Content-Type': 'application/json',
-              },
-            });
-            
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              localStorage.setItem('user_data', JSON.stringify(userData));
-              return { success: true, user: userData, token: data.token };
-            }
-          } catch (userError) {
-            console.error('Error fetching user data:', userError);
-          }
-          
-          // Return with minimal user data if we can't fetch full data
-          return { success: true, user: { id: 0, username: email, email: email }, token: data.token };
-        }
-      } else {
-        return { success: false, error: data.message || data.code || 'Login failed' };
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Network error occurred' };
-    }
-  },
-  
-  register: async (email: string, password: string, username: string) => {
-    try {
-      // First try to register the user using WordPress built-in endpoint
-      const response = await fetch(getApiUrl('/wp/v2/users'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          email: email,
-          password: password,
-          display_name: username, // Using username as display name
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok && data.id) {
-        // Login after successful registration
-        return await wpAuthService.login(email, password);
-      } else {
-        // Check if it's a custom endpoint error
-        if (data.code === 'rest_user_exists') {
-          return { success: false, error: 'Username or email already exists' };
-        }
-        return { success: false, error: data.message || data.code || 'Registration failed' };
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      return { success: false, error: 'Network error occurred' };
-    }
-  },
-};
 
 const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
@@ -131,7 +19,9 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
   const [message, setMessage] = useState('');
   const [isLogin, setIsLogin] = useState(true); // Switch between login and register
 
-  const { refetchUser } = useAuth();
+
+
+  const { login, register } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,10 +30,9 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const result = await wpAuthService.login(email, password);
+      const result = await login(email, password, false); // Use regular login, not app password
       if (result.success) {
         setMessage('Authenticated successfully! Redirecting...');
-        refetchUser();
         setTimeout(onClose, 1500);
       } else {
         setError(result.error || 'Login failed');
@@ -162,10 +51,9 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const result = await wpAuthService.register(email, password, username);
+      const result = await register(username, email, password, username); // Use username as display name
       if (result.success) {
         setMessage('Account created successfully! Redirecting...');
-        refetchUser();
         setTimeout(onClose, 1500);
       } else {
         setError(result.error || 'Registration failed');

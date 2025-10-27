@@ -83,7 +83,6 @@ const ProductDetail = () => {
 
   return (
     <div className='bg-white py-10'>
-      {/* Floating header that appears when scrolling past the add to cart section */}
       {showFloatingHeader && (
         <div className="fixed top-[110px] z-20 left-0 right-0 bg-white shadow-md py-3 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center">

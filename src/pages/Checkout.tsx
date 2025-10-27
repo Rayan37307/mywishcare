@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { woocommerceService } from '../services/woocommerceService';
 import { useAuth } from '../hooks/useAuth';
+import { useOrder } from '../contexts/OrderContext';
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCartStore();
@@ -54,11 +55,14 @@ const Checkout = () => {
     }
   };
 
+  const { refreshOrders } = useOrder(); // Get the refreshOrders function
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const orderData = {
+    // Include customer ID in order data if user is authenticated
+    const orderData: any = {
       payment_method: formData.paymentMethod,
       payment_method_title: formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay Secure',
       set_paid: false,
@@ -91,10 +95,35 @@ const Checkout = () => {
       customer_note: formData.notes,
     };
 
+    // Add customer ID if user is authenticated
+    if (isAuthenticated && user) {
+      // Use the user ID which should correspond to the WooCommerce customer ID
+      // In WordPress/WooCommerce, the user ID is typically the same as the customer ID
+      orderData.customer_id = user.id;
+      console.log('Setting customer ID for order:', user.id); // Debug log
+    } else {
+      // If not authenticated, the order will be guest order
+      console.log('Creating guest order without customer ID');
+    }
+
     try {
-      await woocommerceService.createOrder(orderData);
+      console.log('Creating order with data:', orderData); // Debug log
+      const newOrder = await woocommerceService.createOrder(orderData);
+      console.log('Order created successfully:', newOrder); // Debug log
+      
+      if (newOrder && newOrder.customer_id) {
+        console.log(`Order created for customer ID: ${newOrder.customer_id}`); // Debug log
+      }
+      
       alert('Order placed successfully!');
       clearCart();
+      
+      // Refresh orders to include the new one
+      if (refreshOrders) {
+        console.log('Refreshing orders after successful checkout'); // Debug log
+        await refreshOrders();
+      }
+      
       // You might want to redirect to a thank you page
       // navigate('/thank-you');
     } catch (error) {
