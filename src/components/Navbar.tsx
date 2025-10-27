@@ -79,7 +79,7 @@ const Navbar = ({ toggleMenu, toggleCart, onUserIconClick }: NavbarProps) => {
   // Determine navbar classes based on scroll state and page
   const isHome = location.pathname === '/';
   const navbarClasses = [
-    "py-8 px-10 relative transition-all duration-500 ease-in-out",
+    "py-4 px-7 md:py-8 md:px-10 relative transition-all duration-500 ease-in-out",
     isHome && !isScrolled
       ? "bg-transparent backdrop-blur-[20px]"
       : "bg-[#E4EDFD]"
@@ -101,17 +101,20 @@ const Navbar = ({ toggleMenu, toggleCart, onUserIconClick }: NavbarProps) => {
           </button>
         </div>
 
-        {/* Middle: Logo */}
-        <div className="flex items-center justify-center pl-24">
-          <Link to="/"><img 
-            src="/logo.webp" 
-            alt="MyWishCare Logo" 
-            className="h-8  w-auto object-contain"
-          /></Link>
-        </div>
+        {/* Middle: Logo (always centered on screen) */}
+<div className="absolute left-1/2 transform -translate-x-1/2">
+  <Link to="/">
+    <img
+      src="/logo.webp"
+      alt="MyWishCare Logo"
+      className="w-36 md:w-44 lg:w-52 object-contain transition-all duration-300"
+    />
+  </Link>
+</div>
+
 
         {/* Right: User, Search, Cart */}
-        <div className="flex items-center space-x-5">
+        <div className="flex items-center space-x-5 max-md:space-x-2 ">
           {isAuthenticated && user ? (
             // Show user profile button when signed in
             <UserDropdown 
@@ -122,7 +125,7 @@ const Navbar = ({ toggleMenu, toggleCart, onUserIconClick }: NavbarProps) => {
           ) : (
             // Show login button when not signed in
             <button 
-              className="p-2 rounded-md transition-colors duration-200 cursor-pointer"
+              className="p-2 rounded-md transition-colors duration-200 cursor-pointer max-md:hidden"
               onClick={onUserIconClick}
               aria-label="User account"
             >

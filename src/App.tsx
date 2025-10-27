@@ -31,6 +31,7 @@ import Checkout from './pages/Checkout'
 import SearchPage from './pages/SearchPage'
 import APIDebugPage from './pages/APIDebugPage'
 import TestPage from './pages/TestPage'
+import AnalyticsDashboard from './pages/AnalyticsDashboard'
 
 // Component imports
 import Topbar from './components/Topbar'
@@ -159,6 +160,7 @@ const App = () => {
                   />
                   <Route path={ROUTES.API_DEBUG} element={<APIDebugPage />} />
                   <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
+                  <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
                 </Routes>
               </div>
               <Footer />

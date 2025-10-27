@@ -29,4 +29,5 @@ export const ROUTES = {
   PROFILE: '/profile',
   API_DEBUG: '/debug/api',
   TEST_PAGE: '/test',
+  ANALYTICS: '/analytics',
 } as const;

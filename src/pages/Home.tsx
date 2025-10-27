@@ -12,14 +12,20 @@ import DiscountSticker from '../components/DiscountSticker'
 
 const Home = () => {
   return (
-    <div className='container mx-auto max-w-7xl max-lg:px-10'>
+    <div className='container mx-auto max-w-7xl '>
       <Hero />
-      <BestSellers />
+      <div className='px-10 max-lg:px-5'>
+        <BestSellers />
+      </div>
       <BannerSlider />
+      <div className='px-10 max-lg:px-5'>
       <WhatsNew />
       <RoutineBuilder />
+      </div>
       <Science/>
-      <Features />
+      <div className='px-10 max-lg:px-5'>
+        <Features />
+      </div>
       <DisSlider />
       <DisSlider1 />
       <CategoryHome />

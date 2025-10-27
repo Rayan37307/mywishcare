@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { woocommerceService } from '../services/woocommerceService';
 import { useAuth } from '../hooks/useAuth';
 import { useOrder } from '../contexts/OrderContext';
+import { analyticsService, type CheckoutTrackingData } from '../services/analyticsService';
+import { checkoutTrackingService } from '../services/checkoutTrackingService';
+import { fakeOrderBlockingService } from '../services/fakeOrderBlockingService';
+import { pixelConfirmationService } from '../services/pixelConfirmationService';
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCartStore();
@@ -26,6 +30,8 @@ const Checkout = () => {
     notes: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const hasTrackedStart = useRef(false);
 
   // Pre-populate form fields if user is authenticated
   useEffect(() => {
@@ -39,20 +45,61 @@ const Checkout = () => {
     }
   }, [isAuthenticated, user]);
 
+  // Track checkout start when component mounts
+  useEffect(() => {
+    if (items.length > 0 && !hasTrackedStart.current) {
+      const newSessionId = checkoutTrackingService.trackCheckoutStart(
+        formData,
+        items,
+        totalPrice
+      );
+      setSessionId(newSessionId);
+      hasTrackedStart.current = true;
+
+      // Track the checkout start event with analytics
+      analyticsService.trackCheckoutStart({
+        value: totalPrice,
+        currency: 'INR',
+        contents: items.map(item => ({
+          id: item.product.id,
+          quantity: item.quantity,
+          item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+        })),
+        content_type: 'product',
+      });
+    }
+
+    // Cleanup function to track abandonment if user leaves without submitting
+    return () => {
+      if (sessionId) {
+        // Don't track as abandoned if form was submitted
+        // In a real app, this would be more sophisticated
+      }
+    };
+  }, [items, formData, totalPrice]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    let newValue = value;
+    
     if (type === 'checkbox') {
       const target = e.target as HTMLInputElement;
-      setFormData(prev => ({
-        ...prev,
-        [name]: target.checked
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      newValue = target.checked;
     }
+    
+    setFormData(prev => {
+      const updatedData = {
+        ...prev,
+        [name]: newValue
+      };
+      
+      // Track form changes for abandonment analysis
+      if (sessionId) {
+        checkoutTrackingService.trackFormChange(sessionId, updatedData);
+      }
+      
+      return updatedData;
+    });
   };
 
   const { refreshOrders } = useOrder(); // Get the refreshOrders function
@@ -60,6 +107,33 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Check for fake orders using our blocking service
+    const orderForFraudCheck = {
+      email: formData.email,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      address1: formData.address1,
+      city: formData.city,
+      state: formData.state,
+      postalCode: formData.postalCode,
+      phone: formData.phone,
+      items: items.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+      })),
+      total: totalPrice,
+      ip: getIP(), // Simplified IP detection
+      timestamp: Date.now(),
+    };
+
+    // Check if order is suspicious
+    const fraudResult = fakeOrderBlockingService.processOrder(orderForFraudCheck);
+    if (fraudResult.shouldBlock) {
+      alert(`Order blocked: ${fraudResult.reasons.join(', ')}`);
+      setIsLoading(false);
+      return;
+    }
 
     // Include customer ID in order data if user is authenticated
     const orderData: any = {
@@ -115,6 +189,42 @@ const Checkout = () => {
         console.log(`Order created for customer ID: ${newOrder.customer_id}`); // Debug log
       }
       
+      // Track successful purchase with analytics
+      if (newOrder && newOrder.id) {
+        // Track purchase with analytics service
+        analyticsService.trackPurchase({
+          value: totalPrice,
+          currency: 'INR',
+          contents: items.map(item => ({
+            id: item.product.id,
+            quantity: item.quantity,
+            item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+          })),
+          content_type: 'product',
+        }, newOrder.id.toString());
+        
+        // Track with pixel confirmation service
+        pixelConfirmationService.trackOrder({
+          orderId: newOrder.id.toString(),
+          value: totalPrice,
+          currency: 'INR',
+          contents: items.map(item => ({
+            id: item.product.id,
+            quantity: item.quantity,
+            item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+          })),
+          email: formData.email,
+          phone: formData.phone,
+          customerName: `${formData.firstName} ${formData.lastName}`,
+          timestamp: Date.now(),
+        });
+      }
+      
+      // Track checkout completion
+      if (sessionId) {
+        checkoutTrackingService.trackCheckoutComplete(sessionId);
+      }
+      
       alert('Order placed successfully!');
       clearCart();
       
@@ -132,6 +242,13 @@ const Checkout = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to get IP address (in a real implementation, this would be more robust)
+  const getIP = (): string => {
+    // This is a simplified approach
+    // In a real implementation, IP would be determined server-side
+    return localStorage.getItem('userIP') || 'unknown';
   };
 
   if (items.length === 0) {
