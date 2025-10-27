@@ -1,5 +1,5 @@
 // src/services/woocommerce.service.ts
-import { Product } from '../types';
+import type { Product } from '../types/product';
 
 // WooCommerce API Configuration
 const WOOCOMMERCE_API_URL = import.meta.env.VITE_WC_API_URL || 'https://sajcaree.com/wp-json/wc/v3';
@@ -99,6 +99,7 @@ class WooCommerceService {
     return {
       id: wooProduct.id,
       name: wooProduct.name,
+      slug: wooProduct.slug || '',
       price: wooProduct.price || '0.00',
       regular_price: wooProduct.regular_price,
       sale_price: wooProduct.sale_price,
@@ -114,8 +115,11 @@ class WooCommerceService {
       description: wooProduct.description || 'No description available',
       short_description: wooProduct.short_description || wooProduct.description || 'No description available',
       stock_quantity: wooProduct.stock_quantity,
-      stock_status: wooProduct.stock_status,
-      categories: wooProduct.categories || []
+      stock_status: wooProduct.stock_status as 'instock' | 'outofstock' | 'onbackorder',
+      categories: (wooProduct.categories || []).map((cat: any) => ({
+        id: cat.id,
+        name: cat.name
+      }))
     };
   }
 

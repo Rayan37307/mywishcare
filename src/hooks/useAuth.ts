@@ -57,10 +57,10 @@ export const useAuth = () => {
         setAuthState({
           user: null,
           loading: false,
-          error: result.error,
+          error: result.error || null,
           isAuthenticated: false,
         });
-        return { success: false, error: result.error };
+        return { success: false, error: result.error || null };
       }
 
       setAuthState({
@@ -90,7 +90,7 @@ export const useAuth = () => {
       const result = await wpAuthService.register(username, email, password, displayName);
 
       if (result.error) {
-        setAuthState(prev => ({ ...prev, loading: false, error: result.error, isAuthenticated: false }));
+        setAuthState(prev => ({ ...prev, loading: false, error: result.error || null, isAuthenticated: false, user: null }));
         return { success: false, error: result.error };
       }
 
@@ -167,7 +167,7 @@ export const useAuth = () => {
 
       if (result.error) {
         setAuthState(prev => ({ ...prev, error: result.error || null }));
-        return { success: false, error: result.error };
+        return { success: false, error: result.error || null };
       }
 
       if (result.user) {

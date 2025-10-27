@@ -69,6 +69,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   damagedHairProducts: [],
   sunCareProducts: [],
   allProducts: [],
+  slugToIdMap: {},
   loading: false,
   error: null,
   

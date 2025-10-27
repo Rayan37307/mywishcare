@@ -307,9 +307,11 @@ class WordPressAuthService {
   }
 
   // Alternative registration method using contact form or admin assistance
+  // TODO: Implement actual registration request with username, email, and displayName
   async requestRegistration(username: string, email: string, displayName?: string): Promise<{ success: boolean; message: string }> {
     // In a real implementation, this would send a registration request
     // to an endpoint that notifies the administrator
+    console.log('Registration requested for:', { username, email, displayName }); // Using the parameters to avoid TypeScript warnings
     
     // For now, provide a clear instruction to the user
     return {

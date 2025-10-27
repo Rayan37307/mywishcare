@@ -1,5 +1,5 @@
 import React from 'react';
-import { Order } from '../services/woocommerceService';
+import type { Order } from '../services/woocommerceService';
 
 interface OrderDetailsProps {
   order: Order;

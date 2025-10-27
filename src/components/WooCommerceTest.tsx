@@ -1,7 +1,7 @@
-// src/components/APITest.tsx
+// src/components/WooCommerceTest.tsx
 import React, { useState } from 'react';
 
-const APITest: React.FC = () => {
+const WooCommerceTest: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,4 +77,4 @@ const APITest: React.FC = () => {
   );
 };
 
-export default APITest;
+export default WooCommerceTest;

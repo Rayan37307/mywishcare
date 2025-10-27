@@ -58,6 +58,9 @@ export interface WishCareProductData {
   faqs?: WishCareFAQ[];
 }
 
+// Collection type
+export type CollectionType = 'bestsellers' | 'sun-care' | 'lip-balm' | 'hairfall' | 'acne' | 'pigmentation' | 'dull-skin' | 'detan' | 'damaged-hair' | 'all-products';
+
 // Extended Product interface with WishCare data
 export interface Product {
   id: number;

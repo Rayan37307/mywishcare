@@ -1,5 +1,6 @@
 // Product Context to manage product operations globally
-import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
 import { useProductOperations } from '../hooks/useProductOperations';
 import type { Product } from '../types/product';
 

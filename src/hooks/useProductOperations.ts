@@ -1,5 +1,5 @@
 import { useProductStore } from '../store/productStore';
-import type { Product, CollectionType } from '../types/product';
+import type { CollectionType } from '../types/product';
 import { COLLECTIONS } from '../constants/app';
 
 // Custom hook to encapsulate product operations
@@ -42,9 +42,9 @@ export const useProductOperations = () => {
         return await fetchDamagedHairProducts();
       case COLLECTIONS.SUN_CARE:
         return await fetchSunCareProducts();
-      case 'allProducts':
+      case 'all-products':
         return await fetchAllProductsCollection();
-      case 'bestSellers':
+      case 'bestsellers':
         return await fetchBestSellingProducts();
       default:
         return await fetchAllProducts();

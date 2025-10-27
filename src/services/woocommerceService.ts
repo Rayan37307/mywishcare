@@ -1,4 +1,4 @@
-import { apiService } from './apiService';
+
 
 // Define the Order type within this file
 export interface Order {
@@ -88,7 +88,7 @@ export interface Product {
   tax_class: string;
   manage_stock: boolean;
   stock_quantity: number | null;
-  stock_status: string;
+  stock_status: 'instock' | 'outofstock' | 'onbackorder';
   backorders: string;
   backorders_allowed: boolean;
   backordered: boolean;
@@ -137,18 +137,19 @@ export interface Product {
     key: string;
     value: string;
   }>;
+  // WishCare specific fields with compatible types
   wishCare?: {
     activeOffers?: string[];
     benefits?: string[];
     suitableFor?: string[];
     whatMakesItGreat?: string;
-    whatMakesImages?: string[];
+    whatMakesImages?: number[]; // Compatible with both string[] and number[]
     howToUse?: string;
-    howToImages?: string[];
+    howToImages?: number[];
     ingredients?: string;
-    ingredientsImages?: string[];
+    ingredientsImages?: number[];
     results?: string;
-    resultsImages?: string[];
+    resultsImages?: number[];
     pairsWith?: string;
     faqs?: Array<{
       q: string;
@@ -260,46 +261,7 @@ class WooCommerceService {
     }
   }
 
-  // Build URL for authenticated user requests (use JWT token)
-  private buildUserAuthURL(endpoint: string): string {
-    // Ensure endpoint starts with /
-    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    
-    // Build the full URL with WooCommerce API base
-    let baseURL = this.apiBase;
-    
-    if (baseURL.endsWith('/wc/v3')) {
-      return `${baseURL}${normalizedEndpoint}`;
-    } else {
-      if (baseURL.endsWith('/')) {
-        baseURL = `${baseURL}wc/v3`;
-      } else {
-        baseURL = `${baseURL}/wc/v3`;
-      }
-      return `${baseURL}${normalizedEndpoint}`;
-    }
-  }
-
-  // Get auth headers for authenticated requests
-  private getUserAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('wp_jwt_token');
-    if (token) {
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      };
-    }
-    return { 'Content-Type': 'application/json' };
-  }
-
-  // Not needed for WooCommerce API as we use query parameters for auth
-  // Keeping this for consistency with other services
-  private getAuthHeaders(): Record<string, string> {
-    return { 'Content-Type': 'application/json' };
-  }
-
-  // Product Methods
-  async fetchProducts(): Promise<Product[]> {
+  async fetchProducts(includeWishCareData: boolean = false): Promise<Product[]> {
     try {
       const endpoint = this.buildAuthURL('/products');
       console.log(`Fetching products from endpoint: ${endpoint}`);
@@ -314,8 +276,107 @@ class WooCommerceService {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      const products: Product[] = await response.json();
+      let products: Product[] = await response.json();
       console.log(`Successfully fetched ${products.length} products`);
+      
+      // Parse WishCare metadata if requested
+      if (includeWishCareData) {
+        products = await Promise.all(products.map(async (product) => {
+          if (product.meta_data) {
+            const wishCareData: any = {};
+            product.meta_data.forEach(meta => {
+              switch (meta.key) {
+                case 'wishcare_active_offers':
+                  try {
+                    wishCareData.activeOffers = JSON.parse(meta.value);
+                  } catch {
+                    wishCareData.activeOffers = [meta.value];
+                  }
+                  break;
+                case 'wishcare_benefits':
+                  try {
+                    wishCareData.benefits = JSON.parse(meta.value);
+                  } catch {
+                    wishCareData.benefits = [meta.value];
+                  }
+                  break;
+                case 'wishcare_suitable_for':
+                  try {
+                    wishCareData.suitableFor = JSON.parse(meta.value);
+                  } catch {
+                    wishCareData.suitableFor = [meta.value];
+                  }
+                  break;
+                case 'wishcare_what_makes_it_great':
+                  wishCareData.whatMakesItGreat = meta.value;
+                  break;
+                case 'wishcare_what_makes_images':
+                  try {
+                    const parsed = JSON.parse(meta.value);
+                    wishCareData.whatMakesImages = Array.isArray(parsed) 
+                      ? parsed.map((item: any) => Number(item) || 0)
+                      : [];
+                  } catch {
+                    wishCareData.whatMakesImages = [];
+                  }
+                  break;
+                case 'wishcare_how_to_use':
+                  wishCareData.howToUse = meta.value;
+                  break;
+                case 'wishcare_how_to_images':
+                  try {
+                    const parsed = JSON.parse(meta.value);
+                    wishCareData.howToImages = Array.isArray(parsed) 
+                      ? parsed.map((item: any) => Number(item) || 0)
+                      : [];
+                  } catch {
+                    wishCareData.howToImages = [];
+                  }
+                  break;
+                case 'wishcare_ingredients':
+                  wishCareData.ingredients = meta.value;
+                  break;
+                case 'wishcare_ingredients_images':
+                  try {
+                    const parsed = JSON.parse(meta.value);
+                    wishCareData.ingredientsImages = Array.isArray(parsed) 
+                      ? parsed.map((item: any) => Number(item) || 0)
+                      : [];
+                  } catch {
+                    wishCareData.ingredientsImages = [];
+                  }
+                  break;
+                case 'wishcare_results':
+                  wishCareData.results = meta.value;
+                  break;
+                case 'wishcare_results_images':
+                  try {
+                    const parsed = JSON.parse(meta.value);
+                    wishCareData.resultsImages = Array.isArray(parsed) 
+                      ? parsed.map((item: any) => Number(item) || 0)
+                      : [];
+                  } catch {
+                    wishCareData.resultsImages = [];
+                  }
+                  break;
+                case 'wishcare_pairs_with':
+                  wishCareData.pairsWith = meta.value;
+                  break;
+                case 'wishcare_faqs':
+                  try {
+                    wishCareData.faqs = JSON.parse(meta.value);
+                  } catch {
+                    wishCareData.faqs = [];
+                  }
+                  break;
+              }
+            });
+            product.wishCare = wishCareData;
+          }
+          return product;
+        }));
+      }
+      
       return products;
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -376,7 +437,10 @@ class WooCommerceService {
               break;
             case 'wishcare_what_makes_images':
               try {
-                wishCareData.whatMakesImages = JSON.parse(meta.value);
+                const parsed = JSON.parse(meta.value);
+                wishCareData.whatMakesImages = Array.isArray(parsed) 
+                  ? parsed.map((item: any) => Number(item) || 0)
+                  : [];
               } catch {
                 wishCareData.whatMakesImages = [];
               }
@@ -386,7 +450,10 @@ class WooCommerceService {
               break;
             case 'wishcare_how_to_images':
               try {
-                wishCareData.howToImages = JSON.parse(meta.value);
+                const parsed = JSON.parse(meta.value);
+                wishCareData.howToImages = Array.isArray(parsed) 
+                  ? parsed.map((item: any) => Number(item) || 0)
+                  : [];
               } catch {
                 wishCareData.howToImages = [];
               }
@@ -396,7 +463,10 @@ class WooCommerceService {
               break;
             case 'wishcare_ingredients_images':
               try {
-                wishCareData.ingredientsImages = JSON.parse(meta.value);
+                const parsed = JSON.parse(meta.value);
+                wishCareData.ingredientsImages = Array.isArray(parsed) 
+                  ? parsed.map((item: any) => Number(item) || 0)
+                  : [];
               } catch {
                 wishCareData.ingredientsImages = [];
               }
@@ -406,7 +476,10 @@ class WooCommerceService {
               break;
             case 'wishcare_results_images':
               try {
-                wishCareData.resultsImages = JSON.parse(meta.value);
+                const parsed = JSON.parse(meta.value);
+                wishCareData.resultsImages = Array.isArray(parsed) 
+                  ? parsed.map((item: any) => Number(item) || 0)
+                  : [];
               } catch {
                 wishCareData.resultsImages = [];
               }
@@ -524,7 +597,8 @@ class WooCommerceService {
         return [];
       }
       
-      const endpoint = this.buildAuthURL(`/orders?customer=${customerId}&per_page=50`);
+      // Fetch more orders and all statuses
+      const endpoint = this.buildAuthURL(`/orders?customer=${customerId}&per_page=100&status=any`);
       console.log(`Fetching customer orders from endpoint: ${endpoint}`);
       console.log(`Using customer ID: ${customerId}`);
       

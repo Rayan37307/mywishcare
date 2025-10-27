@@ -1,5 +1,6 @@
 // Context to provide theme configuration to the app
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
 
 interface ThemeContextType {
   primaryColor: string;

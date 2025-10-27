@@ -38,7 +38,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import MobileMenu from './components/MobileMenu'
 import LoginForm from './components/LoginForm'
-import UserProfile from './components/UserProfile'
+
 import ProfilePage from './components/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute'
 import CartSlide from './components/CartSlide'
@@ -47,11 +47,21 @@ import CartSlide from './components/CartSlide'
 import { ROUTES } from './constants/routes'
 
 // Menu item types
-interface MenuItemType {
+interface MenuItemBase {
   name: string;
-  path?: string;
-  submenu?: MenuItemType[];
 }
+
+interface MenuItemWithLink extends MenuItemBase {
+  path: string;
+  submenu?: undefined;
+}
+
+interface MenuItemWithSubmenu extends MenuItemBase {
+  submenu: MenuItemWithLink[];
+  path?: undefined;
+}
+
+type MenuItemType = MenuItemWithLink | MenuItemWithSubmenu;
 
 const App = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -84,8 +94,8 @@ const App = () => {
     { name: 'Our bestsellers hairgrowth serum 💫', path: '/collections/bestsellers/13' },
     { name: 'lip balm sunscreens - trending 🚀', path: '/collections/bestsellers/13' },
     { name: 'Head to sun toe protection 🌞', path: ROUTES.COLLECTIONS_SUN_CARE },
-    {name: 'BestSellers', path: ROUTES.COLLECTIONS_BESTSELLERS},
-    {name: 'New launches', path: ROUTES?.COLLECTIONS_WHATS_NEW},
+    { name: 'BestSellers', path: ROUTES.COLLECTIONS_BESTSELLERS },
+    { name: 'New launches', path: ROUTES.COLLECTIONS_BESTSELLERS },
   ];
 
   // Pass the cart functions down to components that need them

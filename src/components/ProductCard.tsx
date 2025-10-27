@@ -37,10 +37,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
               <div className="flex flex-col justify-center">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 text-[13px] leading-[20px] line-through mb-1">
-                    {formatCurrency(parseFloat(product.regular_price))}
+                    {formatCurrency(parseFloat(product.regular_price || '0'))}
                   </span>
                   <span className="text-gray-800 text-lg mb-2 mt-1">
-                    {formatCurrency(parseFloat(product.sale_price))}
+                    {formatCurrency(parseFloat(product.sale_price || '0'))}
                   </span>
                 </div>
                 <span className="text-xs text-green-600">

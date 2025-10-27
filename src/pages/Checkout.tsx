@@ -64,7 +64,7 @@ const Checkout = () => {
     // Include customer ID in order data if user is authenticated
     const orderData: any = {
       payment_method: formData.paymentMethod,
-      payment_method_title: formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay Secure',
+      payment_method_title: 'Cash on Delivery',
       set_paid: false,
       billing: {
         first_name: formData.firstName,
@@ -453,36 +453,9 @@ const Checkout = () => {
               {/* Payment Section */}
               <section aria-label="Payment" className="border-b pb-8">
                 <h2 id="payment" className="text-xl font-bold mb-4">Payment</h2>
-                <p className="text-sm text-gray-600 mb-6">Select EXTRA 5% OFF on your preferred mode of payment once redirected to Razorpay Gateway</p>
                 
                 <div className="space-y-4">
-                  <div className="border rounded-lg p-4">
-                    <div className="flex items-center space-x-3">
-                      <input 
-                        type="radio" 
-                        id="basic-Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)" 
-                        name="paymentMethod" 
-                        value="razorpay"
-                        checked={formData.paymentMethod === 'razorpay'}
-                        onChange={handleChange}
-                        aria-label="Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)" 
-                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                      />
-                      <div className="flex flex-col">
-                        <label htmlFor="basic-Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)" className="font-medium">
-                          Razorpay Secure (UPI, Cards, Int'l Cards, Wallets)
-                        </label>
-                        <div className="flex space-x-2 mt-1">
-                          <img alt="upi" src="/cdn/shopifycloud/checkout-web/assets/c1/assets/upi.CmgCfll8.svg" width="38" height="24" className="h-6" />
-                          <img alt="visa" src="/cdn/shopifycloud/checkout-web/assets/c1/assets/visa.sxIq5Dot.svg" width="38" height="24" className="h-6" />
-                          <img alt="master" src="/cdn/shopifycloud/checkout-web/assets/c1/assets/master.CzeoQWmc.svg" width="38" height="24" className="h-6" />
-                          <span className="text-xs text-gray-500 flex items-center">+18 payment methods</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-lg p-4">
+                  <div className="border rounded-lg p-4 bg-blue-50">
                     <div className="flex items-center space-x-3">
                       <input 
                         type="radio" 
@@ -491,11 +464,12 @@ const Checkout = () => {
                         value="cod"
                         checked={formData.paymentMethod === 'cod'}
                         onChange={handleChange}
-                        aria-label="Cash On Delivery (CoD) - Extra 5% OFF on Payment through RazorPay " 
+                        aria-label="Cash On Delivery" 
                         className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        defaultChecked
                       />
                       <label htmlFor="basic-cod" className="font-medium">
-                        Cash On Delivery (CoD) - Extra 5% OFF on Payment through RazorPay
+                        Cash On Delivery (CoD)
                       </label>
                     </div>
                   </div>
@@ -580,7 +554,7 @@ const Checkout = () => {
 
                 <div className="flex justify-between font-semibold pt-2 border-t">
                   <span>Payment Method</span>
-                  <span>{formData.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Razorpay Secure'}</span>
+                  <span>Cash on Delivery</span>
                 </div>
                 
                 <div className="flex justify-between font-bold pt-2 border-t text-lg">

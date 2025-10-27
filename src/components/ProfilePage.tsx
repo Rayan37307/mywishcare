@@ -6,16 +6,16 @@ interface CartItem {
   product: {
     id: number;
     name: string;
-    price: string;
+    price: string | number;
     images: Array<{ src: string; alt: string }>;
   };
   quantity: number;
 }
 
 const ProfilePage: React.FC = () => {
-  const { user, isAuthenticated, logout, updateUser } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { orders, loading: ordersLoading, error: ordersError, fetchOrders, fetchOrder } = useOrder();
-  const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'cart'>('profile');
+  const [activeTab, setActiveTab] = useState<'orders' | 'cart'>('orders'); // Removed profile tab, only orders and cart
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   
@@ -23,12 +23,10 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
-      if (hash === '#orders') {
+      if (hash === '#orders' || hash === '#profile') { // Still handle #profile for backward compatibility
         setActiveTab('orders');
       } else if (hash === '#cart') {
         setActiveTab('cart');
-      } else if (hash === '#profile') {
-        setActiveTab('profile');
       }
     };
 
@@ -43,24 +41,7 @@ const ProfilePage: React.FC = () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, []);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [editData, setEditData] = useState({
-    displayName: '',
-    email: '',
-    username: '',
-  });
-
-  // Update editData when user changes
-  useEffect(() => {
-    if (user) {
-      setEditData({
-        displayName: user.displayName || '',
-        email: user.email || '',
-        username: user.username || '',
-      });
-    }
-  }, [user]);
+  // Removed editData state since we're no longer editing profile
 
   // Cart data from localStorage
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -109,33 +90,10 @@ const ProfilePage: React.FC = () => {
     console.log('Cart items state updated:', cartItems); // Debug log
   }, [cartItems]);
 
-  // Handle profile update
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
 
-    try {
-      const result = await updateUser({
-        displayName: editData.displayName,
-        email: editData.email,
-        username: editData.username,
-      });
-
-      if (result.success) {
-        setMessage('Profile updated successfully!');
-      } else {
-        setMessage(result.error || 'Failed to update profile');
-      }
-    } catch (error) {
-      setMessage('Error updating profile');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Calculate cart total
-  const cartTotal = React.useMemo(() => {
+  const cartTotal = React.useMemo((): number => {
     return cartItems.reduce((total, item) => {
       // Safely parse the price
       let price = 0;
@@ -202,26 +160,28 @@ const ProfilePage: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg">
           {/* Profile Header */}
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 h-12 w-12 rounded-full bg-indigo-500 flex items-center justify-center text-white">
-                <span className="text-lg font-medium">
-                  {user.displayName?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || 'U'}
-                </span>
-              </div>
-              <div className="ml-4">
-                <h1 className="text-lg leading-6 font-medium text-gray-900">
-                  {user.displayName || user.username}
-                </h1>
-                <p className="text-sm text-gray-500">
-                  {user.email || 'No email'}
-                </p>
+          <div className="px-6 py-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                  <span className="text-xl font-bold">
+                    {user.displayName?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+                <div className="ml-4">
+                  <h1 className="text-xl leading-6 font-bold text-gray-900">
+                    {user.displayName || user.username}
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {user.email || 'No email'}
+                  </p>
+                </div>
               </div>
               <button
                 onClick={logout}
-                className="ml-auto text-sm text-red-600 hover:text-red-800"
+                className="text-sm bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg transition-colors duration-200 font-medium"
               >
-                Logout
+                Sign Out
               </button>
             </div>
           </div>
@@ -229,16 +189,6 @@ const ProfilePage: React.FC = () => {
           {/* Tab Navigation */}
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-4 -mb-px">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`${
-                  activeTab === 'profile'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-              >
-                Profile
-              </button>
               <button
                 onClick={() => setActiveTab('orders')}
                 className={`${
@@ -264,76 +214,7 @@ const ProfilePage: React.FC = () => {
 
           {/* Tab Content */}
           <div className="p-6">
-            {/* Profile Tab */}
-            {activeTab === 'profile' && (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900">Personal Information</h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Update your personal details here.
-                  </p>
-                </div>
 
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
-                  {message && (
-                    <div className={`px-4 py-3 rounded ${message.includes('successfully') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {message}
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                    <div className="sm:col-span-3">
-                      <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">
-                        Display Name
-                      </label>
-                      <input
-                        type="text"
-                        id="displayName"
-                        value={editData.displayName}
-                        onChange={(e) => setEditData({...editData, displayName: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-3">
-                      <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                        Username
-                      </label>
-                      <input
-                        type="text"
-                        id="username"
-                        value={editData.username}
-                        onChange={(e) => setEditData({...editData, username: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-6">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        value={editData.email}
-                        onChange={(e) => setEditData({...editData, email: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                    >
-                      {loading ? 'Saving...' : 'Save Changes'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
 
             {/* Orders Tab */}
             {activeTab === 'orders' && (
@@ -445,7 +326,7 @@ const ProfilePage: React.FC = () => {
                 ) : (
                   <div className="bg-white shadow overflow-hidden sm:rounded-md">
                     <ul className="divide-y divide-gray-200">
-                      {cartItems.map((item, index) => (
+                      {cartItems.map((item: CartItem, index) => (
                         <li key={index}>
                           <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center">
@@ -466,11 +347,16 @@ const ProfilePage: React.FC = () => {
                                   </div>
                                 </div>
                                 <div className="mt-1 text-sm text-gray-500">
-                                  ${typeof item.product.price === 'number' ? item.product.price.toFixed(2) : item.product.price || '0.00'} each
+                                  ${typeof item.product.price === 'number' ? item.product.price.toFixed(2) : parseFloat(item.product.price || '0').toFixed(2)} each
                                 </div>
                               </div>
                               <div className="ml-4 text-sm font-medium text-gray-900">
-                                ${((typeof item.product.price === 'number' ? item.product.price : parseFloat(item.product.price || '0')) * (item.quantity || 0)).toFixed(2)}
+                                ${(() => {
+                                  const price = typeof item.product.price === 'number' ? item.product.price : parseFloat(item.product.price || '0');
+                                  const quantity = item.quantity || 0;
+                                  const total: number = price * quantity;
+                                  return isNaN(total) ? '0.00' : total.toFixed(2);
+                                })()}
                               </div>
                             </div>
                           </div>

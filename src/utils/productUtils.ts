@@ -3,25 +3,25 @@ import type { Product } from '../types/product';
 // Product utilities
 export const getProductPrice = (product: Product): number => {
   if (product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price) {
-    return parseFloat(product.sale_price.replace(/[^\d.-]/g, '')) || 0;
+    return parseFloat((product.sale_price || '0').replace(/[^\\d.-]/g, '')) || 0;
   }
-  return parseFloat(product.price.toString().replace(/[^\d.-]/g, '')) || 0;
+  return parseFloat((product.price || '0').toString().replace(/[^\\d.-]/g, '')) || 0;
 };
 
 export const getOriginalPrice = (product: Product): number => {
   if (product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price) {
-    return parseFloat(product.regular_price.replace(/[^\d.-]/g, '')) || 0;
+    return parseFloat((product.regular_price || '0').replace(/[^\\d.-]/g, '')) || 0;
   }
   return 0; // No original price if there's no sale
 };
 
 export const isOnSale = (product: Product): boolean => {
   return (
-    product.sale_price && 
+    !!product.sale_price && 
     product.sale_price !== '' && 
     product.sale_price !== product.regular_price &&
-    parseFloat(product.sale_price.replace(/[^\d.-]/g, '') || '0') < 
-    parseFloat(product.regular_price.replace(/[^\d.-]/g, '') || '0')
+    parseFloat((product.sale_price || '0').replace(/[^\\d.-]/g, '') || '0') < 
+    parseFloat((product.regular_price || '0').replace(/[^\\d.-]/g, '') || '0')
   );
 };
 
