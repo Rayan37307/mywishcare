@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Navbar from './Navbar';
@@ -30,6 +30,21 @@ const Header = ({ toggleMenu, toggleCart, isMenuOpen }: HeaderProps) => {
       setIsAuthModalOpen(true);
     }
   };
+
+  // Listen for the custom event to open auth modal
+  useEffect(() => {
+    const handleOpenAuthModal = () => {
+      if (!isAuthenticated) {  // Only open if user is not authenticated
+        setIsAuthModalOpen(true);
+      }
+    };
+
+    window.addEventListener('openAuthModal', handleOpenAuthModal);
+    
+    return () => {
+      window.removeEventListener('openAuthModal', handleOpenAuthModal);
+    };
+  }, [isAuthenticated]);
 
   return (
     <>

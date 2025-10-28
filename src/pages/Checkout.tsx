@@ -288,9 +288,16 @@ const Checkout = () => {
                       </button>
                     </div>
                   ) : (
-                    <a href="/login" className="text-blue-600 hover:underline text-sm">
+                    <button 
+                      onClick={() => {
+                        // Trigger auth modal
+                        const event = new CustomEvent('openAuthModal');
+                        window.dispatchEvent(event);
+                      }}
+                      className="text-blue-600 hover:underline text-sm"
+                    >
                       Sign in
-                    </a>
+                    </button>
                   )}
                 </div>
                 

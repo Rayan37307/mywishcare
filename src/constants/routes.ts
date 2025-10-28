@@ -25,7 +25,6 @@ export const ROUTES = {
   CART: '/cart',
   CHECKOUT: '/checkout',
   SEARCH: '/search',
-  LOGIN: '/login',
   PROFILE: '/profile',
   API_DEBUG: '/debug/api',
   TEST_PAGE: '/test',

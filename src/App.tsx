@@ -92,7 +92,7 @@ const App = () => {
         { name: 'Damaged Hair', path: ROUTES.COLLECTIONS_DAMAGED_HAIR },
       ],
     },
-    { name: 'Our bestsellers hairgrowth serum 💫', path: '/collections/bestsellers/13' },
+    { name: 'Our bestsellers hairgrowth serum 💫', path: '/products/13' },
     { name: 'lip balm sunscreens - trending 🚀', path: '/collections/bestsellers/13' },
     { name: 'Head to sun toe protection 🌞', path: ROUTES.COLLECTIONS_SUN_CARE },
     { name: 'BestSellers', path: ROUTES.COLLECTIONS_BESTSELLERS },
@@ -148,8 +148,7 @@ const App = () => {
                   <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
                   <Route path={ROUTES.SEARCH} element={<SearchPage />} />
                   
-                  {/* Authentication Routes */}
-                  <Route path={ROUTES.LOGIN} element={<LoginForm />} />
+
                   <Route 
                     path={ROUTES.PROFILE} 
                     element={

@@ -4,7 +4,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { FaUser, FaSignOutAlt, FaSignInAlt, FaHome } from 'react-icons/fa';
 
-const Navigation: React.FC = () => {
+interface NavigationProps {
+  onOpenAuthModal?: () => void;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ onOpenAuthModal }) => {
   const { isAuthenticated, user, logout } = useAuth();
 
   return (
@@ -49,12 +53,12 @@ const Navigation: React.FC = () => {
               </button>
             </div>
           ) : (
-            <Link
-              to="/login"
+            <button
+              onClick={onOpenAuthModal}
               className="flex items-center bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-md transition-colors"
             >
               <FaSignInAlt className="mr-1" /> Login
-            </Link>
+            </button>
           )}
         </div>
       </div>

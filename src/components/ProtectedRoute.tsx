@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
-  fallbackPath = '/login' 
+  fallbackPath = '/' 
 }) => {
   const { isAuthenticated, loading, error } = useAuth();
   
@@ -26,7 +26,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    console.log('ProtectedRoute - user not authenticated, redirecting to login'); // Debug log
+    console.log('ProtectedRoute - user not authenticated, redirecting to home'); // Debug log
+    // Instead of redirecting to /login which no longer exists, redirect to home
+    // and the user can click the login button to open the auth modal
     return <Navigate to={fallbackPath} replace />;
   }
 
