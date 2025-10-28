@@ -61,6 +61,8 @@ class ProductTrackingService {
     });
   }
   
+
+  
   // Track that a product was clicked
   trackProductClick(productId: string | number, productName: string, price: number, category?: string): void {
     if (!this.options.trackClicks) return;
@@ -112,6 +114,17 @@ class ProductTrackingService {
     };
     
     analyticsService.trackPurchase(checkoutData, orderId);
+    
+    // Optionally store in local tracking
+    this.trackedProducts.set(productId, {
+      id: productId,
+      name: productName,
+      category,
+      price,
+      currency: 'INR',
+      quantity,
+      timestamp: Date.now(),
+    });
   }
   
   // Get real-time product performance data

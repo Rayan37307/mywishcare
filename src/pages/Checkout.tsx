@@ -3,7 +3,7 @@ import { useCartStore } from '../store/cartStore';
 import { woocommerceService } from '../services/woocommerceService';
 import { useAuth } from '../hooks/useAuth';
 import { useOrder } from '../contexts/OrderContext';
-import { analyticsService, type CheckoutTrackingData } from '../services/analyticsService';
+import { analyticsService } from '../services/analyticsService';
 import { checkoutTrackingService } from '../services/checkoutTrackingService';
 import { fakeOrderBlockingService } from '../services/fakeOrderBlockingService';
 import { pixelConfirmationService } from '../services/pixelConfirmationService';
@@ -11,7 +11,26 @@ import { pixelConfirmationService } from '../services/pixelConfirmationService';
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCartStore();
   const { user, isAuthenticated } = useAuth();
-  const [formData, setFormData] = useState({
+  type FormData = {
+    email: string;
+    firstName: string;
+    lastName: string;
+    address1: string;
+    address2: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    phone: string;
+    countryCode: string;
+    zone: string;
+    marketingOptIn: boolean;
+    saveShippingInfo: boolean;
+    billingAddressSame: boolean;
+    paymentMethod: string;
+    notes: string;
+  };
+
+  const [formData, setFormData] = useState<FormData>({
     email: '',
     firstName: '',
     lastName: '',
@@ -80,17 +99,11 @@ const Checkout = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    let newValue = value;
-    
-    if (type === 'checkbox') {
-      const target = e.target as HTMLInputElement;
-      newValue = target.checked;
-    }
     
     setFormData(prev => {
       const updatedData = {
         ...prev,
-        [name]: newValue
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
       };
       
       // Track form changes for abandonment analysis
@@ -294,7 +307,7 @@ const Checkout = () => {
                         const event = new CustomEvent('openAuthModal');
                         window.dispatchEvent(event);
                       }}
-                      className="text-blue-600 hover:underline text-sm"
+                      className="text-[#D4F871] hover:underline text-sm font-medium"
                     >
                       Sign in
                     </button>

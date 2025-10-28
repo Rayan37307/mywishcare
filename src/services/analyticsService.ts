@@ -285,9 +285,9 @@ class AnalyticsService {
     const fbPixelId = import.meta.env.VITE_FACEBOOK_PIXEL_ID;
     if (!window.fbq && fbPixelId) {
       // Load Facebook Pixel script
-      (function(f: any, b: any, e: any, v: any, n: any, t: any, s: any) {
+      (function(f: any, b: any, e: any, v: any) {
         if (f.fbq) return;
-        n = f.fbq = function() {
+        var n: any = f.fbq = function() {
           n.callMethod ?
           n.callMethod.apply(n, arguments) : n.queue.push(arguments);
         };
@@ -296,11 +296,13 @@ class AnalyticsService {
         n.loaded = !0;
         n.version = '2.0';
         n.queue = [];
-        t = b.createElement(e);
+        var t = b.createElement(e);
         t.async = !0;
         t.src = v;
-        s = b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t, s);
+        var s = b.getElementsByTagName(e)[0];
+        if (s && s.parentNode) {
+          s.parentNode.insertBefore(t, s);
+        }
       })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
       
       fbq('init', fbPixelId);
@@ -313,7 +315,7 @@ class AnalyticsService {
     // Load TikTok Pixel script if not already loaded
     const tiktokPixelId = import.meta.env.VITE_TIKTOK_PIXEL_ID;
     if (!window.ttq && tiktokPixelId) {
-      (function (w, d, t) {
+      (function (w: any, d: any, t: any) {
         w.TiktokAnalyticsObject = t;
         var ttq = (w[t] = w[t] || []);
         ttq.methods = [
@@ -331,18 +333,18 @@ class AnalyticsService {
           'enableCookie',
           'disableCookie',
         ];
-        ttq.setAndDefer = function (t, e) {
+        ttq.setAndDefer = function (t: any, e: any) {
           t[e] = function () {
             t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
           };
         };
         for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
-        ttq.instance = function (t) {
+        ttq.instance = function (t: any) {
           for (var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)
             ttq.setAndDefer(e, ttq.methods[n]);
           return e;
         };
-        ttq.load = function (e, n) {
+        ttq.load = function (e: any, n: any) {
           var i = 'https://analytics.tiktok.com/i18n/pixel/events.js';
           var o = d.createElement(t);
           o.src = i;
@@ -354,7 +356,9 @@ class AnalyticsService {
             });
           };
           var a = d.getElementsByTagName(t)[0];
-          a.parentNode.insertBefore(o, a);
+          if (a.parentNode) {
+            a.parentNode.insertBefore(o, a);
+          }
         };
       })(window, document, 'ttq');
       
@@ -399,7 +403,12 @@ declare global {
     gtag: (...args: any[]) => void;
     fbq: any;
     ttq: any;
+    _fbq: any;
   }
+
+  var gtag: any;
+  var fbq: any;
+  var ttq: any;
 }
 
 // Initialize analytics service when app loads

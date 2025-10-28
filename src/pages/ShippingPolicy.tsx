@@ -2,7 +2,7 @@
 
 const ShippingPolicy = () => {
   return (
-    <div className='flex justify-center items-center flex-col py-10'>
+    <div className='flex justify-center items-center flex-col py-10 px-10'>
       <br />
       <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>SHIPPING POLICY</h3>
       <br />

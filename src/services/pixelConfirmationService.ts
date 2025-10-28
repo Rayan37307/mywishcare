@@ -253,7 +253,7 @@ class PixelConfirmationService {
   }
   
   // Load confirmations from localStorage
-  private loadConfirmations(): void {
+  loadConfirmations(): void {
     try {
       const stored = localStorage.getItem('pixelConfirmations');
       if (stored) {

@@ -24,7 +24,7 @@ const DiscountSticker = () => {
         }}
         onClick={handleOpenModal}
       >
-        <div className="bg-white rounded-tr-[10px] rounded-br-[10px] text-lg font-bold py-4 px-6 rotate-180 text-center whitespace-nowrap">
+        <div className="bg-white rounded-tr-[10px] rounded-br-[10px] text-lg max-md:text-sm font-bold py-4 max-md:py-2 max-md:px-4 px-6 rotate-180 text-center whitespace-nowrap">
           <div className="transform rotate-180">Flat 50% off*</div>
         </div>
       </div>

@@ -276,13 +276,7 @@ class FakeOrderBlockingService {
     }
   }
   
-  private saveOrderHistory(): void {
-    try {
-      localStorage.setItem('orderHistory', JSON.stringify(this.orderHistory));
-    } catch (e) {
-      console.error('Failed to save order history', e);
-    }
-  }
+
 }
 
 // Singleton instance

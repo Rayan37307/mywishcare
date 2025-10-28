@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import type { Product } from '../types/product';
 import { woocommerceService } from '../services/woocommerceService';
 import { useCartStore } from '../store/cartStore';
+import AllProductsCardSkeleton from '../components/AllProductsCardSkeleton';
 
 const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -45,12 +46,7 @@ const SearchPage: React.FC = () => {
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-lg">Loading search results...</p>
-          </div>
-        </div>
+        <AllProductsCardSkeleton count={10} />
       ) : products.length === 0 ? (
         <div className="text-center py-16">
           <h2 className="text-2xl font-semibold mb-4">No products found</h2>

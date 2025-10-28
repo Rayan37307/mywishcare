@@ -9,7 +9,6 @@ import { pixelConfirmationService } from '../services/pixelConfirmationService';
 
 const AnalyticsDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   
   // Get stats from all services
   const overviewStats = {
@@ -23,7 +22,7 @@ const AnalyticsDashboard: React.FC = () => {
   
   // Force refresh of stats
   const handleRefresh = () => {
-    setRefreshTrigger(prev => prev + 1);
+    // Currently does nothing since we're using direct service calls
   };
   
   // Clean up old data periodically

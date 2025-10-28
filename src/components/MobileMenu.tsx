@@ -183,7 +183,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     const event = new CustomEvent('openAuthModal');
                     window.dispatchEvent(event);
                   }}
-                  className="block w-full text-center bg-[#111827] text-white py-3 rounded-md font-medium hover:bg-[#1f2937] transition-colors"
+                  className="block w-full text-center bg-[#D4F871] text-black py-3 rounded-md font-medium hover:bg-[#c1e05a] transition-colors"
                 >
                   Log In
                 </button>

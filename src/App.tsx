@@ -38,11 +38,12 @@ import Topbar from './components/Topbar'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import MobileMenu from './components/MobileMenu'
-import LoginForm from './components/LoginForm'
+
 
 import ProfilePage from './components/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute'
 import CartSlide from './components/CartSlide'
+import LoaderWrapper from './components/LoaderWrapper';
 
 // Constants
 import { ROUTES } from './constants/routes'
@@ -121,48 +122,50 @@ const App = () => {
                 toggleCart={toggleCart} 
                 isMenuOpen={isMenuOpen}
               />
-              <div className="">
-                <Routes>
-                  <Route path={ROUTES.HOME} element={<Home />} />
-                  <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
-                  <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<BestSellers />} />
-                  <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<SunCare />} />
-                  <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<LipBalm />} />
-                  <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Hairfall />} />
-                  <Route path={ROUTES.COLLECTIONS_ACNE} element={<Acne />} />
-                  <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Pigmentation />} />
-                  <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<DullSkin />} />
-                  <Route path={ROUTES.COLLECTIONS_DETAN} element={<Detan />} />
-                  <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<DamagedHair />} />
-                  <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<HairCare1 />} />
-                  <Route path={ROUTES.PAGES_ABOUT} element={<About />} />
-                  <Route path={ROUTES.COLLECTIONS_ALL} element={<AllProducts />} />
-                  <Route path={ROUTES.POLICIES_TERMS} element={<TermsOfService />} />
-                  <Route path={ROUTES.POLICIES_PRIVACY} element={<PrivacyPolicy />} />
-                  <Route path={ROUTES.POLICIES_SHIPPING} element={<ShippingPolicy />} />
-                  <Route path={ROUTES.POLICIES_REFUND} element={<RefundPolicy />} />
-                  <Route path={ROUTES.PRODUCT_DETAIL_ID_SLUG} element={<ProductDetail />} />
-                  <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetail />} />
-                  <Route path={ROUTES.PRODUCT_DETAIL_SLUG} element={<ProductDetail />} />
-                  <Route path={ROUTES.CART} element={<Cart />} />
-                  <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
-                  <Route path={ROUTES.SEARCH} element={<SearchPage />} />
-                  
+              <LoaderWrapper>
+                <div className="">
+                  <Routes>
+                    <Route path={ROUTES.HOME} element={<Home />} />
+                    <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
+                    <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<BestSellers />} />
+                    <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<SunCare />} />
+                    <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<LipBalm />} />
+                    <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Hairfall />} />
+                    <Route path={ROUTES.COLLECTIONS_ACNE} element={<Acne />} />
+                    <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Pigmentation />} />
+                    <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<DullSkin />} />
+                    <Route path={ROUTES.COLLECTIONS_DETAN} element={<Detan />} />
+                    <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<DamagedHair />} />
+                    <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<HairCare1 />} />
+                    <Route path={ROUTES.PAGES_ABOUT} element={<About />} />
+                    <Route path={ROUTES.COLLECTIONS_ALL} element={<AllProducts />} />
+                    <Route path={ROUTES.POLICIES_TERMS} element={<TermsOfService />} />
+                    <Route path={ROUTES.POLICIES_PRIVACY} element={<PrivacyPolicy />} />
+                    <Route path={ROUTES.POLICIES_SHIPPING} element={<ShippingPolicy />} />
+                    <Route path={ROUTES.POLICIES_REFUND} element={<RefundPolicy />} />
+                    <Route path={ROUTES.PRODUCT_DETAIL_ID_SLUG} element={<ProductDetail />} />
+                    <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetail />} />
+                    <Route path={ROUTES.PRODUCT_DETAIL_SLUG} element={<ProductDetail />} />
+                    <Route path={ROUTES.CART} element={<Cart />} />
+                    <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
+                    <Route path={ROUTES.SEARCH} element={<SearchPage />} />
+                    
 
-                  <Route 
-                    path={ROUTES.PROFILE} 
-                    element={
-                      <ProtectedRoute>
-                        <ProfilePage />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  <Route path={ROUTES.API_DEBUG} element={<APIDebugPage />} />
-                  <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
-                  <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
-                </Routes>
-              </div>
-              <Footer />
+                    <Route 
+                      path={ROUTES.PROFILE} 
+                      element={
+                        <ProtectedRoute>
+                          <ProfilePage />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    <Route path={ROUTES.API_DEBUG} element={<APIDebugPage />} />
+                    <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
+                    <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
+                  </Routes>
+                </div>
+                <Footer />
+              </LoaderWrapper>
             </div>
             
             {/* Cart Slide - Positioned at app level to avoid navbar constraints */}

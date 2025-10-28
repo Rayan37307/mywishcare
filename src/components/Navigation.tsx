@@ -55,7 +55,7 @@ const Navigation: React.FC<NavigationProps> = ({ onOpenAuthModal }) => {
           ) : (
             <button
               onClick={onOpenAuthModal}
-              className="flex items-center bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-md transition-colors"
+              className="flex items-center bg-[#D4F871] hover:bg-[#c1e05a] text-black px-3 py-1 rounded-md transition-colors"
             >
               <FaSignInAlt className="mr-1" /> Login
             </button>

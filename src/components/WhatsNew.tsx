@@ -2,12 +2,11 @@ import { useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, FreeMode } from 'swiper/modules';
 import type { Product } from '../types/product';
-
-
 import { Link } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
 import { ArrowRightIcon } from 'lucide-react';
+import Skeleton from './Skeleton';
 
 const WhatsNew = () => {
   const { whatsNewProducts, loading, error, fetchWhatsNewProducts } = useProductStore();
@@ -23,11 +22,51 @@ const WhatsNew = () => {
     }
   }, [whatsNewProducts.length, fetchWhatsNewProducts]);
 
+  // Loading skeleton for the whole component
   if (loading && whatsNewProducts.length === 0) {
     return (
       <div className="py-8">
-        <h2 className="text-3xl font-bold mb-8 text-left">What's New</h2>
-        <p>Loading new products...</p>
+        <div className="flex gap-4 items-center mb-8">
+          <Skeleton variant="text" className="h-8 w-48" />
+          <Skeleton variant="text" className="h-4 w-20" />
+        </div>
+        <div className="relative">
+          <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div 
+                key={`skeleton-${index}`}
+                className="bg-white rounded-lg overflow-hidden p-2 max-w-[250px] flex flex-col min-w-[250px]"
+              >
+                <div className="w-full aspect-[5/5.5]">
+                  <Skeleton 
+                    variant="rectangular" 
+                    className="w-full h-full rounded-lg" 
+                  />
+                </div>
+                <div className="text-center flex-grow mt-2">
+                  <Skeleton 
+                    variant="text" 
+                    className="h-4 w-3/4 mx-auto mb-2" 
+                  />
+                  <Skeleton 
+                    variant="text" 
+                    className="h-3 w-full mx-auto mb-4" 
+                  />
+                  <div className="flex gap-2 justify-center items-center py-2">
+                    <Skeleton 
+                      variant="text" 
+                      className="h-4 w-1/3" 
+                    />
+                  </div>
+                </div>
+                <Skeleton 
+                  variant="rectangular" 
+                  className="w-full h-10 rounded-md" 
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

@@ -41,7 +41,7 @@ export interface AbandonedCheckoutData {
 class CheckoutTrackingService {
   private activeCheckouts: Map<string, CheckoutFormState> = new Map();
   private abandonedCheckouts: AbandonedCheckoutData[] = [];
-  private formChangedTimer: NodeJS.Timeout | null = null;
+  private formChangedTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly abandonmentThresholdMs: number = 5 * 60 * 1000; // 5 minutes
   
   // Track when user starts checkout
@@ -49,7 +49,7 @@ class CheckoutTrackingService {
     formData: CheckoutFormState, 
     cartItems: any[],
     value: number
-  ): void {
+  ): string {
     const sessionId = this.generateSessionId();
     
     // Store the active checkout session
@@ -127,7 +127,7 @@ class CheckoutTrackingService {
     this.activeCheckouts.delete(sessionId);
     
     // Track as abandoned checkout
-    const abandonedData: AbandonedCheckoutData = {
+    const abandonedCheckout: AbandonedCheckoutData = {
       formData,
       cartItems: cartItems.map(item => ({
         product_id: item.product.id,
@@ -144,7 +144,7 @@ class CheckoutTrackingService {
     };
     
     // Add to abandoned checkouts list
-    this.abandonedCheckouts.push(abandonedData);
+    this.abandonedCheckouts.push(abandonedCheckout);
     
     // Track abandonment event
     const checkoutData: CheckoutTrackingData = {
@@ -163,13 +163,13 @@ class CheckoutTrackingService {
     this.saveAbandonedCheckouts();
     
     // Optionally, try to recover the checkout with an incentive
-    this.attemptCheckoutRecovery(abandonedData);
+    this.attemptCheckoutRecovery(abandonedCheckout);
   }
   
   // Attempt to recover abandoned checkout
-  private attemptCheckoutRecovery(abandonedData: AbandonedCheckoutData): void {
+  private attemptCheckoutRecovery(abandonedCheckout: AbandonedCheckoutData): void {
     // This could trigger a modal offering discount, etc.
-    console.log('Checkout abandoned, considering recovery options');
+    console.log('Checkout abandoned, considering recovery options', { orderId: abandonedCheckout.sessionId });
     
     // In a real implementation, you might show a discount offer
     // to encourage the user to return and complete their purchase

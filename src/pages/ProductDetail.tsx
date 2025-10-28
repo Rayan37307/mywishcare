@@ -12,6 +12,7 @@ import FAQSection from '../components/wishcare/FAQSection';
 import { getImageUrlFromId } from '../utils/imageUtils';
 import type { Product } from '../types/product';
 import { CheckCircleIcon } from 'lucide-react';
+import Skeleton from '../components/Skeleton';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +71,40 @@ const ProductDetail = () => {
     getProduct();
   }, [id, fetchProductById, setLoading, setError]);
 
-  if (loading) return <div className="text-center">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="bg-white py-10">
+        <div className="container mx-auto max-w-7xl p-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+            {/* Images Column Skeleton */}
+            <div className="md:col-span-2 flex flex-col">
+              <Skeleton variant="rectangular" className="w-full h-96 rounded-lg mb-4" />
+              <div className="flex gap-3 mt-4">
+                <Skeleton variant="rectangular" className="w-16 h-16 rounded" />
+                <Skeleton variant="rectangular" className="w-16 h-16 rounded" />
+                <Skeleton variant="rectangular" className="w-16 h-16 rounded" />
+              </div>
+            </div>
+
+            {/* Details Column Skeleton */}
+            <div className="md:col-span-3">
+              <Skeleton variant="text" className="h-8 w-3/4 mb-4" />
+              <Skeleton variant="text" className="h-4 w-full mb-4" />
+              <Skeleton variant="text" className="h-6 w-1/4 mb-6" />
+              
+              <div className="flex items-center gap-4 mt-4 mb-6">
+                <Skeleton variant="rectangular" className="w-1/2 h-12 rounded" />
+              </div>
+              
+              <Skeleton variant="rectangular" className="w-full h-12 rounded mb-4" />
+              
+              <Skeleton variant="rectangular" className="w-full h-48 rounded mt-10" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!product) return <div className="text-center">Product not found.</div>;
 
   return (
