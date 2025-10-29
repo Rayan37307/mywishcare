@@ -579,6 +579,148 @@ class WooCommerceService {
     }
   }
 
+  async fetchProductsByTag(tagId: number): Promise<Product[]> {
+    try {
+      const endpoint = this.buildAuthURL(`/products?tag=${tagId}`);
+      console.log(`Fetching products by tag ${tagId} from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Products by tag API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Products by tag API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const products: Product[] = await response.json();
+      console.log(`Found ${products.length} products with tag ${tagId}`);
+      return products;
+    } catch (error) {
+      console.error('Error fetching products by tag:', error);
+      throw error;
+    }
+  }
+
+  async getAllTags(): Promise<Array<{ id: number, slug: string, name: string }>> {
+    try {
+      const endpoint = this.buildAuthURL('/products/tags');
+      console.log(`Fetching all tags from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`All tags API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`All tags API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const tags: Array<{ id: number, slug: string, name: string }> = await response.json();
+      console.log(`Fetched ${tags.length} tags`);
+      return tags;
+    } catch (error) {
+      console.error('Error fetching all tags:', error);
+      throw error;
+    }
+  }
+
+  async getTagBySlug(tagSlug: string): Promise<{ id: number } | null> {
+    try {
+      const endpoint = this.buildAuthURL(`/products/tags/slug:${encodeURIComponent(tagSlug)}`);
+      console.log(`Fetching tag by slug "${tagSlug}" from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Tag by slug API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`Tag with slug "${tagSlug}" not found`);
+          return null;
+        }
+        const errorText = await response.text();
+        console.error(`Tag by slug API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const tag: { id: number } = await response.json();
+      console.log(`Found tag with slug "${tagSlug}", ID: ${tag.id}`);
+      return tag;
+    } catch (error) {
+      console.error('Error fetching tag by slug:', error);
+      // Return null instead of throwing to handle gracefully
+      return null;
+    }
+  }
+
+  async fetchProductsByTagSlug(tagSlug: string): Promise<Product[]> {
+    try {
+      // First, get the tag ID by slug
+      const tag = await this.getTagBySlug(tagSlug);
+      
+      if (!tag) {
+        console.log(`Tag with slug "${tagSlug}" not found, returning empty array`);
+        
+        // Special handling for common fallback scenarios
+        if (tagSlug === 'bestsellers') {
+          // For bestsellers, fallback to products sorted by sales
+          return await this.fetchBestSellingProducts();
+        }
+        
+        return [];
+      }
+      
+      // Use the tag ID to fetch products
+      const endpoint = this.buildAuthURL(`/products?tag=${tag.id}`);
+      console.log(`Fetching products by tag slug "${tagSlug}" (ID: ${tag.id}) from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Products by tag slug API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Products by tag slug API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const products: Product[] = await response.json();
+      console.log(`Found ${products.length} products with tag slug "${tagSlug}" (ID: ${tag.id})`);
+      return products;
+    } catch (error) {
+      console.error('Error fetching products by tag slug:', error);
+      throw error;
+    }
+  }
+  
+  // Add method to fetch best selling products (sorted by total_sales)
+  async fetchBestSellingProducts(): Promise<Product[]> {
+    try {
+      const endpoint = this.buildAuthURL('/products?orderby=popularity'); // orderby=popularity sorts by total_sales
+      console.log(`Fetching best selling products from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Best selling products API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Best selling products API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const products: Product[] = await response.json();
+      console.log(`Found ${products.length} best selling products`);
+      return products;
+    } catch (error) {
+      console.error('Error fetching best selling products:', error);
+      throw error;
+    }
+  }
+
   // Order Methods
   async getCustomerOrders(customerId: number): Promise<Order[]> {
     try {

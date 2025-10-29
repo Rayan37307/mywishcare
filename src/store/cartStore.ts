@@ -48,31 +48,49 @@ export const useCartStore = create<CartState>()(
       items: [],
       totalItems: 0,
       totalPrice: 0,
+      loadingItems: [], // Track which products are currently being added
       
       addItem: (product: Product, quantity: number = 1) => {
-        const { items } = get();
-        const existingItemIndex = items.findIndex(item => item.product.id === product.id);
+        // Add to loading state
+        set(state => ({
+          loadingItems: [...state.loadingItems, product.id]
+        }));
         
-        let updatedItems: CartItem[];
-        
-        if (existingItemIndex >= 0) {
-          // Update quantity if item already exists
-          updatedItems = [...items];
-          updatedItems[existingItemIndex] = {
-            ...updatedItems[existingItemIndex],
-            quantity: updatedItems[existingItemIndex].quantity + quantity
-          };
-        } else {
-          // Add new item
-          const newItem: CartItem = {
-            product,
-            quantity
-          };
-          updatedItems = [...items, newItem];
-        }
-        
-        set({ items: updatedItems });
-        get().calculateTotals();
+        // Simulate a short delay to show the loading state
+        setTimeout(() => {
+          const { items, loadingItems } = get();
+          const existingItemIndex = items.findIndex(item => item.product.id === product.id);
+          
+          let updatedItems: CartItem[];
+          
+          if (existingItemIndex >= 0) {
+            // Update quantity if item already exists
+            updatedItems = [...items];
+            updatedItems[existingItemIndex] = {
+              ...updatedItems[existingItemIndex],
+              quantity: updatedItems[existingItemIndex].quantity + quantity
+            };
+          } else {
+            // Add new item
+            const newItem: CartItem = {
+              product,
+              quantity
+            };
+            updatedItems = [...items, newItem];
+          }
+          
+          // Remove from loading state
+          set({ 
+            items: updatedItems,
+            loadingItems: loadingItems.filter(id => id !== product.id)
+          });
+          get().calculateTotals();
+        }, 300); // 300ms delay to show "Adding..." text
+      },
+      
+      // Function to check if a product is currently being added
+      isAddingItem: (productId: number) => {
+        return get().loadingItems.includes(productId);
       },
       
       removeItem: (productId: number) => {

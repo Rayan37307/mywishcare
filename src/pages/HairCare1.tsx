@@ -1,23 +1,18 @@
 import { useEffect } from 'react'
 import ProblemCategory from '../components/ProblemCategory';
-import ProductsGrid from '../components/ProductsGrid';
-import { useProductOperations } from '../hooks/useProductOperations';
-import { useCartOperations } from '../hooks/useCartOperations';
+import UniversalProductCard from '../components/UniversalProductCard';
+import { useProductStore } from '../store/productStore';
 
 const HairCare1 = () => {
   const { 
-    fetchBestSellingProducts, 
-    loading, 
-    getProductsByCollection 
-  } = useProductOperations();
-  
-  const { addToCart } = useCartOperations();
-  
-  const bestSellingProducts = getProductsByCollection('bestSellers');
+    fetchHairCare1Products, 
+    hairCare1Products,
+    loading
+  } = useProductStore();
 
   useEffect(() => {
-    fetchBestSellingProducts();
-  }, [fetchBestSellingProducts]);
+    fetchHairCare1Products();
+  }, [fetchHairCare1Products]);
 
   return (
     <div className='px-10'>
@@ -25,7 +20,7 @@ const HairCare1 = () => {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : (
-        <ProductsGrid products={bestSellingProducts} onAddToCart={addToCart} />
+        <UniversalProductCard products={hairCare1Products} />
       )}
     </div>
   );

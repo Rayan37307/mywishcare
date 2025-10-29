@@ -29,4 +29,5 @@ export const ROUTES = {
   API_DEBUG: '/debug/api',
   TEST_PAGE: '/test',
   ANALYTICS: '/analytics',
+  ORDER_SUCCESS: '/order-success',
 } as const;

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useAuth } from "../hooks/useAuth";
 import { User } from "lucide-react";
+import { useSidebar } from '../contexts/SidebarContext';
 
 interface MenuItemBase {
   name: string;
@@ -27,6 +28,7 @@ interface MenuItemProps {
     action: "close" | "openSubmenu" | "goBack",
     payload?: MenuItemWithSubmenu
   ) => void;
+  closeAllSidebars: () => void;
   level?: number;
 }
 
@@ -36,7 +38,7 @@ interface MobileMenuProps {
   menuItems: MenuItem[];
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, closeAllSidebars, level = 0 }) => {
   const hasSubmenu =
     "submenu" in item && Array.isArray(item.submenu) && item.submenu.length > 0;
 
@@ -45,12 +47,12 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
       <li>
         <button
           onClick={() => onNavigate("openSubmenu", item as MenuItemWithSubmenu)}
-          className="flex justify-between items-center w-full py-3 text-sm hover:text-gray-600 transition-colors"
+          className="flex justify-between items-center w-full py-2 text-base hover:text-gray-600 transition-colors"
         >
           {item.name}
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
+            className="h-4 w-4"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -72,8 +74,11 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, level = 0 }) => {
     <li>
       <Link
         to={(item as MenuItemWithLink).path}
-        className="block py-3 text-lg hover:text-gray-600 transition-colors"
-        onClick={() => onNavigate("close")}
+        className="block py-2 text-base hover:text-gray-600 transition-colors"
+        onClick={() => {
+          closeAllSidebars();
+          onNavigate("close");
+        }}
       >
         {item.name}
       </Link>
@@ -91,6 +96,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
     useState<MenuItemWithSubmenu | null>(null);
   const isLargeScreen = useMediaQuery("(min-width: 640px)");
   const { user } = useAuth();
+  const { closeAllSidebars } = useSidebar();
 
   const handleNavigate = (
     action: "close" | "openSubmenu" | "goBack",
@@ -123,17 +129,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       {/* Main Menu */}
       {showMainMenu && (
         <div
-          className={`fixed top-0 left-0 z-50 h-full w-full sm:w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+          className={`fixed top-0 left-0 z-50 h-full w-full pr-4 sm:w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
             isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="p-6 h-full flex flex-col">
+          <div className="p-4 h-full flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <button
                 onClick={onClose}
                 aria-label="Close menu"
-                className="p-1 rounded-md"
+                className="p-0.5 rounded-md"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -153,12 +159,13 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             </div>
 
             {/* Menu Items */}
-            <ul className="space-y-3 flex-1 overflow-y-auto uppercase">
+            <ul className="space-y-1 flex-1 overflow-y-auto uppercase">
               {menuItems.map((item, index) => (
                 <MenuItem
                   key={index}
                   item={item}
                   onNavigate={handleNavigate}
+                  closeAllSidebars={closeAllSidebars}
                   level={0}
                 />
               ))}
@@ -169,7 +176,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               {user ? (
                 <Link
                   to="/account"
-                  onClick={onClose}
+                  onClick={() => {
+                    closeAllSidebars();
+                    onClose();
+                  }}
                   className="flex items-center justify-center gap-2 w-full bg-[#111827] text-white py-3 rounded-md font-medium hover:bg-[#1f2937] transition-colors"
                 >
                   <User size={18} />
@@ -178,6 +188,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               ) : (
                 <button
                   onClick={() => {
+                    closeAllSidebars();
                     onClose();
                     // This will trigger the auth modal through the Header component
                     const event = new CustomEvent('openAuthModal');
@@ -196,17 +207,17 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       {/* Submenu */}
       {showSubmenu && (
         <div
-          className={`fixed top-0 z-50 h-full w-full ${
-            isLargeScreen ? "left-96 w-96" : "left-0"
+          className={`fixed top-0 z-50 h-full w-full pl-4 pr-4 ${
+            isLargeScreen ? "left-96 w-96" : "left-0 pr-4"  // Add right padding when on left side of screen
           } bg-white shadow-lg transform transition-transform duration-300 ease-in-out translate-x-0`}
         >
-          <div className="p-6 h-full flex flex-col">
+          <div className="p-4 h-full flex flex-col">
             {/* Back button */}
-            <div className="flex items-center mb-6">
+            <div className="flex items-center mb-4">
               <button
                 onClick={() => handleNavigate("goBack")}
                 aria-label="Go back to menu"
-                className="p-1 rounded-md hover:bg-gray-100 flex items-center"
+                className="p-0.5 rounded-md hover:bg-gray-100 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -225,19 +236,22 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 {!isLargeScreen && <span className="ml-2">Back</span>}
               </button>
               {isLargeScreen && (
-                <h2 className="text-lg font-medium ml-2">
+                <h2 className="text-base font-medium ml-2">
                   {currentSubmenu?.name}
                 </h2>
               )}
             </div>
 
-            <ul className="space-y-1 flex-1 uppercase">
+            <ul className="space-y-0.5 flex-1 uppercase">
               {currentSubmenu?.submenu.map((subItem, idx) => (
                 <li key={idx}>
                   <Link
                     to={subItem.path}
-                    className="block py-2 text-lg hover:text-gray-600 transition-colors"
-                    onClick={onClose}
+                    className="block py-2 text-base hover:text-gray-600 transition-colors"
+                    onClick={() => {
+                      closeAllSidebars();
+                      onClose();
+                    }}
                   >
                     {subItem.name}
                   </Link>

@@ -1,17 +1,15 @@
 import { useEffect } from 'react';
 import ProblemCategory from '../components/ProblemCategory';
-import BestSellersCard from '../components/BestSellersCards';
-import { useProductOperations } from '../hooks/useProductOperations';
+import UniversalProductCard from '../components/UniversalProductCard';
+import { useProductStore } from '../store/productStore';
 
 const BestSellers = () => {
   const { 
     fetchBestSellingProducts, 
-    loading, 
-    getProductsByCollection 
-  } = useProductOperations();
+    bestSellingProducts,
+    loading
+  } = useProductStore();
   
-  const bestSellingProducts = getProductsByCollection('bestSellers');
-
   useEffect(() => {
     fetchBestSellingProducts();
   }, [fetchBestSellingProducts]);
@@ -22,7 +20,7 @@ const BestSellers = () => {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : (
-        <BestSellersCard products={bestSellingProducts} />
+        <UniversalProductCard products={bestSellingProducts} />
       )}
     </div>
   );

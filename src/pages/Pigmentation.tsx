@@ -1,20 +1,18 @@
 import { useEffect } from 'react'
 import ProblemCategory from '../components/ProblemCategory';
 import PigmentationCard from '../components/PigmentationCard';
-import { useProductOperations } from '../hooks/useProductOperations';
+import { useProductStore } from '../store/productStore';
 
 const Pigmentation = () => {
   const { 
-    fetchBestSellingProducts, 
-    loading, 
-    getProductsByCollection 
-  } = useProductOperations();
+    fetchPigmentationProducts, 
+    pigmentationProducts,
+    loading
+  } = useProductStore();
   
-  const bestSellingProducts = getProductsByCollection('bestSellers');
-
   useEffect(() => {
-    fetchBestSellingProducts();
-  }, [fetchBestSellingProducts]);
+    fetchPigmentationProducts();
+  }, [fetchPigmentationProducts]);
 
   return (
     <div className='px-10'>
@@ -22,7 +20,7 @@ const Pigmentation = () => {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : (
-        <PigmentationCard products={bestSellingProducts} />
+        <PigmentationCard products={pigmentationProducts} />
       )}
     </div>
   );

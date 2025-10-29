@@ -13,13 +13,19 @@ export type CollectionType =
   | typeof COLLECTIONS.DAMAGED_HAIR
   | 'allProducts'
   | typeof COLLECTIONS.SUN_CARE
-  | 'bestSellers';
+  | 'bestSellers'
+  | 'lipBalm'
+  | 'routineBuilder'
+  | 'whatsNew'
+  | 'hairCare1';
 
 interface ProductState {
   products: Product[];
   whatsNewProducts: Product[];
   bestSellingProducts: Product[];
   routineBuilderProducts: Product[];
+  lipBalmProducts: Product[];
+  hairCare1Products: Product[];
   acneProducts: Product[];
   pigmentationProducts: Product[];
   hairfallProducts: Product[];
@@ -44,7 +50,11 @@ interface ProductState {
   searchProducts: (query: string) => Promise<Product[]>;
   // Add category filtering
   fetchProductsByCategory: (categoryId: number) => Promise<void>;
+  fetchProductsByTag: (tagId: number) => Promise<void>;
+  fetchProductsByTagSlug: (tagSlug: string) => Promise<void>;
   // Collection-specific functions
+  fetchLipBalmProducts: () => Promise<void>;
+  fetchHairCare1Products: () => Promise<void>;
   fetchAcneProducts: () => Promise<void>;
   fetchPigmentationProducts: () => Promise<void>;
   fetchHairfallProducts: () => Promise<void>;
@@ -61,6 +71,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
   whatsNewProducts: [],
   bestSellingProducts: [],
   routineBuilderProducts: [],
+  lipBalmProducts: [],
+  hairCare1Products: [],
   acneProducts: [],
   pigmentationProducts: [],
   hairfallProducts: [],
@@ -115,17 +127,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchBestSellingProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // In a real implementation, you might:
-      // 1. Use WooCommerce reports API to get actual bestsellers
-      // 2. Create a specific tag/category for bestsellers
-      // 3. Sort by a custom meta field
-      const products = await woocommerceService.fetchProducts();
-      
-      // For now, you could add a custom sort if you have meta data
-      // Or just take first 6 as placeholder
-      const bestSelling = products.slice(0, 6);
+      // Fetch products by 'bestsellers' tag
+      const products = await woocommerceService.fetchProductsByTagSlug('bestsellers');
       set({ 
-        bestSellingProducts: bestSelling,
+        bestSellingProducts: products,
         loading: false 
       });
     } catch {
@@ -139,12 +144,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchRoutineBuilderProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // You might want to filter by a specific category/tag for routine builder products
-      const products = await woocommerceService.fetchProducts();
-      const routineBuilderProducts = products.slice(0, 6);
-      // write function that + a + b
+      // Fetch products by 'routine-builder' tag
+      const products = await woocommerceService.fetchProductsByTagSlug('routine-builder');
       set({ 
-        routineBuilderProducts: routineBuilderProducts,
+        routineBuilderProducts: products,
         loading: false 
       });
     } catch {
@@ -155,6 +158,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       });
     }
   },
+
 
   // Add individual product fetching
   fetchProductById: async (id: number) => {
@@ -241,22 +245,80 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
   
+  // Add tag filtering
+  fetchProductsByTag: async (tagId: number) => {
+    set({ loading: true, error: null });
+    try {
+      const products = await woocommerceService.fetchProductsByTag(tagId);
+      set({ 
+        products,
+        loading: false 
+      });
+    } catch {
+      set({ 
+        error: 'Failed to fetch products by tag', 
+        loading: false 
+      });
+    }
+  },
+  
+  fetchProductsByTagSlug: async (tagSlug: string) => {
+    set({ loading: true, error: null });
+    try {
+      const products = await woocommerceService.fetchProductsByTagSlug(tagSlug);
+      set({ 
+        products,
+        loading: false 
+      });
+    } catch {
+      set({ 
+        error: 'Failed to fetch products by tag slug', 
+        loading: false 
+      });
+    }
+  },
+  
   // Collection-specific functions
+  fetchLipBalmProducts: async () => {
+    set({ loading: true, error: null });
+    try {
+      const products = await woocommerceService.fetchProductsByTagSlug('lip-balm');
+      set({ 
+        lipBalmProducts: products,
+        loading: false 
+      });
+    } catch {
+      set({ 
+        error: 'Failed to fetch lip balm products', 
+        loading: false 
+      });
+    }
+  },
+  
+  fetchHairCare1Products: async () => {
+    set({ loading: true, error: null });
+    try {
+      const products = await woocommerceService.fetchProductsByTagSlug('hair-care-1');
+      set({ 
+        hairCare1Products: products,
+        loading: false 
+      });
+    } catch {
+      set({ 
+        error: 'Failed to fetch Hair Care 1 products', 
+        loading: false 
+      });
+    }
+  },
+  
   fetchAcneProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // In a real implementation, you would filter by specific category/tag for acne products
-      const products = await woocommerceService.fetchProducts();
-      // Filter products that belong to acne category (this is example - implement based on your actual data structure)
-      const acneProducts = products.filter(product => 
-        product.categories.some(cat => 
-          cat.name.toLowerCase().includes('acne') || 
-          product.name.toLowerCase().includes('acne') ||
-          product.short_description.toLowerCase().includes('acne')
-        )
-      );
+      // In a real implementation, you would fetch by specific tag ID for acne products
+      // For now, using tag slug - you would replace 'acne' with the actual tag slug in your WooCommerce store
+      const products = await woocommerceService.fetchProductsByTagSlug('acne');
       set({ 
-        acneProducts: acneProducts,
+        acneProducts: products,
         loading: false 
       });
     } catch {
@@ -270,16 +332,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchPigmentationProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
-      const pigmentationProducts = products.filter(product => 
-        product.categories.some(cat => 
-          cat.name.toLowerCase().includes('pigmentation') || 
-          product.name.toLowerCase().includes('pigmentation') ||
-          product.short_description.toLowerCase().includes('pigmentation')
-        )
-      );
+      const products = await woocommerceService.fetchProductsByTagSlug('pigmentation');
       set({ 
-        pigmentationProducts: pigmentationProducts,
+        pigmentationProducts: products,
         loading: false 
       });
     } catch {
@@ -293,16 +348,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchHairfallProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
-      const hairfallProducts = products.filter(product => 
-        product.categories.some(cat => 
-          cat.name.toLowerCase().includes('hairfall') || 
-          product.name.toLowerCase().includes('hairfall') ||
-          product.short_description.toLowerCase().includes('hairfall')
-        )
-      );
+      const products = await woocommerceService.fetchProductsByTagSlug('hairfall');
       set({ 
-        hairfallProducts: hairfallProducts,
+        hairfallProducts: products,
         loading: false 
       });
     } catch {
@@ -316,16 +364,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchDullSkinProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
-      const dullSkinProducts = products.filter(product => 
-        product.categories.some(cat => 
-          cat.name.toLowerCase().includes('dull') || 
-          product.name.toLowerCase().includes('dull') ||
-          product.short_description.toLowerCase().includes('dull')
-        )
-      );
+      const products = await woocommerceService.fetchProductsByTagSlug('dull-skin');
       set({ 
-        dullSkinProducts: dullSkinProducts,
+        dullSkinProducts: products,
         loading: false 
       });
     } catch {
@@ -339,16 +380,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchDetanProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
-      const detanProducts = products.filter(product => 
-        product.categories.some(cat => 
-          cat.name.toLowerCase().includes('detan') || 
-          product.name.toLowerCase().includes('detan') ||
-          product.short_description.toLowerCase().includes('detan')
-        )
-      );
+      const products = await woocommerceService.fetchProductsByTagSlug('detan');
       set({ 
-        detanProducts: detanProducts,
+        detanProducts: products,
         loading: false 
       });
     } catch {
@@ -362,16 +396,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchDamagedHairProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
-      const damagedHairProducts = products.filter(product => 
-        product.categories.some(cat => 
-          cat.name.toLowerCase().includes('damaged') || 
-          product.name.toLowerCase().includes('damaged') ||
-          product.short_description.toLowerCase().includes('damaged')
-        )
-      );
+      const products = await woocommerceService.fetchProductsByTagSlug('damaged-hair');
       set({ 
-        damagedHairProducts: damagedHairProducts,
+        damagedHairProducts: products,
         loading: false 
       });
     } catch {
@@ -385,17 +412,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchSunCareProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
-      const sunCareProducts = products.filter(product => 
-        product.categories.some(cat => 
-          cat.name.toLowerCase().includes('sun') || 
-          product.name.toLowerCase().includes('sun') ||
-          product.short_description.toLowerCase().includes('sun') ||
-          product.categories.some(cat => cat.name.toLowerCase().includes('sun'))
-        )
-      );
+      const products = await woocommerceService.fetchProductsByTagSlug('sun-care');
       set({ 
-        sunCareProducts: sunCareProducts,
+        sunCareProducts: products,
         loading: false 
       });
     } catch {
@@ -409,6 +428,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchAllProductsCollection: async () => {
     set({ loading: true, error: null });
     try {
+      // Fetch all products (no specific tag filter)
       const products = await woocommerceService.fetchProducts();
       set({ 
         allProducts: products,
@@ -439,6 +459,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
         return state.damagedHairProducts;
       case COLLECTIONS.SUN_CARE:
         return state.sunCareProducts;
+      case 'lipBalm':
+        return state.lipBalmProducts;
+      case 'routineBuilder':
+        return state.routineBuilderProducts;
+      case 'whatsNew':
+        return state.whatsNewProducts;
+      case 'hairCare1':
+        return state.hairCare1Products;
       case 'allProducts':
         return state.allProducts;
       case 'bestSellers':

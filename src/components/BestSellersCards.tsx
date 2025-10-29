@@ -2,6 +2,7 @@ import React from 'react';
 import type { Product } from '../types/product';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
+import NoProductsFound from './NoProductsFound';
 
 interface BestSellersCardProps {
   products: Product[];
@@ -13,6 +14,14 @@ const BestSellersCard: React.FC<BestSellersCardProps> = ({ products = [] }) => {
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
   };
+
+  if (products.length === 0) {
+    return (
+      <div className="py-8">
+        <NoProductsFound message="No best selling products found" />
+      </div>
+    );
+  }
 
   return (
     <div className="py-8">

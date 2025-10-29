@@ -1,20 +1,18 @@
 import { useEffect } from 'react';
 import ProblemCategory from '../components/ProblemCategory';
 import DetanCard from '../components/DetanCard';
-import { useProductOperations } from '../hooks/useProductOperations';
+import { useProductStore } from '../store/productStore';
 
 const Detan = () => {
   const { 
-    fetchBestSellingProducts, 
-    loading, 
-    getProductsByCollection 
-  } = useProductOperations();
+    fetchDetanProducts, 
+    detanProducts,
+    loading
+  } = useProductStore();
   
-  const bestSellingProducts = getProductsByCollection('bestSellers');
-
   useEffect(() => {
-    fetchBestSellingProducts();
-  }, [fetchBestSellingProducts]);
+    fetchDetanProducts();
+  }, [fetchDetanProducts]);
 
   return (
     <div className='px-10'>
@@ -22,7 +20,7 @@ const Detan = () => {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : (
-        <DetanCard products={bestSellingProducts} />
+        <DetanCard products={detanProducts} />
       )}
     </div>
   );

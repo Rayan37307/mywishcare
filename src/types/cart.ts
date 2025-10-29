@@ -10,6 +10,7 @@ export interface CartState {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
+  loadingItems: number[]; // Track which products are currently being added
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
@@ -18,5 +19,6 @@ export interface CartState {
   getCartItem: (productId: number) => CartItem | null;
   isInCart: (productId: number) => boolean;
   getProductQuantity: (productId: number) => number;
+  isAddingItem: (productId: number) => boolean;
   calculateTotals: () => void;
 }

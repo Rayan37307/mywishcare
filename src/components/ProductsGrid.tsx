@@ -1,6 +1,7 @@
 import type { Product } from '../types/product';
 import ProductCard from './ProductCard';
 import ProductCardSkeleton from './ProductCardSkeleton';
+import NoProductsFound from './NoProductsFound';
 
 interface ProductsGridProps {
   products: Product[];
@@ -23,6 +24,16 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({
         {Array.from({ length: skeletonCount }, (_, index) => (
           <ProductCardSkeleton key={`skeleton-${index}`} />
         ))}
+      </div>
+    );
+  }
+
+  if (products.length === 0 && !loading) {
+    return (
+      <div className={className}>
+        <div className="col-span-full">
+          <NoProductsFound message="No products found" />
+        </div>
       </div>
     );
   }

@@ -5,6 +5,8 @@ import { Mousewheel, FreeMode } from 'swiper/modules';
 import { useCartStore } from "../store/cartStore";
 import { useProductStore } from "../store/productStore";
 import { Link } from 'react-router-dom';
+import { useSidebar } from '../contexts/SidebarContext';
+import NoProductsFound from './NoProductsFound';
 
 interface CartSlideProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const { items, totalPrice, updateQuantity, removeItem, addItem } =
     useCartStore();
   const { bestSellingProducts, fetchBestSellingProducts } = useProductStore();
+  const { closeAllSidebars } = useSidebar();
   
   useEffect(() => {
     if (bestSellingProducts.length === 0) {
@@ -186,58 +189,70 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
               <div className="pb-4 bg-[#e9e7fd] px-3 flex-shrink-0">
                 <h1 className="text-center text-lg sm:text-xl mb-4">Trending Products</h1>
                 <div className="max-h-64 overflow-y-auto">
-                  <Swiper
-                    modules={[Mousewheel, FreeMode]}
-                    spaceBetween={10}               // gap between cards
-                    slidesPerView={'auto'}          // allows natural horizontal scroll
-                    freeMode={{ enabled: true, momentum: false }} // smooth scrolling
-                    mousewheel={true}
-                    className="mySwiper px-2"
-                  >
-                    {bestSellingProducts.map((product) => (
-                      <SwiperSlide
-                        key={product.id}
-                        className="!w-[110px] max-md:!w-[90px]"
-                      >
-                        <div className="bg-white rounded-lg overflow-hidden p-1.5 flex flex-col h-full">
-                          <Link to={`/products/${product.id}`} className="h-full block">
-                            <div className="w-full aspect-[3/4]">
-                              <img
-                                src={product.images[0]?.src || '/placeholder.webp'}
-                                alt={product.name}
-                                className="w-full h-full object-cover rounded-lg"
-                              />
-                            </div>
-                            <div className="text-center flex-grow mt-1">
-                              <h3 className="text-[9px] max-md:text-[8px] font-medium truncate">{product.name}</h3>
-                              <div className="text-[6px] max-md:text-[5px] text-black mt-1">
-                                {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-red-500 text-[4px] max-md:text-[3px] line-through">₹{product.regular_price}</span>
-                                    <span>₹{product.sale_price}</span>
-                                  </div>
-                                ) : (
-                                  <span>₹{product.price}</span>
-                                )}
+                  {bestSellingProducts.length === 0 ? (
+                    <div className="flex items-center justify-center h-40">
+                      <NoProductsFound message="No trending products" className="py-4" showImage={false} />
+                    </div>
+                  ) : (
+                    <Swiper
+                      modules={[Mousewheel, FreeMode]}
+                      spaceBetween={10}               // gap between cards
+                      slidesPerView={'auto'}          // allows natural horizontal scroll
+                      freeMode={{ enabled: true, momentum: false }} // smooth scrolling
+                      mousewheel={true}
+                      className="mySwiper px-2"
+                    >
+                      {bestSellingProducts.map((product) => (
+                        <SwiperSlide
+                          key={product.id}
+                          className="!w-[110px] max-md:!w-[90px]"
+                        >
+                          <div className="bg-white rounded-lg overflow-hidden p-1.5 flex flex-col h-full">
+                            <Link 
+                              to={`/products/${product.id}`}
+                              className="h-full block"
+                              onClick={() => {
+                                closeAllSidebars();
+                              }}
+                            >
+                              <div className="w-full aspect-[3/4]">
+                                <img
+                                  src={product.images[0]?.src || '/placeholder.webp'}
+                                  alt={product.name}
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
                               </div>
-                            </div>
-                          </Link>
-                          <button 
-                            className="w-full py-0.5 bg-[#D4F871] uppercase rounded-md border-1 text-[8px] max-md:text-[7px] border-black flex justify-center items-center gap-0.5 mt-1"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              addItem(product, 1);
-                            }}
-                          >
-                            Add to cart 
-                            <svg aria-hidden="true" fill="none" focusable="false" width="5" max-md:width="4" viewBox="0 0 24 24">
-                              <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-                            </svg>
-                          </button>
-                        </div>
-                      </SwiperSlide>
-                    ))}
-                  </Swiper>
+                              <div className="text-center flex-grow mt-1">
+                                <h3 className="text-[9px] max-md:text-[8px] font-medium truncate">{product.name}</h3>
+                                <div className="text-[6px] max-md:text-[5px] text-black mt-1">
+                                  {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
+                                    <div className="flex flex-col items-center">
+                                      <span className="text-red-500 text-[4px] max-md:text-[3px] line-through">₹{product.regular_price}</span>
+                                      <span>₹{product.sale_price}</span>
+                                    </div>
+                                  ) : (
+                                    <span>₹{product.price}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </Link>
+                            <button 
+                              className="w-full py-0.5 bg-[#D4F871] uppercase rounded-md border-1 text-[8px] max-md:text-[7px] border-black flex justify-center items-center gap-0.5 mt-1"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                addItem(product, 1);
+                              }}
+                            >
+                              Add to cart 
+                              <svg aria-hidden="true" fill="none" focusable="false" width="5" max-md:width="4" viewBox="0 0 24 24">
+                                <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+                  )}
                 </div>
               </div>
             </div>
@@ -246,7 +261,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
             {items.length > 0 && (
               <div className="p-4 border-t border-gray-200 flex-shrink-0">
                 <div className="space-y-4">
-                  <Link to="/checkout" onClick={onClose} className="w-full block">
+                  <Link to="/checkout" onClick={closeAllSidebars} className="w-full block">
                     <button
                       className="w-full flex justify-center px-4 py-3 text-sm font-medium text-white bg-black hover:bg-black rounded-md"
                     >

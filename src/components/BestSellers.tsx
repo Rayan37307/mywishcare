@@ -7,6 +7,7 @@ import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
 import { ArrowRightIcon } from 'lucide-react';
 import Skeleton from './Skeleton';
+import NoProductsFound from './NoProductsFound';
 
 const BestSellers = () => {
   const { bestSellingProducts, loading, error, fetchBestSellingProducts } = useProductStore();
@@ -74,11 +75,24 @@ const BestSellers = () => {
   if (error && bestSellingProducts.length === 0) {
     return (
       <div className="py-8">
-        <div className='flex gap-4'>
-        <h2 className="text-3xl font-bold mb-8 text-left">Best Sellers</h2>
-        <Link to='/collections/bestsellers'  className='flex items-center gap-2'>View All <ArrowRightIcon/></Link>
+        <div className='flex gap-4 items-center'>
+          <h2 className="text-3xl font-bold mb-8 text-left pt-7">Best Sellers</h2>
+          <Link to='/collections/bestsellers' className='flex items-center gap-2'>View All <ArrowRightIcon/></Link>
         </div>
         <p>Error loading products: {error}</p>
+      </div>
+    );
+  }
+
+  // Show "No Products Found" when there are no products after loading
+  if (!loading && bestSellingProducts.length === 0) {
+    return (
+      <div className="py-8">
+        <div className='flex gap-4 items-center'>
+          <h2 className="text-3xl font-bold mb-8 text-left pt-7">Best Sellers</h2>
+          <Link to='/collections/bestsellers' className='flex items-center gap-2'>View All <ArrowRightIcon/></Link>
+        </div>
+        <NoProductsFound message="No best selling products found" />
       </div>
     );
   }

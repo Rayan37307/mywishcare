@@ -7,6 +7,7 @@ import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
 import { ArrowRightIcon } from 'lucide-react';
 import Skeleton from './Skeleton';
+import NoProductsFound from './NoProductsFound';
 
 const RoutineBuilder = () => {
   const { routineBuilderProducts, loading, error, fetchRoutineBuilderProducts } = useProductStore();
@@ -74,8 +75,24 @@ const RoutineBuilder = () => {
   if (error && routineBuilderProducts.length === 0) {
     return (
       <div className="py-8">
-        <h2 className="text-3xl font-bold mb-8 text-left">Routine Builder</h2>
+        <div className='flex gap-4 items-center'>
+          <h2 className="text-3xl font-bold mb-8 text-left pt-7">Routine Builder</h2>
+          <Link to='/collections/routinebuilder' className='flex items-center gap-2'>View All <ArrowRightIcon/></Link>
+        </div>
         <p>Error loading products: {error}</p>
+      </div>
+    );
+  }
+
+  // Show "No Products Found" when there are no products after loading
+  if (!loading && routineBuilderProducts.length === 0) {
+    return (
+      <div className="py-8">
+        <div className='flex gap-4 items-center'>
+          <h2 className="text-3xl font-bold mb-8 text-left pt-7">Routine Builder</h2>
+          <Link to='/collections/routinebuilder' className='flex items-center gap-2'>View All <ArrowRightIcon/></Link>
+        </div>
+        <NoProductsFound message="No routine builder products found" />
       </div>
     );
   }

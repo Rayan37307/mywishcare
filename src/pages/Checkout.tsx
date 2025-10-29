@@ -7,10 +7,14 @@ import { analyticsService } from '../services/analyticsService';
 import { checkoutTrackingService } from '../services/checkoutTrackingService';
 import { fakeOrderBlockingService } from '../services/fakeOrderBlockingService';
 import { pixelConfirmationService } from '../services/pixelConfirmationService';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../constants/routes';
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCartStore();
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  
   type FormData = {
     email: string;
     firstName: string;
@@ -247,8 +251,8 @@ const Checkout = () => {
         await refreshOrders();
       }
       
-      // You might want to redirect to a thank you page
-      // navigate('/thank-you');
+      // Redirect to order success page
+      navigate(ROUTES.ORDER_SUCCESS, { state: { order: newOrder, total: totalPrice } });
     } catch (error) {
       console.error('Failed to place order:', error);
       alert('There was an error placing your order. Please try again.');

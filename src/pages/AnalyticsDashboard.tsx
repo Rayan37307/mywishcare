@@ -6,6 +6,7 @@ import { productTrackingService } from '../services/productTrackingService';
 import { checkoutTrackingService } from '../services/checkoutTrackingService';
 import { fakeOrderBlockingService } from '../services/fakeOrderBlockingService';
 import { pixelConfirmationService } from '../services/pixelConfirmationService';
+import NoProductsFound from '../components/NoProductsFound';
 
 const AnalyticsDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -141,26 +142,32 @@ const AnalyticsDashboard: React.FC = () => {
               <div className="bg-gray-50 p-6 rounded-lg mb-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Most Viewed Products</h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-100">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Viewed</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {overviewStats.mostViewedProducts.map((product, index) => (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{product.price}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(product.timestamp).toLocaleString()}
-                          </td>
+                  {overviewStats.mostViewedProducts.length > 0 ? (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Viewed</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {overviewStats.mostViewedProducts.map((product, index) => (
+                          <tr key={index}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{product.price}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(product.timestamp).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="py-12">
+                      <NoProductsFound message="No most viewed products found" showImage={false} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

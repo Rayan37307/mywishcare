@@ -1,5 +1,5 @@
 import { useProductStore } from '../store/productStore';
-import type { CollectionType } from '../types/product';
+import type { CollectionType } from '../store/productStore';
 import { COLLECTIONS } from '../constants/app';
 
 // Custom hook to encapsulate product operations
@@ -19,6 +19,8 @@ export const useProductOperations = () => {
     fetchDetanProducts,
     fetchDamagedHairProducts,
     fetchSunCareProducts,
+    fetchLipBalmProducts,
+    fetchHairCare1Products,
     fetchAllProductsCollection,
     getProductsByCollection,
     loading,
@@ -42,9 +44,17 @@ export const useProductOperations = () => {
         return await fetchDamagedHairProducts();
       case COLLECTIONS.SUN_CARE:
         return await fetchSunCareProducts();
-      case 'all-products':
+      case 'lipBalm':
+        return await fetchLipBalmProducts();
+      case 'routineBuilder':
+        return await fetchRoutineBuilderProducts();
+      case 'whatsNew':
+        return await fetchWhatsNewProducts();
+      case 'hairCare1':
+        return await fetchHairCare1Products();
+      case 'allProducts':
         return await fetchAllProductsCollection();
-      case 'bestsellers':
+      case 'bestSellers':
         return await fetchBestSellingProducts();
       default:
         return await fetchAllProducts();
@@ -70,6 +80,8 @@ export const useProductOperations = () => {
     fetchDetanProducts,
     fetchDamagedHairProducts,
     fetchSunCareProducts,
+    fetchLipBalmProducts,
+    fetchHairCare1Products,
     fetchAllProductsCollection,
     
     // Helper functions

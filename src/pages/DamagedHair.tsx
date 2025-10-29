@@ -1,20 +1,18 @@
 import { useEffect } from 'react';
 import ProblemCategory from '../components/ProblemCategory';
 import DamagedHairCard from '../components/DamagedHairCard';
-import { useProductOperations } from '../hooks/useProductOperations';
+import { useProductStore } from '../store/productStore';
 
 const DamagedHair = () => {
   const { 
-    fetchBestSellingProducts, 
-    loading, 
-    getProductsByCollection 
-  } = useProductOperations();
+    fetchDamagedHairProducts, 
+    damagedHairProducts,
+    loading
+  } = useProductStore();
   
-  const bestSellingProducts = getProductsByCollection('bestSellers');
-
   useEffect(() => {
-    fetchBestSellingProducts();
-  }, [fetchBestSellingProducts]);
+    fetchDamagedHairProducts();
+  }, [fetchDamagedHairProducts]);
 
   return (
     <div className='px-10'>
@@ -22,7 +20,7 @@ const DamagedHair = () => {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : (
-        <DamagedHairCard products={bestSellingProducts} />
+        <DamagedHairCard products={damagedHairProducts} />
       )}
     </div>
   );

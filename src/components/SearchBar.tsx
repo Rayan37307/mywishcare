@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { Product } from '../types/product';
 import { woocommerceService } from '../services/woocommerceService';
 import { Link } from 'react-router-dom';
+import NoProductsFound from './NoProductsFound';
 
 interface SearchBarProps {
   onSubmit: (searchTerm: string) => void;
@@ -146,7 +147,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
                 ))}
               </div>
             ) : (
-              <div className="p-4 text-center text-gray-500">No products found</div>
+              <div className="p-4">
+                <NoProductsFound message={`No products found for "${searchTerm}"`} showImage={false} />
+              </div>
             )}
             
             {/* View all results button */}

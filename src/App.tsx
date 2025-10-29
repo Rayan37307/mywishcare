@@ -5,6 +5,7 @@ import { Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProductProvider } from './contexts/ProductContext';
 import { OrderProvider } from './contexts/OrderContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 
 // Page imports
 import Home from './pages/Home'
@@ -28,6 +29,7 @@ import HairCare1 from './pages/HairCare1'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
+import OrderSuccessPage from './pages/OrderSuccessPage'
 import SearchPage from './pages/SearchPage'
 import APIDebugPage from './pages/APIDebugPage'
 import TestPage from './pages/TestPage'
@@ -43,7 +45,6 @@ import MobileMenu from './components/MobileMenu'
 import ProfilePage from './components/ProfilePage'
 import ProtectedRoute from './components/ProtectedRoute'
 import CartSlide from './components/CartSlide'
-import LoaderWrapper from './components/LoaderWrapper';
 
 // Constants
 import { ROUTES } from './constants/routes'
@@ -74,6 +75,11 @@ const App = () => {
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);
   const closeCart = () => setIsCartOpen(false);
+
+  const closeAllSidebars = () => {
+    closeMenu();
+    closeCart();
+  };
 
   const menuItems: MenuItemType[] = [
     { name: 'Home', path: ROUTES.HOME },
@@ -106,70 +112,71 @@ const App = () => {
       <ProductProvider>
         <OrderProvider>
           <div className="relative bg-[#E4EDFD]">
-            {/* ✅ Reusable Mobile Menu */}
-            <MobileMenu
-              isOpen={isMenuOpen}
-              onClose={closeMenu}
-              menuItems={menuItems}
-            />
-
-            {/* Main Content */}
-            <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
-              {/* <Navigation /> */}
-              <Topbar />
-              <Header 
-                toggleMenu={toggleMenu} 
-                toggleCart={toggleCart} 
-                isMenuOpen={isMenuOpen}
+            <SidebarProvider onCloseAll={closeAllSidebars}>
+              {/* ✅ Reusable Mobile Menu */}
+              <MobileMenu
+                isOpen={isMenuOpen}
+                onClose={closeMenu}
+                menuItems={menuItems}
               />
-              <LoaderWrapper>
-                <div className="">
-                  <Routes>
-                    <Route path={ROUTES.HOME} element={<Home />} />
-                    <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
-                    <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<BestSellers />} />
-                    <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<SunCare />} />
-                    <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<LipBalm />} />
-                    <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Hairfall />} />
-                    <Route path={ROUTES.COLLECTIONS_ACNE} element={<Acne />} />
-                    <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Pigmentation />} />
-                    <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<DullSkin />} />
-                    <Route path={ROUTES.COLLECTIONS_DETAN} element={<Detan />} />
-                    <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<DamagedHair />} />
-                    <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<HairCare1 />} />
-                    <Route path={ROUTES.PAGES_ABOUT} element={<About />} />
-                    <Route path={ROUTES.COLLECTIONS_ALL} element={<AllProducts />} />
-                    <Route path={ROUTES.POLICIES_TERMS} element={<TermsOfService />} />
-                    <Route path={ROUTES.POLICIES_PRIVACY} element={<PrivacyPolicy />} />
-                    <Route path={ROUTES.POLICIES_SHIPPING} element={<ShippingPolicy />} />
-                    <Route path={ROUTES.POLICIES_REFUND} element={<RefundPolicy />} />
-                    <Route path={ROUTES.PRODUCT_DETAIL_ID_SLUG} element={<ProductDetail />} />
-                    <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetail />} />
-                    <Route path={ROUTES.PRODUCT_DETAIL_SLUG} element={<ProductDetail />} />
-                    <Route path={ROUTES.CART} element={<Cart />} />
-                    <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
-                    <Route path={ROUTES.SEARCH} element={<SearchPage />} />
-                    
 
-                    <Route 
-                      path={ROUTES.PROFILE} 
-                      element={
-                        <ProtectedRoute>
-                          <ProfilePage />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    <Route path={ROUTES.API_DEBUG} element={<APIDebugPage />} />
-                    <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
-                    <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
-                  </Routes>
-                </div>
-                <Footer />
-              </LoaderWrapper>
-            </div>
-            
-            {/* Cart Slide - Positioned at app level to avoid navbar constraints */}
-            <CartSlide isOpen={isCartOpen} onClose={closeCart} />
+              {/* Main Content */}
+              <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
+                {/* <Navigation /> */}
+                <Topbar />
+                <Header 
+                  toggleMenu={toggleMenu} 
+                  toggleCart={toggleCart} 
+                  isMenuOpen={isMenuOpen}
+                />
+                  <div className="">
+                    <Routes>
+                      <Route path={ROUTES.HOME} element={<Home />} />
+                      <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
+                      <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<BestSellers />} />
+                      <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<SunCare />} />
+                      <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<LipBalm />} />
+                      <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Hairfall />} />
+                      <Route path={ROUTES.COLLECTIONS_ACNE} element={<Acne />} />
+                      <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Pigmentation />} />
+                      <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<DullSkin />} />
+                      <Route path={ROUTES.COLLECTIONS_DETAN} element={<Detan />} />
+                      <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<DamagedHair />} />
+                      <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<HairCare1 />} />
+                      <Route path={ROUTES.PAGES_ABOUT} element={<About />} />
+                      <Route path={ROUTES.COLLECTIONS_ALL} element={<AllProducts />} />
+                      <Route path={ROUTES.POLICIES_TERMS} element={<TermsOfService />} />
+                      <Route path={ROUTES.POLICIES_PRIVACY} element={<PrivacyPolicy />} />
+                      <Route path={ROUTES.POLICIES_SHIPPING} element={<ShippingPolicy />} />
+                      <Route path={ROUTES.POLICIES_REFUND} element={<RefundPolicy />} />
+                      <Route path={ROUTES.PRODUCT_DETAIL_ID_SLUG} element={<ProductDetail />} />
+                      <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetail />} />
+                      <Route path={ROUTES.PRODUCT_DETAIL_SLUG} element={<ProductDetail />} />
+                      <Route path={ROUTES.CART} element={<Cart />} />
+                      <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
+                      <Route path={ROUTES.ORDER_SUCCESS} element={<OrderSuccessPage />} />
+                      <Route path={ROUTES.SEARCH} element={<SearchPage />} />
+                      
+
+                      <Route 
+                        path={ROUTES.PROFILE} 
+                        element={
+                          <ProtectedRoute>
+                            <ProfilePage />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      <Route path={ROUTES.API_DEBUG} element={<APIDebugPage />} />
+                      <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
+                      <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
+                    </Routes>
+                  </div>
+                  <Footer />
+              </div>
+              
+              {/* Cart Slide - Positioned at app level to avoid navbar constraints */}
+              <CartSlide isOpen={isCartOpen} onClose={closeCart} />
+            </SidebarProvider>
           </div>
         </OrderProvider>
       </ProductProvider>

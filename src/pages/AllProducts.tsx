@@ -5,11 +5,11 @@ import AllProductsCardSkeleton from '../components/AllProductsCardSkeleton';
 import { useProductStore } from '../store/productStore';
 
 const AllProducts = () => {
-  const { products, fetchAllProducts, loading } = useProductStore();
+  const { allProducts, fetchAllProductsCollection, loading } = useProductStore();
 
   useEffect(() => {
-    fetchAllProducts();
-  }, [fetchAllProducts]);
+    fetchAllProductsCollection();
+  }, [fetchAllProductsCollection]);
 
   return (
     <div className='px-10'>
@@ -17,7 +17,7 @@ const AllProducts = () => {
       {loading ? (
         <AllProductsCardSkeleton count={8} />
       ) : (
-        <AllProductsCard products={products} />
+        <AllProductsCard products={allProducts} />
       )}
     </div>
   );
