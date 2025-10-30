@@ -111,7 +111,7 @@ const App = () => {
     <ThemeProvider>
       <ProductProvider>
         <OrderProvider>
-          <div className="relative bg-[#E4EDFD]">
+          <div className="relative bg-[#E4EDFD] ">
             <SidebarProvider onCloseAll={closeAllSidebars}>
               {/* ✅ Reusable Mobile Menu */}
               <MobileMenu
@@ -133,16 +133,6 @@ const App = () => {
                     <Routes>
                       <Route path={ROUTES.HOME} element={<Home />} />
                       <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
-                      <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<BestSellers />} />
-                      <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<SunCare />} />
-                      <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<LipBalm />} />
-                      <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Hairfall />} />
-                      <Route path={ROUTES.COLLECTIONS_ACNE} element={<Acne />} />
-                      <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Pigmentation />} />
-                      <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<DullSkin />} />
-                      <Route path={ROUTES.COLLECTIONS_DETAN} element={<Detan />} />
-                      <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<DamagedHair />} />
-                      <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<HairCare1 />} />
                       <Route path={ROUTES.PAGES_ABOUT} element={<About />} />
                       <Route path={ROUTES.COLLECTIONS_ALL} element={<AllProducts />} />
                       <Route path={ROUTES.POLICIES_TERMS} element={<TermsOfService />} />
@@ -170,6 +160,20 @@ const App = () => {
                       <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
                       <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
                     </Routes>
+                    <div className='pb-10'>
+                      <Routes>
+                        <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<BestSellers />} />
+                      <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<SunCare />} />
+                      <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<LipBalm />} />
+                      <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Hairfall />} />
+                      <Route path={ROUTES.COLLECTIONS_ACNE} element={<Acne />} />
+                      <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Pigmentation />} />
+                      <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<DullSkin />} />
+                      <Route path={ROUTES.COLLECTIONS_DETAN} element={<Detan />} />
+                      <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<DamagedHair />} />
+                      <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<HairCare1 />} />
+                      </Routes>
+                    </div>
                   </div>
                   <Footer />
               </div>

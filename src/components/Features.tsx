@@ -22,7 +22,7 @@ const Features = () => {
           {features.map((feature) => (
             <div
               key={feature.id}
-              className="flex-shrink-0 w-[400px]"
+              className="flex-shrink-0 max-md:w-[70vw] w-[400px]"
             >
               <div className="rounded-lg overflow-hidden shadow-md h-full">
                 <img

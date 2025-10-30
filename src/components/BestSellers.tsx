@@ -11,7 +11,7 @@ import NoProductsFound from './NoProductsFound';
 
 const BestSellers = () => {
   const { bestSellingProducts, loading, error, fetchBestSellingProducts } = useProductStore();
-  const { addItem } = useCartStore();
+  const { addItem, isAddingItem } = useCartStore();
 
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
@@ -21,7 +21,7 @@ const BestSellers = () => {
     if (bestSellingProducts.length === 0) {
       fetchBestSellingProducts();
     }
-  }, [bestSellingProducts.length, fetchBestSellingProducts]);
+  }, [bestSellingProducts.length]); // Removed fetchBestSellingProducts from dependency to prevent infinite loop
 
   // Loading skeleton for the whole component
   if (loading && bestSellingProducts.length === 0) {
@@ -144,18 +144,23 @@ const BestSellers = () => {
             </div>
           </div>
           <button 
-            className='w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2'
+            className={`w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2 ${
+              isAddingItem(product.id) ? 'bg-gray-300' : ''
+            }`}
             onClick={(e) => {
               e.preventDefault();
               handleAddToCart(product);
             }}
+            disabled={isAddingItem(product.id)}
           >
-            Add to cart
-            <span className="mb-[3px]">
+            {isAddingItem(product.id) ? 'Adding...' : 'Add to cart'}
+            {!isAddingItem(product.id) && (
+              <span className="mb-[3px]">
             <svg aria-hidden="true" fill="none" focusable="false" width="15" viewBox="0 0 24 24">
               <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
             </svg>
             </span>
+            )}
           </button>
         </div>
       </Link>

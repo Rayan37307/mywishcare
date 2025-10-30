@@ -25,15 +25,10 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
   category,
   className = "py-8"
 }) => {
-  const { addItem, getCartItems, isAddingItem } = useCartStore();
+  const { addItem, isAddingItem } = useCartStore();
   
   const handleAddToCart = (product: Product) => {
     addItem(product, 1);
-  };
-
-  // Check if a product is already in the cart
-  const isInCart = (productId: number) => {
-    return getCartItems().some(item => item.product.id === productId);
   };
 
   // Check if a product is currently being added to the cart

@@ -721,6 +721,30 @@ class WooCommerceService {
     }
   }
 
+  async fetchProductsByOrder(orderBy: string = 'date', order: string = 'desc'): Promise<Product[]> {
+    try {
+      const endpoint = this.buildAuthURL(`/products?orderby=${orderBy}&order=${order}`);
+      console.log(`Fetching products ordered by ${orderBy} (${order}) from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Products by order API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Products by order API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const products: Product[] = await response.json();
+      console.log(`Successfully fetched ${products.length} products ordered by ${orderBy} (${order})`);
+      return products;
+    } catch (error) {
+      console.error('Error fetching products by order:', error);
+      throw error;
+    }
+  }
+
   // Order Methods
   async getCustomerOrders(customerId: number): Promise<Order[]> {
     try {

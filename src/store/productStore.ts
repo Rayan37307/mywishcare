@@ -108,9 +108,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchWhatsNewProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
-      // Sort by date_created to get newest products (WooCommerce API returns this)
-      // For now, just take the first 6 as you have
+      // Fetch products ordered by date (newest first) - using woocommerce API parameter
+      const products = await woocommerceService.fetchProductsByOrder('date', 'desc');
       const newProducts = products.slice(0, 6);
       set({ 
         whatsNewProducts: newProducts,
@@ -127,8 +126,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchBestSellingProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // Fetch products by 'bestsellers' tag
-      const products = await woocommerceService.fetchProductsByTagSlug('bestsellers');
+      // Fetch best selling products by ordering by popularity
+      const products = await woocommerceService.fetchBestSellingProducts();
       set({ 
         bestSellingProducts: products,
         loading: false 

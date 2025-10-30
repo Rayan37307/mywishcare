@@ -1,10 +1,11 @@
 // components/MobileMenu.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useAuth } from "../hooks/useAuth";
 import { User } from "lucide-react";
 import { useSidebar } from '../contexts/SidebarContext';
+import { gsap } from "gsap";
 
 interface MenuItemBase {
   name: string;
@@ -30,6 +31,8 @@ interface MenuItemProps {
   ) => void;
   closeAllSidebars: () => void;
   level?: number;
+  index?: number; // Add index for stagger animation
+  isOpen?: boolean; // Add isOpen for animation
 }
 
 interface MobileMenuProps {
@@ -38,16 +41,36 @@ interface MobileMenuProps {
   menuItems: MenuItem[];
 }
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, closeAllSidebars, level = 0 }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, closeAllSidebars, level = 0, index = 0, isOpen = false }) => {
   const hasSubmenu =
     "submenu" in item && Array.isArray(item.submenu) && item.submenu.length > 0;
+  const menuItemRef = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    if (menuItemRef.current && isOpen) {
+      gsap.fromTo(
+        menuItemRef.current,
+        { 
+          opacity: 0, 
+          x: -20,
+        },
+        { 
+          opacity: 1, 
+          x: 0,
+          duration: 0.3,
+          delay: (level * 0.05) + (index! * 0.1), // Stagger animation based on level and index
+          ease: "power2.out"
+        }
+      );
+    }
+  }, [isOpen, level, index]);
 
   if (hasSubmenu) {
     return (
-      <li>
+      <li ref={menuItemRef}>
         <button
           onClick={() => onNavigate("openSubmenu", item as MenuItemWithSubmenu)}
-          className="flex justify-between items-center w-full py-2 text-base hover:text-gray-600 transition-colors"
+          className="flex justify-between items-center w-full py-2 text-[13px] font-semibold hover:text-gray-600 transition-colors"
         >
           {item.name}
           <svg
@@ -71,10 +94,10 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, closeAllSidebars,
   }
 
   return (
-    <li>
+    <li ref={menuItemRef}>
       <Link
         to={(item as MenuItemWithLink).path}
-        className="block py-2 text-base hover:text-gray-600 transition-colors"
+        className="block py-2 text-[13px] font-semibold hover:text-gray-600 transition-colors"
         onClick={() => {
           closeAllSidebars();
           onNavigate("close");
@@ -83,6 +106,63 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onNavigate, closeAllSidebars,
         {item.name}
       </Link>
       {level === 0 && <hr className="border-gray-300 mt-2" />}
+    </li>
+  );
+};
+
+interface AnimatedSubmenuItemProps {
+  subItem: MenuItemWithLink;
+  idx: number;
+  currentSubmenu: MenuItemWithSubmenu | null;
+  closeAllSidebars: () => void;
+  onClose: () => void;
+  isOpen: boolean; // Add isOpen prop for animation
+}
+
+const AnimatedSubmenuItem: React.FC<AnimatedSubmenuItemProps> = ({ 
+  subItem, 
+  idx, 
+  currentSubmenu,
+  closeAllSidebars,
+  onClose,
+  isOpen 
+}) => {
+  const subItemRef = useRef<HTMLLIElement>(null);
+  
+  useEffect(() => {
+    if (subItemRef.current && isOpen) {
+      gsap.fromTo(
+        subItemRef.current,
+        { 
+          opacity: 0, 
+          x: -20,
+        },
+        { 
+          opacity: 1, 
+          x: 0,
+          duration: 0.3,
+          delay: idx * 0.1, // Stagger animation with more delay for submenu items
+          ease: "power2.out"
+        }
+      );
+    }
+  }, [idx, isOpen]);
+
+  return (
+    <li ref={subItemRef}>
+      <Link
+        to={subItem.path}
+        className="block py-2 text-[13px] py-3 font-semibold hover:text-gray-600 transition-colors"
+        onClick={() => {
+          closeAllSidebars();
+          onClose();
+        }}
+      >
+        {subItem.name}
+      </Link>
+      {idx !== currentSubmenu!.submenu.length - 1 && (
+        <hr className="border-gray-300 mt-2" />
+      )}
     </li>
   );
 };
@@ -115,6 +195,40 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   const showMainMenu = !currentSubmenu || (currentSubmenu && isLargeScreen);
   const showSubmenu = currentSubmenu != null;
 
+  // Refs for the main menu and submenu containers
+  const mainMenuRef = useRef<HTMLDivElement>(null);
+  const subMenuRef = useRef<HTMLDivElement>(null);
+
+  // Animate the main menu open/close
+  useEffect(() => {
+    if (mainMenuRef.current) {
+      if (isOpen && showMainMenu) {
+        gsap.fromTo(
+          mainMenuRef.current,
+          { x: "-100%" },
+          { x: 0, duration: 0.4, ease: "power2.out" }
+        );
+      } else if (!isOpen) {
+        gsap.fromTo(
+          mainMenuRef.current,
+          { x: 0 },
+          { x: "-100%", duration: 0.3, ease: "power2.in" }
+        );
+      }
+    }
+  }, [isOpen, showMainMenu]);
+
+  // Animate the submenu open/close
+  useEffect(() => {
+    if (subMenuRef.current && showSubmenu) {
+      gsap.fromTo(
+        subMenuRef.current,
+        { x: isLargeScreen ? "100%" : "-100%" },
+        { x: 0, duration: 0.4, ease: "power2.out" }
+      );
+    }
+  }, [showSubmenu, isLargeScreen]);
+
   return (
     <>
       {/* Backdrop */}
@@ -129,13 +243,12 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       {/* Main Menu */}
       {showMainMenu && (
         <div
-          className={`fixed top-0 left-0 z-50 h-full w-full pr-4 sm:w-96 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
-            isOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          ref={mainMenuRef}
+          className="fixed top-0 left-0 z-50 h-full w-full pr-4 sm:w-96 bg-white shadow-lg"
         >
-          <div className="p-4 h-full flex flex-col">
+          <div className="p-7 h-full flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-8">
               <button
                 onClick={onClose}
                 aria-label="Close menu"
@@ -159,7 +272,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             </div>
 
             {/* Menu Items */}
-            <ul className="space-y-1 flex-1 overflow-y-auto uppercase">
+            <ul className="space-y-4 flex-1 overflow-y-auto uppercase text-[10px]">
               {menuItems.map((item, index) => (
                 <MenuItem
                   key={index}
@@ -167,6 +280,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                   onNavigate={handleNavigate}
                   closeAllSidebars={closeAllSidebars}
                   level={0}
+                  index={index}
+                  isOpen={isOpen}
                 />
               ))}
             </ul>
@@ -207,9 +322,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       {/* Submenu */}
       {showSubmenu && (
         <div
-          className={`fixed top-0 z-50 h-full w-full pl-4 pr-4 ${
-            isLargeScreen ? "left-96 w-96" : "left-0 pr-4"  // Add right padding when on left side of screen
-          } bg-white shadow-lg transform transition-transform duration-300 ease-in-out translate-x-0`}
+          ref={subMenuRef}
+          className={`fixed top-0 z-50 h-full ${
+            isLargeScreen ? "left-96 w-96" : "left-0 w-full pr-4"  // Add right padding when on left side of screen
+          } bg-white shadow-lg`}
         >
           <div className="p-4 h-full flex flex-col">
             {/* Back button */}
@@ -244,21 +360,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
 
             <ul className="space-y-0.5 flex-1 uppercase">
               {currentSubmenu?.submenu.map((subItem, idx) => (
-                <li key={idx}>
-                  <Link
-                    to={subItem.path}
-                    className="block py-2 text-base hover:text-gray-600 transition-colors"
-                    onClick={() => {
-                      closeAllSidebars();
-                      onClose();
-                    }}
-                  >
-                    {subItem.name}
-                  </Link>
-                  {idx !== currentSubmenu.submenu.length - 1 && (
-                    <hr className="border-gray-300 mt-2" />
-                  )}
-                </li>
+                <AnimatedSubmenuItem 
+                  key={idx}
+                  subItem={subItem}
+                  idx={idx}
+                  currentSubmenu={currentSubmenu}
+                  closeAllSidebars={closeAllSidebars}
+                  onClose={onClose}
+                  isOpen={isOpen}
+                />
               ))}
             </ul>
           </div>

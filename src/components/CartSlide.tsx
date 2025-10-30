@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Mousewheel, FreeMode } from 'swiper/modules';
+import { gsap } from 'gsap';
 
 import { useCartStore } from "../store/cartStore";
 import { useProductStore } from "../store/productStore";
@@ -19,11 +20,66 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const { bestSellingProducts, fetchBestSellingProducts } = useProductStore();
   const { closeAllSidebars } = useSidebar();
   
+  const slideRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Animation function using GSAP
+  const animateSlide = useCallback(() => {
+    if (!slideRef.current || !backdropRef.current) return;
+
+    if (isOpen) {
+      setIsVisible(true);
+      // Animate in
+      gsap.set(slideRef.current, { 
+        x: '100%', // Start from the right side
+        scaleX: 0.95,
+        scaleY: 1
+      });
+      gsap.set(backdropRef.current, { opacity: 0 });
+      
+      gsap.to(backdropRef.current, {
+        opacity: 1,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+      
+      gsap.to(slideRef.current, {
+        x: 0, // Move to final position
+        scaleX: 1,
+        duration: 0.4,
+        ease: 'power2.out'
+      });
+    } else {
+      // Animate out
+      gsap.to(backdropRef.current, {
+        opacity: 0,
+        duration: 0.25,
+        ease: 'power2.in'
+      });
+      
+      gsap.to(slideRef.current, {
+        x: '100%', // Move back to the right side
+        scaleX: 0.95,
+        duration: 0.3,
+        ease: 'power2.in',
+        onComplete: () => {
+          setIsVisible(false); // Hide after animation completes
+        }
+      });
+    }
+  }, [isOpen]);
+  
   useEffect(() => {
     if (bestSellingProducts.length === 0) {
       fetchBestSellingProducts();
     }
-  }, [bestSellingProducts.length, fetchBestSellingProducts]);
+  }, [bestSellingProducts.length]); // Removed fetchBestSellingProducts from dependency to prevent infinite loop
+  
+  // Trigger GSAP animation when isOpen changes
+  useEffect(() => {
+    animateSlide();
+  }, [animateSlide]);
   
   const messages = [
     "Free Delivery on ₹299+",
@@ -47,15 +103,12 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-hidden ${
-        isOpen ? "block" : "hidden"
-      }`}
+      className={`fixed inset-0 z-50 overflow-hidden ${isVisible ? "block" : "hidden"}`}
     >
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 transition-opacity duration-500 ease-out ${
-          isOpen ? "opacity-100" : "opacity-0"
-        }`}
+        ref={backdropRef}
+        className="absolute inset-0 bg-black/25"
         onClick={onClose}
       ></div>
 
@@ -63,9 +116,8 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
       <div className="absolute inset-y-0 right-0 max-w-full flex">
         <div className="relative w-screen max-w-md">
           <div
-            className={`h-full flex flex-col bg-white shadow-xl transform transition-all duration-500 ease-out ${
-              isOpen ? "translate-x-0 translate-y-0 scale-100" : "translate-x-full translate-y-0 scale-95"
-            }`}
+            ref={slideRef}
+            className="h-full flex flex-col bg-white shadow-xl ml-16 w-[calc(100%-4rem)]" // Reduced width with left margin
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 sm:py-6 border-b border-gray-200">
@@ -213,6 +265,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                               className="h-full block"
                               onClick={() => {
                                 closeAllSidebars();
+                                onClose();
                               }}
                             >
                               <div className="w-full aspect-[3/4]">
@@ -261,7 +314,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
             {items.length > 0 && (
               <div className="p-4 border-t border-gray-200 flex-shrink-0">
                 <div className="space-y-4">
-                  <Link to="/checkout" onClick={closeAllSidebars} className="w-full block">
+                  <Link to="/checkout" onClick={() => { closeAllSidebars(); onClose(); }} className="w-full block">
                     <button
                       className="w-full flex justify-center px-4 py-3 text-sm font-medium text-white bg-black hover:bg-black rounded-md"
                     >
