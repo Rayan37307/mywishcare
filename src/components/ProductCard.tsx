@@ -3,6 +3,7 @@ import { APP_CONSTANTS } from '../constants/app';
 import { formatCurrency } from '../utils/priceUtils';
 import { isOnSale, getSavingsAmount, getSavingsPercentage } from '../utils/productUtils';
 import type { Product } from '../types/product';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -10,18 +11,33 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
+  const [isHovered, setIsHovered] = useState(false);
   const onSale = isOnSale(product);
   const savingsAmount = getSavingsAmount(product);
   const savingsPercentage = getSavingsPercentage(product);
 
+  // Get the image to show based on hover state
+  const getDisplayImage = () => {
+    if (product.images && product.images.length > 1 && isHovered) {
+      // Show the second image (index 1) if hovered and more than one image exists
+      return product.images[1]?.src || product.images[0]?.src || APP_CONSTANTS.DEFAULT_PRODUCT_IMAGE;
+    }
+    // Show the first image by default
+    return product.images[0]?.src || APP_CONSTANTS.DEFAULT_PRODUCT_IMAGE;
+  };
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden p-2 flex flex-col transition-all h-full">
+    <div 
+      className="bg-white rounded-lg overflow-hidden p-2 flex flex-col transition-all h-full"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <Link to={`/products/${product.id}`}>
-        <div className="w-full aspect-[5/5.5]">
+        <div className="w-full aspect-[5/5.5] relative">
           <img 
-            src={product.images[0]?.src || APP_CONSTANTS.DEFAULT_PRODUCT_IMAGE} 
+            src={getDisplayImage()} 
             alt={product.name} 
-            className="w-full h-full object-cover rounded-lg"
+            className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
           />
         </div>
         

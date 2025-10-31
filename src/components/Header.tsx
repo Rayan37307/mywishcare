@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Navbar from './Navbar';
@@ -10,7 +10,7 @@ interface HeaderProps {
   isMenuOpen?: boolean;
 }
 
-const Header = ({ toggleMenu, toggleCart, isMenuOpen }: HeaderProps) => {
+const Header = memo(({ toggleMenu, toggleCart, isMenuOpen }: HeaderProps) => {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -64,6 +64,8 @@ const Header = ({ toggleMenu, toggleCart, isMenuOpen }: HeaderProps) => {
       />
     </>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;

@@ -5,19 +5,17 @@ import { analyticsService, type CheckoutTrackingData } from './analyticsService'
 
 export interface CheckoutFormState {
   email: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   address1: string;
-  address2: string;
-  city: string;
-  state: string;
-  postalCode: string;
+  district: string;
   phone: string;
   countryCode: string;
-  zone: string;
   marketingOptIn: boolean;
   saveShippingInfo: boolean;
   billingAddressSame: boolean;
+  billingName?: string;
+  billingAddress1?: string;
+  billingDistrict?: string;
   paymentMethod: string;
   notes: string;
 }

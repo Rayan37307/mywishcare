@@ -70,6 +70,11 @@ export const useAuth = () => {
         isAuthenticated: !!result.user,
       });
 
+      // Reload the page after successful login
+      if (result.user) {
+        window.location.reload();
+      }
+
       return { success: true, user: result.user };
     } catch (error) {
       const errorMessage = (error as Error).message || 'Login failed';
@@ -102,6 +107,11 @@ export const useAuth = () => {
         error: null,
         isAuthenticated: !!result.user, // Set to true if user object is returned
       }));
+
+      // Reload the page after successful registration
+      if (result.user) {
+        window.location.reload();
+      }
 
       return { success: true, user: result.user };
     } catch (error) {
@@ -155,6 +165,9 @@ export const useAuth = () => {
       error: null,
       isAuthenticated: false,
     });
+    
+    // Reload the page after logout
+    window.location.reload();
   };
 
   const updateUser = async (userData: Partial<User>) => {

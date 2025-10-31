@@ -3,12 +3,9 @@
 
 export interface OrderData {
   email: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   address1: string;
-  city: string;
   state: string;
-  postalCode: string;
   phone: string;
   items: Array<{
     product_id: string | number;
@@ -221,8 +218,7 @@ class FakeOrderBlockingService {
       orderData.email.includes('10minutemail'),
       // Suspicious address patterns
       orderData.address1.toLowerCase().includes('fake'),
-      orderData.firstName.toLowerCase().includes('test'),
-      orderData.lastName.toLowerCase().includes('test'),
+      orderData.name.toLowerCase().includes('test'),
       // Suspicious phone patterns
       orderData.phone.match(/^(\d)\1{9,}$/), // All same digit
     ];
@@ -235,7 +231,6 @@ class FakeOrderBlockingService {
     const similarOrders = this.orderHistory.filter(order => {
       return (
         order.address1 === orderData.address1 &&
-        order.city === orderData.city &&
         order.state === orderData.state
       );
     });

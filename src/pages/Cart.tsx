@@ -51,24 +51,54 @@ const Cart = () => {
                   <div className="flex items-center">
                     <button 
                       className="px-3 py-1 border border-gray-300"
-                      onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                      onClick={() => {
+                        try {
+                          updateQuantity(item.product.id, item.quantity - 1);
+                        } catch (error) {
+                          console.error('Error updating quantity:', error);
+                        }
+                      }}
                     >
                       -
                     </button>
                     <span className="px-3">{item.quantity}</span>
                     <button 
                       className="px-3 py-1 border border-gray-300"
-                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                      onClick={() => {
+                        try {
+                          updateQuantity(item.product.id, item.quantity + 1);
+                        } catch (error) {
+                          console.error('Error updating quantity:', error);
+                        }
+                      }}
                     >
                       +
                     </button>
                   </div>
                   <div className="ml-4">
-                    <p className="font-bold">₹{(parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * item.quantity).toFixed(2)}</p>
+                    <p className="font-bold">
+                      ₹{
+                        (() => {
+                          let price: number;
+                          if (typeof item.product.price === 'string') {
+                            price = parseFloat(item.product.price.replace(/[^\d.-]/g, '')) || 0;
+                          } else {
+                            price = parseFloat(String(item.product.price)) || 0;
+                          }
+                          return (price * item.quantity).toFixed(2);
+                        })()
+                      }
+                    </p>
                   </div>
                   <button 
                     className="ml-6 text-red-600 hover:text-red-800"
-                    onClick={() => removeItem(item.product.id)}
+                    onClick={() => {
+                      try {
+                        removeItem(item.product.id);
+                      } catch (error) {
+                        console.error('Error removing item:', error);
+                      }
+                    }}
                   >
                     Remove
                   </button>
@@ -79,7 +109,13 @@ const Cart = () => {
             <div className="mt-6 flex gap-4">
               <button 
                 className="px-6 py-3 bg-gray-200"
-                onClick={clearCart}
+                onClick={() => {
+                  try {
+                    clearCart();
+                  } catch (error) {
+                    console.error('Error clearing cart:', error);
+                  }
+                }}
               >
                 Clear Cart
               </button>

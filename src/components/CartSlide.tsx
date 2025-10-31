@@ -8,6 +8,7 @@ import { useProductStore } from "../store/productStore";
 import { Link } from 'react-router-dom';
 import { useSidebar } from '../contexts/SidebarContext';
 import NoProductsFound from './NoProductsFound';
+import CartItem from './CartItem';
 
 interface CartSlideProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface CartSlideProps {
 }
 
 const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
-  const { items, totalPrice, updateQuantity, removeItem, addItem } =
+  const { items, totalItems, totalPrice, updateQuantity, removeItem, addItem } =
     useCartStore();
   const { bestSellingProducts, fetchBestSellingProducts } = useProductStore();
   const { closeAllSidebars } = useSidebar();
@@ -84,11 +85,11 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const messages = [
     "Free Delivery on ₹299+",
     "5% extra off on Prepaid Orders",
- ];
+  ];
 
-  // Function to insert dot dividers between every message (including end-to-start)
-  const renderMessages = () => {
-    const spacedDot = "|";//\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0
+  // Memoize the messages array to prevent recreation on every render
+  const memoizedMessages = useCallback(() => {
+    const spacedDot = "|"; //\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0
     const repeatedMessages = [...messages, ...messages]; // duplicate for seamless loop
     return repeatedMessages.map((msg, i) => (
       <span
@@ -99,7 +100,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
         {i !== repeatedMessages.length - 1 && <span>{spacedDot}</span>}
       </span>
     ));
-  };
+  }, [messages]);
 
   return (
     <div
@@ -152,7 +153,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
             </div>
             <div className="w-full bg-[#EAE1EF] py-3 overflow-hidden flex-shrink-0">
               <div className="flex whitespace-nowrap animate-marquee px-4 text-xs">
-                {renderMessages()}
+                {memoizedMessages()}
               </div>
 
               <style>{`
@@ -182,56 +183,12 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                 ) : (
                   <div className="space-y-4">
                     {items.map((item) => (
-                      <div
+                      <CartItem 
                         key={item.product.id}
-                        className="flex items-center pb-4"
-                      >
-                        <img
-                          src={item.product.images[0]?.src || "/placeholder.webp"}
-                          alt={item.product.name}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0 ml-3">
-                          <h3 className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                            {item.product.name}
-                          </h3>
-                          <div className="text-[9px] max-md:text-[8px] mt-1">
-                            {item.product.sale_price && item.product.sale_price !== '' && item.product.sale_price !== item.product.regular_price ? (
-                              <div className="flex items-center gap-0.5">
-                                <span className="text-red-500">₹{item.product.sale_price}</span>
-                                <span className="line-through text-gray-600 text-[8px] max-md:text-[7px]">₹{item.product.regular_price}</span>
-                              </div>
-                            ) : (
-                              <span>₹{item.product.price}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center mt-2 space-x-2">
-                            <button
-                              className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border border-gray-300 text-sm"
-                              onClick={() =>
-                                updateQuantity(item.product.id, item.quantity - 1)
-                              }
-                            >
-                              -
-                            </button>
-                            <span className="text-sm min-w-[20px] text-center">{item.quantity}</span>
-                            <button
-                              className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center border border-gray-300 text-sm"
-                              onClick={() =>
-                                updateQuantity(item.product.id, item.quantity + 1)
-                              }
-                            >
-                              +
-                            </button>
-                            <button
-                              className="text-gray-600 underline text-xs sm:text-sm ml-2"
-                              onClick={() => removeItem(item.product.id)}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                        item={item}
+                        updateQuantity={updateQuantity}
+                        removeItem={removeItem}
+                      />
                     ))}
                   </div>
                 )}
@@ -240,7 +197,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
               {/* Trending products section - now properly constrained */}
               <div className="pb-4 bg-[#e9e7fd] px-3 flex-shrink-0">
                 <h1 className="text-center text-lg sm:text-xl mb-4">Trending Products</h1>
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-80 overflow-y-auto">
                   {bestSellingProducts.length === 0 ? (
                     <div className="flex items-center justify-center h-40">
                       <NoProductsFound message="No trending products" className="py-4" showImage={false} />
@@ -257,9 +214,9 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                       {bestSellingProducts.map((product) => (
                         <SwiperSlide
                           key={product.id}
-                          className="!w-[110px] max-md:!w-[90px]"
+                          className="!w-[140px] sm:!w-[160px]"
                         >
-                          <div className="bg-white rounded-lg overflow-hidden p-1.5 flex flex-col h-full">
+                          <div className="bg-white rounded-lg overflow-hidden p-2 flex flex-col h-full">
                             <Link 
                               to={`/products/${product.id}`}
                               className="h-full block"
@@ -275,12 +232,12 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                                   className="w-full h-full object-cover rounded-lg"
                                 />
                               </div>
-                              <div className="text-center flex-grow mt-1">
-                                <h3 className="text-[9px] max-md:text-[8px] font-medium truncate">{product.name}</h3>
-                                <div className="text-[6px] max-md:text-[5px] text-black mt-1">
+                              <div className="text-center flex-grow mt-2">
+                                <h3 className="text-[11px] sm:text-[12px] font-medium line-clamp-2">{product.name}</h3>
+                                <div className="text-[9px] sm:text-[10px] text-black mt-1">
                                   {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
                                     <div className="flex flex-col items-center">
-                                      <span className="text-red-500 text-[4px] max-md:text-[3px] line-through">₹{product.regular_price}</span>
+                                      <span className="text-red-500 text-[8px] sm:text-[9px] line-through">₹{product.regular_price}</span>
                                       <span>₹{product.sale_price}</span>
                                     </div>
                                   ) : (
@@ -290,14 +247,14 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                               </div>
                             </Link>
                             <button 
-                              className="w-full py-0.5 bg-[#D4F871] uppercase rounded-md border-1 text-[8px] max-md:text-[7px] border-black flex justify-center items-center gap-0.5 mt-1"
+                              className="w-full py-1.5 bg-[#D4F871] uppercase rounded-md border-1 text-[10px] sm:text-[11px] border-black flex justify-center items-center gap-1 mt-2"
                               onClick={(e) => {
                                 e.preventDefault();
                                 addItem(product, 1);
                               }}
                             >
                               Add to cart 
-                              <svg aria-hidden="true" fill="none" focusable="false" width="5" max-md:width="4" viewBox="0 0 24 24">
+                              <svg aria-hidden="true" fill="none" focusable="false" width="8" viewBox="0 0 24 24">
                                 <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                               </svg>
                             </button>
@@ -318,7 +275,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                     <button
                       className="w-full flex justify-center px-4 py-3 text-sm font-medium text-white bg-black hover:bg-black rounded-md"
                     >
-                      Checkout . ₹{totalPrice.toFixed(0)}
+                      Checkout ({totalItems} items) . ₹{totalPrice.toFixed(0)}
                     </button>
                   </Link>
                 </div>

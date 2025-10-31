@@ -14,61 +14,40 @@ const Checkout = () => {
   const { items, totalPrice, clearCart } = useCartStore();
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  
-  type FormData = {
-    email: string;
-    firstName: string;
-    lastName: string;
-    address1: string;
-    address2: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    phone: string;
-    countryCode: string;
-    zone: string;
-    marketingOptIn: boolean;
-    saveShippingInfo: boolean;
-    billingAddressSame: boolean;
-    paymentMethod: string;
-    notes: string;
-  };
+  const { refreshOrders } = useOrder();
 
-  const [formData, setFormData] = useState<FormData>({
-    email: '',
-    firstName: '',
-    lastName: '',
+  const [formData, setFormData] = useState({
+    name: '',
     address1: '',
-    address2: '',
-    city: '',
-    state: '',
-    postalCode: '',
+    district: '',
     phone: '',
-    countryCode: 'IN',
-    zone: '',
+    email: '',
+    countryCode: 'BD',
     marketingOptIn: true,
     saveShippingInfo: false,
     billingAddressSame: true,
+    billingName: '',
+    billingAddress1: '',
+    billingDistrict: '',
     paymentMethod: 'cod',
-    notes: ''
+    notes: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const hasTrackedStart = useRef(false);
 
-  // Pre-populate form fields if user is authenticated
+  // Pre-fill user info if authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       setFormData(prev => ({
         ...prev,
-        email: user.email,
-        firstName: user.displayName.split(' ')[0] || user.username,
-        lastName: user.displayName.split(' ').slice(1).join(' ') || '',
+        name: user.displayName || user.username,
+        email: user.email || '',
       }));
     }
   }, [isAuthenticated, user]);
 
-  // Track checkout start when component mounts
+  // Track checkout start
   useEffect(() => {
     if (items.length > 0 && !hasTrackedStart.current) {
       const newSessionId = checkoutTrackingService.trackCheckoutStart(
@@ -79,72 +58,46 @@ const Checkout = () => {
       setSessionId(newSessionId);
       hasTrackedStart.current = true;
 
-      // Track the checkout start event with analytics
       analyticsService.trackCheckoutStart({
         value: totalPrice,
-        currency: 'INR',
+        currency: 'BDT',
         contents: items.map(item => ({
           id: item.product.id,
           quantity: item.quantity,
-          item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+          item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
         })),
         content_type: 'product',
       });
     }
-
-    // Cleanup function to track abandonment if user leaves without submitting
-    return () => {
-      if (sessionId) {
-        // Don't track as abandoned if form was submitted
-        // In a real app, this would be more sophisticated
-      }
-    };
   }, [items, formData, totalPrice]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
     setFormData(prev => {
-      const updatedData = {
-        ...prev,
-        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-      };
-      
-      // Track form changes for abandonment analysis
-      if (sessionId) {
-        checkoutTrackingService.trackFormChange(sessionId, updatedData);
-      }
-      
+      const updatedData = { ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value };
+      if (sessionId) checkoutTrackingService.trackFormChange(sessionId, updatedData);
       return updatedData;
     });
   };
 
-  const { refreshOrders } = useOrder(); // Get the refreshOrders function
+  const getIP = (): string => localStorage.getItem('userIP') || 'unknown';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Check for fake orders using our blocking service
     const orderForFraudCheck = {
-      email: formData.email,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
+      name: formData.name,
       address1: formData.address1,
-      city: formData.city,
-      state: formData.state,
-      postalCode: formData.postalCode,
+      state: formData.district,
       phone: formData.phone,
-      items: items.map(item => ({
-        product_id: item.product.id,
-        quantity: item.quantity,
-      })),
+      email: formData.email,
+      items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
       total: totalPrice,
-      ip: getIP(), // Simplified IP detection
+      ip: getIP(),
       timestamp: Date.now(),
     };
 
-    // Check if order is suspicious
     const fraudResult = fakeOrderBlockingService.processOrder(orderForFraudCheck);
     if (fraudResult.shouldBlock) {
       alert(`Order blocked: ${fraudResult.reasons.join(', ')}`);
@@ -152,120 +105,73 @@ const Checkout = () => {
       return;
     }
 
-    // Include customer ID in order data if user is authenticated
     const orderData: any = {
       payment_method: formData.paymentMethod,
       payment_method_title: 'Cash on Delivery',
       set_paid: false,
       billing: {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        address_1: formData.address1,
-        address_2: formData.address2,
-        city: formData.city,
-        state: formData.zone,
-        postcode: formData.postalCode,
+        first_name: formData.billingAddressSame ? formData.name : formData.billingName,
+        address_1: formData.billingAddressSame ? formData.address1 : formData.billingAddress1,
+        state: formData.billingAddressSame ? formData.district : formData.billingDistrict,
         country: formData.countryCode,
-        email: formData.email,
         phone: formData.phone,
+        email: formData.email,
       },
       shipping: {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
+        first_name: formData.name,
         address_1: formData.address1,
-        address_2: formData.address2,
-        city: formData.city,
-        state: formData.zone,
-        postcode: formData.postalCode,
+        state: formData.district,
         country: formData.countryCode,
       },
-      line_items: items.map(item => ({
-        product_id: item.product.id,
-        quantity: item.quantity,
-      })),
+      line_items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
       customer_note: formData.notes,
     };
 
-    // Add customer ID if user is authenticated
-    if (isAuthenticated && user) {
-      // Use the user ID which should correspond to the WooCommerce customer ID
-      // In WordPress/WooCommerce, the user ID is typically the same as the customer ID
-      orderData.customer_id = user.id;
-      console.log('Setting customer ID for order:', user.id); // Debug log
-    } else {
-      // If not authenticated, the order will be guest order
-      console.log('Creating guest order without customer ID');
-    }
+    if (isAuthenticated && user) orderData.customer_id = user.id;
 
     try {
-      console.log('Creating order with data:', orderData); // Debug log
       const newOrder = await woocommerceService.createOrder(orderData);
-      console.log('Order created successfully:', newOrder); // Debug log
-      
-      if (newOrder && newOrder.customer_id) {
-        console.log(`Order created for customer ID: ${newOrder.customer_id}`); // Debug log
-      }
-      
-      // Track successful purchase with analytics
-      if (newOrder && newOrder.id) {
-        // Track purchase with analytics service
+
+      if (newOrder?.id) {
         analyticsService.trackPurchase({
           value: totalPrice,
-          currency: 'INR',
+          currency: 'BDT',
           contents: items.map(item => ({
             id: item.product.id,
             quantity: item.quantity,
-            item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+            item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
           })),
           content_type: 'product',
         }, newOrder.id.toString());
-        
-        // Track with pixel confirmation service
+
         pixelConfirmationService.trackOrder({
           orderId: newOrder.id.toString(),
           value: totalPrice,
-          currency: 'INR',
+          currency: 'BDT',
           contents: items.map(item => ({
             id: item.product.id,
             quantity: item.quantity,
-            item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+            item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
           })),
-          email: formData.email,
           phone: formData.phone,
-          customerName: `${formData.firstName} ${formData.lastName}`,
+          customerName: formData.name,
+          email: formData.email,
           timestamp: Date.now(),
         });
       }
-      
-      // Track checkout completion
-      if (sessionId) {
-        checkoutTrackingService.trackCheckoutComplete(sessionId);
-      }
-      
+
+      if (sessionId) checkoutTrackingService.trackCheckoutComplete(sessionId);
+
       alert('Order placed successfully!');
       clearCart();
-      
-      // Refresh orders to include the new one
-      if (refreshOrders) {
-        console.log('Refreshing orders after successful checkout'); // Debug log
-        await refreshOrders();
-      }
-      
-      // Redirect to order success page
+      refreshOrders && await refreshOrders();
       navigate(ROUTES.ORDER_SUCCESS, { state: { order: newOrder, total: totalPrice } });
     } catch (error) {
-      console.error('Failed to place order:', error);
-      alert('There was an error placing your order. Please try again.');
+      console.error(error);
+      alert('Failed to place order. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Helper function to get IP address (in a real implementation, this would be more robust)
-  const getIP = (): string => {
-    // This is a simplified approach
-    // In a real implementation, IP would be determined server-side
-    return localStorage.getItem('userIP') || 'unknown';
   };
 
   if (items.length === 0) {
@@ -273,7 +179,7 @@ const Checkout = () => {
       <div className="bg-white py-10">
         <div className="container mx-auto max-w-7xl p-4">
           <h1 className="text-3xl font-bold mb-6">Checkout</h1>
-          <p className="text-lg">Your cart is empty. Please add items to your cart before checking out.</p>
+          <p className="text-lg">Your cart is empty. Please add items to checkout.</p>
         </div>
       </div>
     );
@@ -283,95 +189,34 @@ const Checkout = () => {
     <div className="bg-white py-10">
       <div className="container mx-auto max-w-7xl p-4">
         <h1 className="text-3xl font-bold mb-6">Checkout</h1>
-        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Form */}
           <div>
             <form id="checkoutForm" onSubmit={handleSubmit} className="space-y-8">
-              {/* Contact Section */}
-              <section aria-label="Contact" className="border-b pb-8">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 id="contact" className="text-xl font-bold">Contact</h2>
-                  {isAuthenticated ? (
-                    <div className="text-sm">
-                      Signed in as <span className="font-medium">{user?.email}</span>
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          // Implement logout or change account
-                        }}
-                        className="ml-2 text-blue-600 hover:underline"
-                      >
-                        Change
-                      </button>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={() => {
-                        // Trigger auth modal
-                        const event = new CustomEvent('openAuthModal');
-                        window.dispatchEvent(event);
-                      }}
-                      className="text-[#D4F871] hover:underline text-sm font-medium"
-                    >
-                      Sign in
-                    </button>
-                  )}
-                </div>
-                
-                <div className="mb-4">
-                  <label htmlFor="email" className="block text-sm font-medium mb-1">
-                    Email or mobile phone number
-                  </label>
-                  <input 
-                    id="email" 
-                    name="email" 
-                    placeholder="Email or mobile phone number" 
-                    required 
-                    type="text" 
-                    inputMode="text" 
-                    aria-required="true" 
-                    value={formData.email}
-                    onChange={handleChange}
-                    autoComplete="shipping email" 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="marketing_opt_in" 
-                    name="marketingOptIn" 
-                    checked={formData.marketingOptIn}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="marketing_opt_in" className="text-sm text-gray-700">
-                    Email me with news and offers
-                  </label>
-                </div>
-              </section>
+              {/* Delivery & Payment sections here (keep existing fields) */}
+
               
               {/* Delivery Section */}
               <section aria-label="Delivery" className="border-b pb-8">
                 <h2 id="deliveryAddress" className="text-xl font-bold mb-6">Delivery</h2>
                 
+
+                
                 <div className="mb-4">
                   <label htmlFor="Select960" className="block text-sm font-medium mb-1">
-                    Country/Region
+                    Country/Region <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <select 
                       name="countryCode" 
                       id="Select960" 
                       required 
-                      value={formData.countryCode}
+                      value="BD"
                       onChange={handleChange}
                       autoComplete="shipping country" 
                       className="w-full px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
                     >
-                      <option value="IN">India</option>
-                      {/* Add more options as needed */}
+                      <option value="BD">Bangladesh</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                       <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -381,46 +226,27 @@ const Checkout = () => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label htmlFor="TextField4443" className="block text-sm font-medium mb-1">
-                      First name
-                    </label>
-                    <input 
-                      id="TextField4443" 
-                      name="firstName" 
-                      placeholder="First name" 
-                      required 
-                      type="text" 
-                      aria-required="true" 
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      autoComplete="shipping given-name" 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="TextField4444" className="block text-sm font-medium mb-1">
-                      Last name
-                    </label>
-                    <input 
-                      id="TextField4444" 
-                      name="lastName" 
-                      placeholder="Last name" 
-                      required 
-                      type="text" 
-                      aria-required="true" 
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      autoComplete="shipping family-name" 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+                <div className="mb-4">
+                  <label htmlFor="name" className="block text-sm font-medium mb-1">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    id="name" 
+                    name="name" 
+                    placeholder="Full Name" 
+                    required 
+                    type="text" 
+                    aria-required="true" 
+                    value={formData.name}
+                    onChange={handleChange}
+                    autoComplete="shipping name" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
                 </div>
                 
                 <div className="mb-4">
                   <label htmlFor="shipping-address1" className="block text-sm font-medium mb-1">
-                    Address
+                    Address <span className="text-red-500">*</span>
                   </label>
                   <input 
                     id="shipping-address1" 
@@ -441,126 +267,99 @@ const Checkout = () => {
                   />
                 </div>
                 
-                <div className="mb-4">
-                  <label htmlFor="TextField4445" className="block text-sm font-medium mb-1">
-                    Apartment, suite, etc. (optional)
-                  </label>
-                  <input 
-                    id="TextField4445" 
-                    name="address2" 
-                    placeholder="Apartment, suite, etc. (optional)" 
-                    type="text" 
-                    aria-required="false" 
-                    value={formData.address2}
-                    onChange={handleChange}
-                    autoComplete="shipping address-line2" 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="md:col-span-2">
-                    <label htmlFor="TextField4446" className="block text-sm font-medium mb-1">
-                      City
-                    </label>
-                    <input 
-                      id="TextField4446" 
-                      name="city" 
-                      placeholder="City" 
+                <div className="mb-4">
+                  <label htmlFor="Select961" className="block text-sm font-medium mb-1">
+                    District <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <select 
+                      name="district" 
+                      id="Select961" 
                       required 
-                      type="text" 
-                      aria-required="true" 
-                      value={formData.city}
+                      value={formData.district}
                       onChange={handleChange}
-                      autoComplete="shipping address-level2" 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="Select961" className="block text-sm font-medium mb-1">
-                      State
-                    </label>
-                    <div className="relative">
-                      <select 
-                        name="zone" 
-                        id="Select961" 
-                        required 
-                        value={formData.zone}
-                        onChange={handleChange}
-                        autoComplete="shipping address-level1" 
-                        className="w-full px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                      >
-                        <option value="" hidden disabled>&nbsp;</option>
-                        <option value="AN">Andaman and Nicobar Islands</option>
-                        <option value="AP">Andhra Pradesh</option>
-                        <option value="AR">Arunachal Pradesh</option>
-                        <option value="AS">Assam</option>
-                        <option value="BR">Bihar</option>
-                        <option value="CH">Chandigarh</option>
-                        <option value="CG">Chhattisgarh</option>
-                        <option value="DN">Dadra and Nagar Haveli</option>
-                        <option value="DD">Daman and Diu</option>
-                        <option value="DL">Delhi</option>
-                        <option value="GA">Goa</option>
-                        <option value="GJ">Gujarat</option>
-                        <option value="HR">Haryana</option>
-                        <option value="HP">Himachal Pradesh</option>
-                        <option value="JK">Jammu and Kashmir</option>
-                        <option value="JH">Jharkhand</option>
-                        <option value="KA">Karnataka</option>
-                        <option value="KL">Kerala</option>
-                        <option value="LA">Ladakh</option>
-                        <option value="LD">Lakshadweep</option>
-                        <option value="MP">Madhya Pradesh</option>
-                        <option value="MH">Maharashtra</option>
-                        <option value="MN">Manipur</option>
-                        <option value="ML">Meghalaya</option>
-                        <option value="MZ">Mizoram</option>
-                        <option value="NL">Nagaland</option>
-                        <option value="OR">Odisha</option>
-                        <option value="PY">Puducherry</option>
-                        <option value="PB">Punjab</option>
-                        <option value="RJ">Rajasthan</option>
-                        <option value="SK">Sikkim</option>
-                        <option value="TN">Tamil Nadu</option>
-                        <option value="TS">Telangana</option>
-                        <option value="TR">Tripura</option>
-                        <option value="UP">Uttar Pradesh</option>
-                        <option value="UK">Uttarakhand</option>
-                        <option value="WB">West Bengal</option>
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                        </svg>
-                      </div>
+                      autoComplete="shipping address-level1" 
+                      className="w-full px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    >
+                      <option value="" hidden disabled>&nbsp;</option>
+                      <option value="dhaka">Dhaka</option>
+                      <option value="gazipur">Gazipur</option>
+                      <option value="kishoreganj">Kishoreganj</option>
+                      <option value="manikganj">Manikganj</option>
+                      <option value="munshiganj">Munshiganj</option>
+                      <option value="narayanganj">Narayanganj</option>
+                      <option value="narsingdi">Narsingdi</option>
+                      <option value="tangail">Tangail</option>
+                      <option value="faridpur">Faridpur</option>
+                      <option value="gopalganj">Gopalganj</option>
+                      <option value="madaripur">Madaripur</option>
+                      <option value="rajbari">Rajbari</option>
+                      <option value="shariatpur">Shariatpur</option>
+                      <option value="chattogram">Chattogram</option>
+                      <option value="coxs-bazar">Cox's Bazar</option>
+                      <option value="cumilla">Cumilla</option>
+                      <option value="brahmanbaria">Brahmanbaria</option>
+                      <option value="chandpur">Chandpur</option>
+                      <option value="feni">Feni</option>
+                      <option value="lakshmipur">Lakshmipur</option>
+                      <option value="noakhali">Noakhali</option>
+                      <option value="khagrachhari">Khagrachhari</option>
+                      <option value="rangamati">Rangamati</option>
+                      <option value="bandarban">Bandarban</option>
+                      <option value="khulna">Khulna</option>
+                      <option value="bagerhat">Bagerhat</option>
+                      <option value="satkhira">Satkhira</option>
+                      <option value="jessore">Jessore</option>
+                      <option value="jhenaidah">Jhenaidah</option>
+                      <option value="magura">Magura</option>
+                      <option value="narail">Narail</option>
+                      <option value="kushtia">Kushtia</option>
+                      <option value="chuadanga">Chuadanga</option>
+                      <option value="meherpur">Meherpur</option>
+                      <option value="rajshahi">Rajshahi</option>
+                      <option value="naogaon">Naogaon</option>
+                      <option value="natore">Natore</option>
+                      <option value="chapainawabganj">Chapainawabganj</option>
+                      <option value="pabna">Pabna</option>
+                      <option value="sirajganj">Sirajganj</option>
+                      <option value="bogura">Bogura</option>
+                      <option value="joypurhat">Joypurhat</option>
+                      <option value="rangpur">Rangpur</option>
+                      <option value="kurigram">Kurigram</option>
+                      <option value="lalmonirhat">Lalmonirhat</option>
+                      <option value="nilphamari">Nilphamari</option>
+                      <option value="gaibandha">Gaibandha</option>
+                      <option value="thakurgaon">Thakurgaon</option>
+                      <option value="panchagarh">Panchagarh</option>
+                      <option value="dinajpur">Dinajpur</option>
+                      <option value="barishal">Barishal</option>
+                      <option value="barguna">Barguna</option>
+                      <option value="bhola">Bhola</option>
+                      <option value="jhalokathi">Jhalokathi</option>
+                      <option value="patuakhali">Patuakhali</option>
+                      <option value="pirojpur">Pirojpur</option>
+                      <option value="sylhet">Sylhet</option>
+                      <option value="habiganj">Habiganj</option>
+                      <option value="moulvibazar">Moulvibazar</option>
+                      <option value="sunamganj">Sunamganj</option>
+                      <option value="mymensingh">Mymensingh</option>
+                      <option value="jamalpur">Jamalpur</option>
+                      <option value="sherpur">Sherpur</option>
+                      <option value="netrokona">Netrokona</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                      </svg>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="TextField4447" className="block text-sm font-medium mb-1">
-                      PIN code
-                    </label>
-                    <input 
-                      id="TextField4447" 
-                      name="postalCode" 
-                      placeholder="PIN code" 
-                      required 
-                      type="text" 
-                      inputMode="numeric" 
-                      aria-required="true" 
-                      value={formData.postalCode}
-                      onChange={handleChange}
-                      autoComplete="shipping postal-code" 
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
                   </div>
                 </div>
                 
                 <div className="mb-4">
                   <label htmlFor="TextField4448" className="block text-sm font-medium mb-1">
-                    Phone
+                    Phone <span className="text-red-500">*</span>
                   </label>
                   <input 
                     id="TextField4448" 
@@ -572,6 +371,23 @@ const Checkout = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     autoComplete="shipping tel" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                
+                <div className="mb-4">
+                  <label htmlFor="email" className="block text-sm font-medium mb-1">
+                    Email (optional)
+                  </label>
+                  <input 
+                    id="email" 
+                    name="email" 
+                    placeholder="Email (optional)" 
+                    type="email" 
+                    aria-required="false" 
+                    value={formData.email}
+                    onChange={handleChange}
+                    autoComplete="shipping email" 
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
@@ -651,73 +467,178 @@ const Checkout = () => {
                       </label>
                     </div>
                   </div>
+                  
+                  {!formData.billingAddressSame && (
+                    <div className="mt-4 space-y-4 border-t pt-4">
+                      <div>
+                        <label htmlFor="billing-name" className="block text-sm font-medium mb-1">
+                          Full Name <span className="text-red-500">*</span>
+                        </label>
+                        <input 
+                          id="billing-name" 
+                          name="billingName" 
+                          placeholder="Full Name" 
+                          type="text" 
+                          value={formData.billingName || ''} // Use billing name if available
+                          onChange={(e) => setFormData(prev => ({...prev, billingName: e.target.value}))}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="billing-address1" className="block text-sm font-medium mb-1">
+                          Address <span className="text-red-500">*</span>
+                        </label>
+                        <input 
+                          id="billing-address1" 
+                          name="billingAddress1" 
+                          placeholder="Address" 
+                          type="text" 
+                          value={formData.billingAddress1 || ''} // Use billing address if available
+                          onChange={(e) => setFormData(prev => ({...prev, billingAddress1: e.target.value}))}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="billing-district" className="block text-sm font-medium mb-1">
+                          District <span className="text-red-500">*</span>
+                        </label>
+                        <select 
+                          name="billingDistrict" 
+                          id="billing-district"
+                          value={formData.billingDistrict || ''} // Use billing district if available
+                          onChange={(e) => setFormData(prev => ({...prev, billingDistrict: e.target.value}))}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option value="" hidden disabled>&nbsp;</option>
+                          <option value="dhaka">Dhaka</option>
+                          <option value="gazipur">Gazipur</option>
+                          <option value="kishoreganj">Kishoreganj</option>
+                          <option value="manikganj">Manikganj</option>
+                          <option value="munshiganj">Munshiganj</option>
+                          <option value="narayanganj">Narayanganj</option>
+                          <option value="narsingdi">Narsingdi</option>
+                          <option value="tangail">Tangail</option>
+                          <option value="faridpur">Faridpur</option>
+                          <option value="gopalganj">Gopalganj</option>
+                          <option value="madaripur">Madaripur</option>
+                          <option value="rajbari">Rajbari</option>
+                          <option value="shariatpur">Shariatpur</option>
+                          <option value="chattogram">Chattogram</option>
+                          <option value="coxs-bazar">Cox's Bazar</option>
+                          <option value="cumilla">Cumilla</option>
+                          <option value="brahmanbaria">Brahmanbaria</option>
+                          <option value="chandpur">Chandpur</option>
+                          <option value="feni">Feni</option>
+                          <option value="lakshmipur">Lakshmipur</option>
+                          <option value="noakhali">Noakhali</option>
+                          <option value="khagrachhari">Khagrachhari</option>
+                          <option value="rangamati">Rangamati</option>
+                          <option value="bandarban">Bandarban</option>
+                          <option value="khulna">Khulna</option>
+                          <option value="bagerhat">Bagerhat</option>
+                          <option value="satkhira">Satkhira</option>
+                          <option value="jessore">Jessore</option>
+                          <option value="jhenaidah">Jhenaidah</option>
+                          <option value="magura">Magura</option>
+                          <option value="narail">Narail</option>
+                          <option value="kushtia">Kushtia</option>
+                          <option value="chuadanga">Chuadanga</option>
+                          <option value="meherpur">Meherpur</option>
+                          <option value="rajshahi">Rajshahi</option>
+                          <option value="naogaon">Naogaon</option>
+                          <option value="natore">Natore</option>
+                          <option value="chapainawabganj">Chapainawabganj</option>
+                          <option value="pabna">Pabna</option>
+                          <option value="sirajganj">Sirajganj</option>
+                          <option value="bogura">Bogura</option>
+                          <option value="joypurhat">Joypurhat</option>
+                          <option value="rangpur">Rangpur</option>
+                          <option value="kurigram">Kurigram</option>
+                          <option value="lalmonirhat">Lalmonirhat</option>
+                          <option value="nilphamari">Nilphamari</option>
+                          <option value="gaibandha">Gaibandha</option>
+                          <option value="thakurgaon">Thakurgaon</option>
+                          <option value="panchagarh">Panchagarh</option>
+                          <option value="dinajpur">Dinajpur</option>
+                          <option value="barishal">Barishal</option>
+                          <option value="barguna">Barguna</option>
+                          <option value="bhola">Bhola</option>
+                          <option value="jhalokathi">Jhalokathi</option>
+                          <option value="patuakhali">Patuakhali</option>
+                          <option value="pirojpur">Pirojpur</option>
+                          <option value="sylhet">Sylhet</option>
+                          <option value="habiganj">Habiganj</option>
+                          <option value="moulvibazar">Moulvibazar</option>
+                          <option value="sunamganj">Sunamganj</option>
+                          <option value="mymensingh">Mymensingh</option>
+                          <option value="jamalpur">Jamalpur</option>
+                          <option value="sherpur">Sherpur</option>
+                          <option value="netrokona">Netrokona</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
-              
-              <button 
-                aria-busy="false" 
-                aria-live="polite" 
-                id="checkout-pay-button" 
-                type="submit" 
-                form="checkoutForm"
-                className="w-full py-4 bg-black text-white font-bold uppercase hover:bg-gray-800 disabled:bg-gray-400 transition-colors duration-200"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Processing...' : `Pay ₹${totalPrice.toFixed(2)}`}
-              </button>
+
+              {/* Desktop pay button */}
+              <div className="hidden lg:block">
+                <button
+                  type="submit"
+                  form="checkoutForm"
+                  disabled={isLoading}
+                  className="w-full py-4 bg-black text-white font-bold uppercase"
+                >
+                  {isLoading ? 'Processing...' : `Pay BDT ${totalPrice.toFixed(2)}`}
+                </button>
+              </div>
             </form>
           </div>
-          
+
+          {/* Order Summary */}
           <div>
             <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-            
             <div className="border p-4 rounded-lg">
-              {items.map((item) => (
+              {items.map(item => (
                 <div key={item.product.id} className="flex justify-between py-3 border-b">
                   <div>
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
-                  <p>₹{(parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * item.quantity).toFixed(2)}</p>
+                  <p>BDT {(parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * item.quantity).toFixed(2)}</p>
                 </div>
               ))}
-              
               <div className="space-y-3 mt-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{totalPrice.toFixed(2)}</span>
+                  <span>BDT {totalPrice.toFixed(2)}</span>
                 </div>
-                
-                <div className="flex justify-between">
-                  <span>Shipping</span>
-                  <span>Free</span>
-                </div>
-
+                <div className="flex justify-between"> <span>Shipping</span> <span>Free</span> </div>
                 <div className="flex justify-between font-semibold pt-2 border-t">
                   <span>Payment Method</span>
                   <span>Cash on Delivery</span>
                 </div>
-                
                 <div className="flex justify-between font-bold pt-2 border-t text-lg">
                   <span>Total</span>
-                  <span>₹{totalPrice.toFixed(2)}</span>
+                  <span>BDT {totalPrice.toFixed(2)}</span>
                 </div>
-              </div>
-              
-              <div className="mt-6">
-                <label className="block text-sm font-medium mb-2">Order Notes (Optional)</label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows={3}
-                  placeholder="Special instructions for delivery"
-                  disabled={isLoading}
-                />
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Mobile pay button */}
+        <div className="lg:hidden mt-4">
+          <button
+            type="submit"
+            form="checkoutForm"
+            disabled={isLoading}
+            className="w-full py-4 bg-black text-white font-bold uppercase"
+          >
+            {isLoading ? 'Processing...' : `Pay BDT ${totalPrice.toFixed(2)}`}
+          </button>
         </div>
       </div>
     </div>

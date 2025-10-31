@@ -2,6 +2,7 @@ import type { Product } from '../types/product';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import NoProductsFound from './NoProductsFound';
+import { useState } from 'react';
 
 export type ProductCategory =
   | 'acne'
@@ -81,17 +82,57 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
   {products.map((product) => (
+    <UniversalProductCardItem 
+      key={product.id} 
+      product={product} 
+      isAddingToCart={isAddingToCart}
+      handleAddToCart={handleAddToCart}
+      formatPrice={formatPrice}
+    />
+  ))}
+</div>
+
+  );
+};
+
+interface UniversalProductCardItemProps {
+  product: Product;
+  isAddingToCart: (productId: number) => boolean;
+  handleAddToCart: (product: Product) => void;
+  formatPrice: (price: string | number | undefined) => string;
+}
+
+const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
+  product,
+  isAddingToCart,
+  handleAddToCart,
+  formatPrice
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Get the image to show based on hover state
+  const getDisplayImage = () => {
+    if (product.images && product.images.length > 1 && isHovered) {
+      // Show the second image (index 1) if hovered and more than one image exists
+      return product.images[1]?.src || product.images[0]?.src || '/placeholder.webp';
+    }
+    // Show the first image by default
+    return product.images[0]?.src || '/placeholder.webp';
+  };
+
+  return (
     <div
-      key={product.id}
       className="bg-white rounded-lg overflow-hidden p-2 flex flex-col"
       style={{ transformOrigin: 'top center' }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <Link to={`/products/${product.id}`} className="flex flex-col flex-grow">
-        <div className="w-full aspect-[5/5.5]">
+        <div className="w-full aspect-[5/5.5] relative">
           <img
-            src={product.images[0]?.src || '/placeholder.webp'}
+            src={getDisplayImage()}
             alt={product.name}
-            className="w-full h-full object-cover rounded-lg"
+            className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
           />
         </div>
         <div className="text-center flex-grow mt-2">
@@ -148,15 +189,12 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-              ></path>
+              />
             </svg>
           </span>
         )}
       </button>
     </div>
-  ))}
-</div>
-
   );
 };
 

@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useOrder } from '../contexts/OrderContext';
-
-interface CartItem {
-  product: {
-    id: number;
-    name: string;
-    price: string | number;
-    images: Array<{ src: string; alt: string }>;
-  };
-  quantity: number;
-}
+import { useCartStore } from '../store/cartStore';
 
 const ProfilePage: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { orders, loading: ordersLoading, error: ordersError, fetchOrders, fetchOrder } = useOrder();
+  const { items: cartItems, totalPrice: cartTotal } = useCartStore();
   const [activeTab, setActiveTab] = useState<'orders' | 'cart'>('orders'); // Removed profile tab, only orders and cart
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
@@ -41,81 +33,10 @@ const ProfilePage: React.FC = () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, []);
-  // Removed editData state since we're no longer editing profile
-
-  // Cart data from localStorage
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  // Load cart items from localStorage
-  useEffect(() => {
-    console.log('useEffect running with isAuthenticated:', isAuthenticated, 'user:', user); // Debug log
-    
-    if (!isAuthenticated || !user) {
-      console.log('User not authenticated or user is null, returning');
-      return;
-    }
-
-    try {
-      const cartData = localStorage.getItem('cart-storage');
-      console.log('Raw cart data from localStorage:', cartData); // Debug log
-      
-      if (cartData && cartData !== 'undefined' && cartData !== 'null') {
-        try {
-          const parsedData = JSON.parse(cartData);
-          console.log('Parsed cart data:', parsedData); // Debug log
-          
-          if (parsedData && parsedData.state && parsedData.state.items) {
-            setCartItems(parsedData.state.items);
-            console.log('Set cart items:', parsedData.state.items); // Debug log
-          } else {
-            console.log('Cart data structure issue - no state or items found'); // Debug log
-            setCartItems([]);
-          }
-        } catch (parseError) {
-          console.error('Error parsing cart data:', parseError);
-          setCartItems([]);
-        }
-      } else {
-        console.log('No cart data found in localStorage or data is undefined/null'); // Debug log
-        setCartItems([]);
-      }
-    } catch (error) {
-      console.error('Error in useEffect:', error);
-      setCartItems([]); // Set empty array on any error
-    }
-  }, [isAuthenticated, user]);
-
-  // Separate effect to handle cart item count display
-  useEffect(() => {
-    console.log('Cart items state updated:', cartItems); // Debug log
-  }, [cartItems]);
-
-
-
-  // Calculate cart total
-  const cartTotal = React.useMemo((): number => {
-    return cartItems.reduce((total, item) => {
-      // Safely parse the price
-      let price = 0;
-      if (typeof item.product.price === 'string') {
-        price = parseFloat(item.product.price) || 0;
-      } else if (typeof item.product.price === 'number') {
-        price = item.product.price;
-      }
-      return total + (price * (item.quantity || 0));
-    }, 0);
-  }, [cartItems]);
-
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      console.log('User not authenticated or user data is null'); // Debug log
-    }
-  }, [isAuthenticated, user]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
       // Fetch orders when the component mounts and user is authenticated
-      console.log('Profile page mounted with authenticated user, fetching orders');
       fetchOrders();
     }
   }, [isAuthenticated, user]); // Removed fetchOrders from dependencies to prevent infinite loop
@@ -136,11 +57,6 @@ const ProfilePage: React.FC = () => {
       </div>
     );
   }
-
-  console.log('User is authenticated, rendering profile page'); // Debug log
-  console.log('Current user:', user); // Debug log
-  console.log('Current cart items:', cartItems); // Debug log
-  console.log('Current orders:', orders); // Debug log
   
   // Additional safety checks
   if (!user.displayName && !user.username) {
@@ -326,8 +242,8 @@ const ProfilePage: React.FC = () => {
                 ) : (
                   <div className="bg-white shadow overflow-hidden sm:rounded-md">
                     <ul className="divide-y divide-gray-200">
-                      {cartItems.map((item: CartItem, index) => (
-                        <li key={index}>
+                      {cartItems.map((item) => (
+                        <li key={item.product.id}>
                           <div className="px-4 py-4 sm:px-6">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-16 w-16">
@@ -347,16 +263,11 @@ const ProfilePage: React.FC = () => {
                                   </div>
                                 </div>
                                 <div className="mt-1 text-sm text-gray-500">
-                                  ${typeof item.product.price === 'number' ? item.product.price.toFixed(2) : parseFloat(item.product.price || '0').toFixed(2)} each
+                                  ${parseFloat(String(item.product.price || '0')).toFixed(2)} each
                                 </div>
                               </div>
                               <div className="ml-4 text-sm font-medium text-gray-900">
-                                ${(() => {
-                                  const price = typeof item.product.price === 'number' ? item.product.price : parseFloat(item.product.price || '0');
-                                  const quantity = item.quantity || 0;
-                                  const total: number = price * quantity;
-                                  return isNaN(total) ? '0.00' : total.toFixed(2);
-                                })()}
+                                ${(parseFloat(String(item.product.price || '0')) * item.quantity).toFixed(2)}
                               </div>
                             </div>
                           </div>
@@ -368,7 +279,10 @@ const ProfilePage: React.FC = () => {
                       <div className="text-lg font-medium text-gray-900">
                         Total: ${cartTotal.toFixed(2)}
                       </div>
-                      <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                      <button 
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        onClick={() => window.location.hash = '#/checkout'}
+                      >
                         Checkout
                       </button>
                     </div>

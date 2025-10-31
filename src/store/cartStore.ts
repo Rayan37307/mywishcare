@@ -5,20 +5,31 @@ import type { CartState, CartItem } from '../types/cart';
 import type { Product } from '../types/product';
 import { APP_CONSTANTS } from '../constants/app';
 
-// Function to check if user is authenticated
-const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem(APP_CONSTANTS.USER_STORAGE_KEY);
+
+
+// Function to get user-specific key for cart persistence
+const getUserCartKey = (name: string): string => {
+  const userId = localStorage.getItem(APP_CONSTANTS.USER_STORAGE_KEY);
+  if (userId) {
+    // For authenticated users, use a key that includes their user ID
+    try {
+      const userData = JSON.parse(atob(userId.split('.')[1])); // Assuming JWT format
+      return `${name}_${userData.id || userData.user_id || 'default'}`;
+    } catch {
+      // If JWT parsing fails, use a generic authenticated user key
+      return `${name}_auth`;
+    }
+  } else {
+    // For non-authenticated users, use the default key
+    return name;
+  }
 };
 
-// Custom storage to conditionally persist based on auth state
+// Custom storage to handle persistence with user-specific keys
 const conditionalStorage = {
   getItem: (name: string) => {
-    if (isAuthenticated()) {
-      // Don't persist when logged in - always return empty state for logged-in users
-      return { items: [] };
-    }
-    // For non-logged-in users, return the stored value
-    const value = localStorage.getItem(name);
+    const key = getUserCartKey(name);
+    const value = localStorage.getItem(key);
     if (value) {
       try {
         return JSON.parse(value);
@@ -29,16 +40,12 @@ const conditionalStorage = {
     return { items: [] };
   },
   setItem: (name: string, value: unknown) => {
-    if (!isAuthenticated()) {
-      // Only save to localStorage when not logged in
-      localStorage.setItem(name, JSON.stringify(value));
-    }
+    const key = getUserCartKey(name);
+    localStorage.setItem(key, JSON.stringify(value));
   },
   removeItem: (name: string) => {
-    if (!isAuthenticated()) {
-      // Only remove from localStorage when not logged in
-      localStorage.removeItem(name);
-    }
+    const key = getUserCartKey(name);
+    localStorage.removeItem(key);
   },
 };
 
@@ -51,41 +58,38 @@ export const useCartStore = create<CartState>()(
       loadingItems: [], // Track which products are currently being added
       
       addItem: (product: Product, quantity: number = 1) => {
-        // Add to loading state
         set(state => ({
           loadingItems: [...state.loadingItems, product.id]
         }));
         
-        // Simulate a short delay to show the loading state
-        setTimeout(() => {
-          const { items, loadingItems } = get();
-          const existingItemIndex = items.findIndex(item => item.product.id === product.id);
-          
-          let updatedItems: CartItem[];
-          
-          if (existingItemIndex >= 0) {
-            // Update quantity if item already exists
-            updatedItems = [...items];
-            updatedItems[existingItemIndex] = {
-              ...updatedItems[existingItemIndex],
-              quantity: updatedItems[existingItemIndex].quantity + quantity
-            };
-          } else {
-            // Add new item
-            const newItem: CartItem = {
-              product,
-              quantity
-            };
-            updatedItems = [...items, newItem];
-          }
-          
-          // Remove from loading state
-          set({ 
-            items: updatedItems,
-            loadingItems: loadingItems.filter(id => id !== product.id)
-          });
-          get().calculateTotals();
-        }, 300); // 300ms delay to show "Adding..." text
+        // Directly update the cart state without complex timing
+        const { items, loadingItems } = get();
+        const existingItemIndex = items.findIndex(item => item.product.id === product.id);
+        
+        let updatedItems: CartItem[];
+        
+        if (existingItemIndex >= 0) {
+          // Update quantity if item already exists
+          updatedItems = [...items];
+          updatedItems[existingItemIndex] = {
+            ...updatedItems[existingItemIndex],
+            quantity: updatedItems[existingItemIndex].quantity + quantity
+          };
+        } else {
+          // Add new item
+          const newItem: CartItem = {
+            product,
+            quantity
+          };
+          updatedItems = [...items, newItem];
+        }
+        
+        // Update state and remove from loading state in a single batch
+        set({ 
+          items: updatedItems,
+          loadingItems: loadingItems.filter(id => id !== product.id)
+        });
+        get().calculateTotals();
       },
       
       // Function to check if a product is currently being added
@@ -94,75 +98,123 @@ export const useCartStore = create<CartState>()(
       },
       
       removeItem: (productId: number) => {
-        const { items } = get();
-        const updatedItems = items.filter(item => item.product.id !== productId);
-        set({ items: updatedItems });
-        get().calculateTotals();
+        try {
+          const { items } = get();
+          const updatedItems = items.filter(item => item.product.id !== productId);
+          set({ items: updatedItems });
+          get().calculateTotals();
+        } catch (error) {
+          console.error('Error removing item from cart:', error);
+        }
       },
       
       updateQuantity: (productId: number, quantity: number) => {
-        if (quantity <= 0) {
-          get().removeItem(productId);
-          return;
-        }
-        
-        const { items } = get();
-        const existingItemIndex = items.findIndex(item => item.product.id === productId);
-        
-        if (existingItemIndex >= 0) {
-          const updatedItems = [...items];
-          updatedItems[existingItemIndex] = {
-            ...updatedItems[existingItemIndex],
-            quantity
-          };
-          set({ items: updatedItems });
-          get().calculateTotals();
+        try {
+          if (quantity <= 0) {
+            get().removeItem(productId);
+            return;
+          }
+          
+          const { items } = get();
+          const existingItemIndex = items.findIndex(item => item.product.id === productId);
+          
+          if (existingItemIndex >= 0) {
+            const updatedItems = [...items];
+            updatedItems[existingItemIndex] = {
+              ...updatedItems[existingItemIndex],
+              quantity
+            };
+            set({ items: updatedItems });
+            get().calculateTotals();
+          }
+        } catch (error) {
+          console.error('Error updating cart item quantity:', error);
         }
       },
       
       clearCart: () => {
-        set({ items: [] });
-        get().calculateTotals();
+        try {
+          set({ items: [] });
+          get().calculateTotals();
+        } catch (error) {
+          console.error('Error clearing cart:', error);
+        }
       },
       
-      getCartItems: () => get().items,
+      getCartItems: () => {
+        try {
+          return get().items;
+        } catch (error) {
+          console.error('Error getting cart items:', error);
+          return [];
+        }
+      },
       
       // Get specific cart item by product ID
       getCartItem: (productId: number) => {
-        return get().items.find(item => item.product.id === productId) || null;
+        try {
+          return get().items.find(item => item.product.id === productId) || null;
+        } catch (error) {
+          console.error('Error getting cart item:', error);
+          return null;
+        }
       },
       
       // Check if a product is in cart
       isInCart: (productId: number) => {
-        return get().items.some(item => item.product.id === productId);
+        try {
+          return get().items.some(item => item.product.id === productId);
+        } catch (error) {
+          console.error('Error checking if item is in cart:', error);
+          return false;
+        }
       },
       
       // Get total quantity of a specific product in cart
       getProductQuantity: (productId: number) => {
-        const item = get().items.find(item => item.product.id === productId);
-        return item ? item.quantity : 0;
+        try {
+          const item = get().items.find(item => item.product.id === productId);
+          return item ? item.quantity : 0;
+        } catch (error) {
+          console.error('Error getting product quantity:', error);
+          return 0;
+        }
       },
       
       // Calculate totals helper function
       calculateTotals: () => {
-        const { items } = get();
-        const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-        const totalPrice = items.reduce((sum, item) => {
-          // Convert price string to number and multiply by quantity
-          // Handle both string and number formats for price
-          let price: number;
-          if (typeof item.product.price === 'string') {
-            price = parseFloat(item.product.price.replace(/[^\d.-]/g, '')) || 0;
-          } else {
-            price = parseFloat(String(item.product.price)) || 0;
+        try {
+          const { items } = get();
+          let totalItems = 0;
+          let totalPrice = 0;
+          
+          // Use for loop instead of reduce for better performance with large arrays
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            totalItems += item.quantity || 0;
+            
+            // Convert price string to number and multiply by quantity
+            // Handle both string and number formats for price
+            let price: number;
+            if (typeof item.product.price === 'string') {
+              price = parseFloat(item.product.price.replace(/[^\d.-]/g, '')) || 0;
+            } else {
+              price = parseFloat(String(item.product.price)) || 0;
+            }
+            totalPrice += (price * (item.quantity || 0));
           }
-          return sum + (price * item.quantity);
-        }, 0);
-        
-        set({ 
-          totalItems,
-          totalPrice: parseFloat(totalPrice.toFixed(2)) // Round to 2 decimal places
-        });
+          
+          set({ 
+            totalItems,
+            totalPrice: parseFloat(totalPrice.toFixed(2)) // Round to 2 decimal places
+          });
+        } catch (error) {
+          console.error('Error calculating cart totals:', error);
+          set({ 
+            totalItems: 0,
+            totalPrice: 0 
+          });
+        }
       }
     }),
     {

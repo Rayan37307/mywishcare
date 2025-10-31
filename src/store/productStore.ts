@@ -178,23 +178,19 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchProductBySlug: async (slug: string) => {
     set({ loading: true, error: null });
     try {
-      console.log(`Fetching product by slug: ${slug}`);
       // First try to find product by slug
       let product = await woocommerceService.findProductBySlug(slug);
       
       // If not found and slug is numeric, try fetching by ID
       if (!product && /^\d+$/.test(slug)) {
         const productId = parseInt(slug, 10);
-        console.log(`Trying to fetch product by ID: ${productId}`);
         product = await woocommerceService.fetchProductById(productId, true);
       }
       
       if (product) {
-        console.log(`Successfully fetched product:`, product);
         set({ loading: false });
         return product;
       } else {
-        console.log(`Product not found for slug/ID: ${slug}`);
         set({ 
           error: 'Product not found', 
           loading: false 
@@ -202,7 +198,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         return null;
       }
     } catch (error) {
-      console.error('Error in fetchProductBySlug:', error);
       set({ 
         error: 'Failed to fetch product', 
         loading: false 
@@ -473,5 +468,34 @@ export const useProductStore = create<ProductState>((set, get) => ({
       default:
         return state.products;
     }
+  },
+  
+  // Optimized selector to get a single product by ID from any collection
+  getProductById: (id: number) => {
+    const state = get();
+    // Check all collections in order of likelihood to find the product
+    const collectionsToSearch: Product[][] = [
+      state.products,
+      state.bestSellingProducts,
+      state.whatsNewProducts,
+      state.allProducts,
+      state.acneProducts,
+      state.pigmentationProducts,
+      state.hairfallProducts,
+      state.dullSkinProducts,
+      state.detanProducts,
+      state.damagedHairProducts,
+      state.sunCareProducts,
+      state.lipBalmProducts,
+      state.routineBuilderProducts,
+      state.hairCare1Products
+    ];
+    
+    for (const collection of collectionsToSearch) {
+      const product = collection.find(p => p.id === id);
+      if (product) return product;
+    }
+    
+    return null;
   }
 }));

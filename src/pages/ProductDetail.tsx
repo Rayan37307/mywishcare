@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
 import ActiveOffersSection from '../components/wishcare/ActiveOffersSection';
@@ -16,10 +16,12 @@ import Skeleton from '../components/Skeleton';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { fetchProductById, setLoading, setError } = useProductStore();
-  const { addItem } = useCartStore();
+  const { addItem, items } = useCartStore();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoadingState] = useState(true);
+  const [shouldNavigate, setShouldNavigate] = useState(false);
   const quantity = 1;
   const addToCartRef = useRef<HTMLDivElement>(null);
 
@@ -29,6 +31,25 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     if (product) addItem(product, quantity);
   };
+
+  const handleBuyNow = () => {
+    if (product) {
+      // Add product to cart and set navigation flag
+      addItem(product, quantity);
+      setShouldNavigate(true);
+    }
+  };
+
+  // Effect to navigate when cart is updated after buy now
+  useEffect(() => {
+    if (shouldNavigate && items.length > 0) {
+      // Check if the product was added to the cart
+      if (product && items.some(item => item.product.id === product.id)) {
+        setShouldNavigate(false);
+        navigate('/checkout');
+      }
+    }
+  }, [items, shouldNavigate, product, navigate]);
 
   // Scroll handler for floating header & mobile bottom bar
   useEffect(() => {
@@ -111,7 +132,7 @@ const ProductDetail = () => {
     <div className="bg-white py-10 relative">
       {/* Desktop Floating Header */}
       {showFloatingHeader && (
-        <div className="fixed top-[110px] z-20 left-0 right-0 bg-white shadow-md py-3 px-4 md:px-8 flex items-center justify-between hidden md:flex">
+        <div className="fixed top-[104px] z-20 left-0 right-0 bg-white shadow-md py-3 px-4 md:px-8 items-center justify-between hidden md:flex">
           <div className="flex items-center">
             <div className="w-16 h-16 overflow-hidden rounded-lg mr-4">
               <img 
@@ -161,7 +182,7 @@ const ProductDetail = () => {
               <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
             </svg>
           </button>
-          <button className="flex-1 py-3 bg-[#D4F871] text-black rounded-xl border-1 border-black uppercase flex items-center justify-center gap-2 font-semibold">
+          <button className="flex-1 py-3 bg-[#D4F871] text-black rounded-xl border-1 border-black uppercase flex items-center justify-center gap-2 font-semibold" onClick={handleBuyNow}>
             Buy it now <CheckCircleIcon />
           </button>
         </div>
@@ -170,7 +191,7 @@ const ProductDetail = () => {
       {/* Main Content */}
       <div className={`container mx-auto max-w-7xl p-4 ${showFloatingHeader ? 'pt-20' : ''}`}>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-       {/* Images Column */}
+ {/* Images Column */}
 <div className="md:col-span-2 flex flex-col md:sticky md:top-56 self-start h-fit">
   {window.innerWidth >= 768 ? (
     // Desktop: Thumbnails + main image
@@ -198,16 +219,24 @@ const ProductDetail = () => {
       </div>
     </div>
   ) : (
-    // Mobile: Horizontal scroll slider
-    <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory">
+    // ✅ Mobile: Horizontal scroll slider with slight border
+    <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory px-1">
       {product.images.map((image, index) => (
-        <div key={index} className="flex-shrink-0 w-72 h-72 snap-center rounded-lg overflow-hidden">
-          <img src={image.src} alt={`Slide ${index + 1}`} className="w-full h-full object-cover" />
+        <div
+          key={index}
+          className="shrink-0 w-72 h-72 snap-center rounded-lg overflow-hidden border-2 border-black/50"
+        >
+          <img
+            src={image.src}
+            alt={`Slide ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
         </div>
       ))}
     </div>
   )}
 </div>
+
 
 
           {/* Details Column */}
@@ -232,7 +261,7 @@ const ProductDetail = () => {
                 Add to Cart
               </button>
             </div>
-            <button className="mt-4 w-full py-3 bg-black text-white uppercase flex items-center justify-center gap-2 border-1 text-[13px] border-black font-semibold">
+            <button className="mt-4 w-full py-3 bg-black text-white uppercase flex items-center justify-center gap-2 border-1 text-[13px] border-black font-semibold" onClick={handleBuyNow}>
               Buy it now
             </button>
 
