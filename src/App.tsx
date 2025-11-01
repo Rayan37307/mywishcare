@@ -1,6 +1,6 @@
 import { useState, lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router-dom'
-import toast, { Toaster } from 'react-hot-toast'
+import { Toaster } from 'react-hot-toast'
 
 // Contexts
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -28,6 +28,7 @@ const Pigmentation = lazy(() => import('./pages/Pigmentation'))
 const DullSkin = lazy(() => import('./pages/DullSkin'))
 const Detan = lazy(() => import('./pages/Detan'))
 const DamagedHair = lazy(() => import('./pages/DamagedHair'))
+const Dandruff = lazy(() => import('./pages/Dandruff'))
 const LipBalm = lazy(() => import('./pages/LipBalm'))
 const HairCare1 = lazy(() => import('./pages/HairCare1'))
 const ProductDetail = lazy(() => import('./pages/ProductDetail'))
@@ -112,6 +113,7 @@ const App = () => {
         { name: 'Dull Skin', path: ROUTES.COLLECTIONS_DULL_SKIN },
         { name: 'Detan', path: ROUTES.COLLECTIONS_DETAN },
         { name: 'Damaged Hair', path: ROUTES.COLLECTIONS_DAMAGED_HAIR },
+        { name: 'Dandruff', path: ROUTES.COLLECTIONS_DANDRUFF },
       ],
     },
     { name: 'Our bestsellers hairgrowth serum 💫', path: '/products/13' },
@@ -204,6 +206,9 @@ const App = () => {
                           } />
                           <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={
                             <div className='pb-10'><DamagedHair /></div>
+                          } />
+                          <Route path={ROUTES.COLLECTIONS_DANDRUFF} element={
+                            <div className='pb-10'><Dandruff /></div>
                           } />
                           <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={
                             <div className='pb-10'><HairCare1 /></div>

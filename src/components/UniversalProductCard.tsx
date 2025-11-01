@@ -8,6 +8,7 @@ export type ProductCategory =
   | 'acne'
   | 'pigmentation'
   | 'hairfall'
+  | 'dandruff'
   | 'dullSkin'
   | 'detan'
   | 'damagedHair'

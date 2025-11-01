@@ -68,12 +68,10 @@ export const useCartStore = create<CartState>()(
         const existingItemIndex = items.findIndex(item => item.product.id === product.id);
         
         let updatedItems: CartItem[];
-        let isNewItem = false;
         
         if (existingItemIndex >= 0) {
           // Update quantity if item already exists
           updatedItems = [...items];
-          const previousQuantity = updatedItems[existingItemIndex].quantity;
           updatedItems[existingItemIndex] = {
             ...updatedItems[existingItemIndex],
             quantity: updatedItems[existingItemIndex].quantity + quantity
@@ -88,7 +86,6 @@ export const useCartStore = create<CartState>()(
             quantity
           };
           updatedItems = [...items, newItem];
-          isNewItem = true;
           
           // Show toast for new item added
           toast.success(`${product.name} added to cart!`);

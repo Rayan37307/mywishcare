@@ -19,6 +19,7 @@ export const COLLECTIONS = {
   HAIRFALL: 'hairfall',
   ACNE: 'acne',
   PIGMENTATION: 'pigmentation',
+  DANDRUFF: 'dandruff',
   DULL_SKIN: 'dull-skin',
   DETAN: 'detan',
   DAMAGED_HAIR: 'damaged-hair',

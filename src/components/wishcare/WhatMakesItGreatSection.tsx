@@ -12,7 +12,7 @@ const WhatMakesItGreatSection: React.FC<WhatMakesItGreatSectionProps> = ({
   getImageUrlFromId,
 }) => {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fetchImages = async () => {

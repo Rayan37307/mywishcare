@@ -89,10 +89,7 @@ interface RoutineBuilderCardItemProps {
 const RoutineBuilderCardItem: React.FC<RoutineBuilderCardItemProps> = ({ product, handleAddToCart, isAddingItem }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const imageSrc = product.images?.length > 1 && isHovered
-    ? product.images[1]?.src
-    : product.images?.[0]?.src;
-    const getDisplayImage = () => {
+  const getDisplayImage = () => {
     if (product.images?.length > 1 && isHovered) return product.images[1]?.src;
     return product.images?.[0]?.src;
   };

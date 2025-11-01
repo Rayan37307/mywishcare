@@ -1,12 +1,15 @@
+import { Link } from "react-router-dom";
+
 const ProblemCategory = () => {
-  const problems = [
-    { id: 3, name: 'Hair Fall', image: '/hairfall.webp' },
-    { id: 6, name: 'Skin Care', image: '/skincare.webp' },
-    { id: 5, name: 'Scalp Care', image: '/sculpcare.webp' },
-    { id: 2, name: 'De-tan', image: '/detan.webp' },
-    { id: 1, name: 'Dandruff', image: '/dandruff.webp' },
-    { id: 4, name: 'Lip Care', image: '/lipcare.webp' },
-  ];
+const problems = [
+    { id: 3, name: 'Hair Fall', image: '/hairfall.webp', link: '/collections/hairfall' },
+    { id: 6, name: 'Sun Care', image: '/skincare.webp', link: '/collections/sun-care' },
+    { id: 5, name: 'Sculp Care', image: '/sculpcare.webp', link: "/collections/hair-care-1" },
+    { id: 2, name: 'De-tan', image: '/detan.webp' , link: '/collections/detan' },
+    { id: 1, name: 'Dandruff', image: '/dandruff.webp', link: '/collections/dandruff' },
+    { id: 4, name: 'Lip Care', image: '/lipcare.webp',  link: '/collections/lip-balm' },
+  ]
+
 
   return (
     <div className="w-full overflow-x-auto py-4 scroll-smooth scrollbar-hidden">
@@ -18,11 +21,13 @@ const ProblemCategory = () => {
             style={{ flexBasis: '15.66%' }} // 6 cards fit in one row
           >
             <div className="w-full aspect-square overflow-hidden rounded-xl mb-2">
+              <Link to={problem.link}>
               <img
                 src={problem.image}
                 alt={problem.name}
                 className="w-full h-full object-cover"
               />
+              </Link>
             </div>
             <span className="text-sm md:text-base font-medium">
               {problem.name}

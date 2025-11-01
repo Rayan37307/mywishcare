@@ -13,7 +13,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({
 }) => {
   const [imageUrls, setImageUrls] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!wishCare) return;

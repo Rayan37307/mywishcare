@@ -32,7 +32,6 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
         toast.success('Authenticated successfully!');
         setTimeout(onClose, 1500);
       } else {
-        const errorMessage = result.error || 'Login failed';
         // The specific error messages are now handled in the useAuth hook
         // Just show the cleaned error message from the hook
       }

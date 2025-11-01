@@ -19,12 +19,8 @@ const RecentlyViewedProducts = ({ currentProductId }: RecentlyViewedProductsProp
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load all product IDs from localStorage first
-    const stored = localStorage.getItem(RECENTLY_VIEWED_KEY);
-    let allIds: number[] = [];
-    if (stored) {
-      allIds = JSON.parse(stored);
-    }
+    // Add current product to recently viewed
+    addToRecentlyViewed(currentProductId);
     
     // Add current product to recently viewed
     addToRecentlyViewed(currentProductId);
@@ -34,7 +30,7 @@ const RecentlyViewedProducts = ({ currentProductId }: RecentlyViewedProductsProp
     if (storedAfterUpdate) {
       const updatedIds = JSON.parse(storedAfterUpdate);
       // Remove the current product ID and keep only unique values
-      const filtered = [...new Set(updatedIds.filter((id: number) => id !== currentProductId))];
+      const filtered = [...new Set(updatedIds.filter((id: number) => id !== currentProductId))] as number[];
       setRecentlyViewedIds(filtered);
     } else {
       setRecentlyViewedIds([]);

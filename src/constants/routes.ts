@@ -10,6 +10,7 @@ export const ROUTES = {
   COLLECTIONS_HAIR_CARE_1: '/collections/hair-care-1',
   COLLECTIONS_ACNE: '/collections/acne',
   COLLECTIONS_PIGMENTATION: '/collections/pigmentation',
+  COLLECTIONS_DANDRUFF: '/collections/dandruff',
   COLLECTIONS_DULL_SKIN: '/collections/dull-skin',
   COLLECTIONS_DETAN: '/collections/detan',
   COLLECTIONS_DAMAGED_HAIR: '/collections/damaged-hair',

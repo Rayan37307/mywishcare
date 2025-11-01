@@ -11,6 +11,7 @@ export type CollectionType =
   | typeof COLLECTIONS.DULL_SKIN
   | typeof COLLECTIONS.DETAN
   | typeof COLLECTIONS.DAMAGED_HAIR
+  | typeof COLLECTIONS.DANDRUFF
   | 'allProducts'
   | typeof COLLECTIONS.SUN_CARE
   | 'bestSellers'
@@ -29,6 +30,7 @@ interface ProductState {
   acneProducts: Product[];
   pigmentationProducts: Product[];
   hairfallProducts: Product[];
+  dandruffProducts: Product[];
   dullSkinProducts: Product[];
   detanProducts: Product[];
   damagedHairProducts: Product[];
@@ -58,6 +60,7 @@ interface ProductState {
   fetchAcneProducts: () => Promise<void>;
   fetchPigmentationProducts: () => Promise<void>;
   fetchHairfallProducts: () => Promise<void>;
+  fetchDandruffProducts: () => Promise<void>;
   fetchDullSkinProducts: () => Promise<void>;
   fetchDetanProducts: () => Promise<void>;
   fetchDamagedHairProducts: () => Promise<void>;
@@ -77,6 +80,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   acneProducts: [],
   pigmentationProducts: [],
   hairfallProducts: [],
+  dandruffProducts: [],
   dullSkinProducts: [],
   detanProducts: [],
   damagedHairProducts: [],
@@ -356,6 +360,22 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
   
+  fetchDandruffProducts: async () => {
+    set({ loading: true, error: null });
+    try {
+      const products = await woocommerceService.fetchProductsByTagSlug('dandruff');
+      set({ 
+        dandruffProducts: products,
+        loading: false 
+      });
+    } catch {
+      set({ 
+        error: 'Failed to fetch dandruff products', 
+        loading: false 
+      });
+    }
+  },
+  
   fetchDullSkinProducts: async () => {
     set({ loading: true, error: null });
     try {
@@ -446,6 +466,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
         return state.pigmentationProducts;
       case COLLECTIONS.HAIRFALL:
         return state.hairfallProducts;
+      case COLLECTIONS.DANDRUFF:
+        return state.dandruffProducts;
       case COLLECTIONS.DULL_SKIN:
         return state.dullSkinProducts;
       case COLLECTIONS.DETAN:
@@ -483,6 +505,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       state.acneProducts,
       state.pigmentationProducts,
       state.hairfallProducts,
+      state.dandruffProducts,
       state.dullSkinProducts,
       state.detanProducts,
       state.damagedHairProducts,

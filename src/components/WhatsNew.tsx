@@ -97,10 +97,6 @@ const WhatsNewCardItem: React.FC<WhatsNewCardItemProps> = ({
     return product.images?.[0]?.src;
   };
 
-  const imageSrc = product.images?.length > 1 && isHovered
-    ? product.images[1]?.src
-    : product.images?.[0]?.src;
-
   return (
     <Link to={`/products/${product.id}`} className="block">
       <div

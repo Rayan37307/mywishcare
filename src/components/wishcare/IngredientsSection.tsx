@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import type { WishCareProductData } from '../../types/product';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -7,15 +7,15 @@ interface IngredientsSectionProps {
   getImageUrlFromId: (id: number) => Promise<string | null>;
 }
 
-const IngredientsSection: React.FC<IngredientsSectionProps> = ({
-  wishCare,
-  getImageUrlFromId,
-}) => {
-  const [imageUrls, setImageUrls] = React.useState<string[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [open, setOpen] = React.useState(true);
+const IngredientsSection: React.FC<IngredientsSectionProps> = ({ wishCare, getImageUrlFromId }) => {
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [showFullText, setShowFullText] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchImages = async () => {
       if (wishCare?.ingredientsImages?.length) {
         const urls = await Promise.all(
@@ -35,14 +35,19 @@ const IngredientsSection: React.FC<IngredientsSectionProps> = ({
     fetchImages();
   }, [wishCare, getImageUrlFromId]);
 
-  if (
-    !wishCare?.ingredients &&
-    (!wishCare?.ingredientsImages || wishCare.ingredientsImages.length === 0)
-  ) {
+  // Detect if text overflows
+  useEffect(() => {
+    if (textRef.current) {
+      const el = textRef.current;
+      if (el.scrollHeight > el.clientHeight) setShowButton(true);
+    }
+  }, [loading, showFullText]);
+
+  if (!wishCare?.ingredients && (!wishCare?.ingredientsImages || wishCare.ingredientsImages.length === 0)) {
     return null;
   }
 
-  if (loading) return <div className="mb-8 p-6  rounded-lg">Loading...</div>;
+  if (loading) return <div className="mb-8 p-6 rounded-lg">Loading...</div>;
 
   return (
     <div className="mb-8 p-6 rounded-lg bg-transparent border-3 border-[#EBE4FD]">
@@ -60,14 +65,25 @@ const IngredientsSection: React.FC<IngredientsSectionProps> = ({
       </button>
 
       {/* Content */}
-      <div
-        className={`transition-all duration-500 overflow-hidden ${
-          open ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
-        }`}
-      >
+      <div className={`transition-all duration-500 overflow-hidden ${open ? 'max-h-[1000px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
         {/* Ingredients Text */}
         {wishCare.ingredients && (
-          <p className="text-gray-700 mb-6 whitespace-pre-line">{wishCare.ingredients}</p>
+          <div className="mb-6 relative">
+            <p
+              ref={textRef}
+              className={`text-gray-700 whitespace-pre-line transition-all duration-300 ${!showFullText ? 'line-clamp-3' : ''}`}
+            >
+              {wishCare.ingredients}
+            </p>
+            {showButton && (
+              <button
+                onClick={() => setShowFullText(!showFullText)}
+                className="mt-2 text-sm text-blue-600 font-medium hover:underline"
+              >
+                {showFullText ? 'Show Less' : 'Show More'}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Horizontal Scroll Image Gallery */}
@@ -75,15 +91,8 @@ const IngredientsSection: React.FC<IngredientsSectionProps> = ({
           <div className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
             <div className="flex gap-6 snap-x snap-mandatory scroll-smooth pb-2">
               {imageUrls.map((url, index) => (
-                <div
-                  key={index}
-                  className="w-96 snap-start overflow-hidden flex-shrink-0"
-                >
-                  <img
-                    src={url}
-                    alt={`Ingredient ${index + 1}`}
-                    className="w-full h-auto object-cover"
-                  />
+                <div key={index} className="w-96 snap-start overflow-hidden flex-shrink-0">
+                  <img src={url} alt={`Ingredient ${index + 1}`} className="w-full h-auto object-cover" />
                 </div>
               ))}
             </div>
