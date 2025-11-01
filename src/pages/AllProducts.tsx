@@ -12,7 +12,7 @@ const AllProducts = () => {
   }, [fetchAllProductsCollection]);
 
   return (
-    <div className='px-10'>
+    <div className=' md:px-10 max-md:px-4'>
       <ProblemCategory />
       {loading ? (
         <AllProductsCardSkeleton count={8} />

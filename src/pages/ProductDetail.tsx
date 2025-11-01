@@ -9,6 +9,8 @@ import IngredientsSection from '../components/wishcare/IngredientsSection';
 import ResultsSection from '../components/wishcare/ResultsSection';
 import PairsWithSection from '../components/wishcare/PairsWithSection';
 import FAQSection from '../components/wishcare/FAQSection';
+import TrendingProducts from '../components/TrendingProducts';
+import RecentlyViewedProducts from '../components/RecentlyViewedProducts';
 import { getImageUrlFromId } from '../utils/imageUtils';
 import type { Product } from '../types/product';
 import { CheckCircleIcon } from 'lucide-react';
@@ -147,13 +149,13 @@ const ProductDetail = () => {
                 {product.sale_price && product.sale_price !== product.regular_price ? (
                   <div className="flex flex-col justify-center">
                     <div>
-                      <span className="text-red-500 mr-4">₹{product.sale_price}</span>
-                      <span className="text-gray-500 line-through text-xs">₹{product.regular_price}</span>
+                      <span className="text-red-500 mr-4">৳{product.sale_price}</span>
+                      <span className="text-gray-500 line-through text-xs">৳{product.regular_price}</span>
                     </div>
                     <p className="text-[11px] text-gray-600">Inclusive of all taxes</p>
                   </div>
                 ) : (
-                  <span>₹{product.price}</span>
+                  <span>৳{product.price}</span>
                 )}
               </div>
             </div>
@@ -247,12 +249,12 @@ const ProductDetail = () => {
               {product.sale_price && product.sale_price !== product.regular_price ? (
                 <div className="flex flex-col justify-center gap-2">
                   <div>
-                    <span>₹{product.sale_price}</span>
-                    <span className="text-gray-500 line-through text-sm mr-2 ml-4">MRP ₹{product.regular_price}</span>
+                    <span>৳{product.sale_price}</span>
+                    <span className="text-gray-500 line-through text-sm mr-2 ml-4">MRP ৳{product.regular_price}</span>
                   </div>
                   <p className="text-[13px] text-gray-600">Inclusive of all taxes</p>
                 </div>
-              ) : <span>₹{product.price}</span>}
+              ) : <span>৳{product.price}</span>}
             </div>
 
             {/* Original Add to Cart Section */}
@@ -282,6 +284,12 @@ const ProductDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Trending Products Section */}
+        <TrendingProducts currentProductId={product.id} />
+
+        {/* Recently Viewed Products Section */}
+        <RecentlyViewedProducts currentProductId={product.id} />
 
         {product.wishCare && <FAQSection wishCare={product.wishCare} />}
       </div>

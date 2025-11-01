@@ -80,7 +80,7 @@ const Navbar = memo(({ toggleMenu, toggleCart, onUserIconClick }: NavbarProps) =
   // Determine navbar classes based on scroll state and page
   const isHome = location.pathname === '/';
   const navbarClasses = [
-    "py-4 px-7 md:py-8 md:px-10 relative transition-all duration-500 ease-in-out",
+    "py-4 px-4 md:py-8 md:px-10 relative transition-all duration-500 ease-in-out",
     isHome && !isScrolled
       ? "bg-transparent backdrop-blur-[20px]"
       : "bg-[#E4EDFD]"

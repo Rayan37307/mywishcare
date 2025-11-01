@@ -39,7 +39,7 @@ const OrderSuccessPage: React.FC = () => {
             <div className="space-y-2">
               <p><span className="font-medium">Order Number:</span> #{order?.id || 'WISH001'}</p>
               <p><span className="font-medium">Order Date:</span> {order?.date_created ? formatDate(order.date_created) : new Date().toLocaleDateString()}</p>
-              <p><span className="font-medium">Total Amount:</span> ₹{total?.toFixed(2) || '0.00'}</p>
+              <p><span className="font-medium">Total Amount:</span> ৳{total?.toFixed(2) || '0.00'}</p>
               <p><span className="font-medium">Payment Method:</span> {order?.payment_method_title || 'Cash on Delivery'}</p>
               <p><span className="font-medium">Status:</span> <span className={`px-2 py-1 rounded text-sm ${
                 order?.status === 'completed' ? 'bg-green-100 text-green-800' :

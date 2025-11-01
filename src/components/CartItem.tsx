@@ -27,11 +27,11 @@ const CartItem = memo(({ item, updateQuantity, removeItem }: CartItemProps) => {
         <div className="text-[9px] max-md:text-[8px] mt-1">
           {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
             <div className="flex items-center gap-0.5">
-              <span className="text-red-500">₹{product.sale_price}</span>
-              <span className="line-through text-gray-600 text-[8px] max-md:text-[7px]">₹{product.regular_price}</span>
+              <span className="text-red-500">৳{product.sale_price}</span>
+              <span className="line-through text-gray-600 text-[8px] max-md:text-[7px]">৳{product.regular_price}</span>
             </div>
           ) : (
-            <span>₹{product.price}</span>
+            <span>৳{product.price}</span>
           )}
         </div>
         <div className="flex items-center mt-2 space-x-2">

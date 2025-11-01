@@ -56,8 +56,47 @@ class WordPressAuthService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Authentication failed: ${response.status}`);
+        let errorText;
+        try {
+          // First try to get the response as text (which may contain HTML)
+          errorText = await response.text();
+        } catch (textError) {
+          // If there's an issue getting text, use status-based message
+          throw new Error(`Authentication failed: ${response.status} ${response.statusText}`);
+        }
+
+        // Remove HTML tags and clean up the message
+        let cleanMessage = errorText
+          .replace(/<[^>]*>/g, '')  // Remove HTML tags
+          .replace(/&nbsp;/g, ' ')  // Replace HTML entities
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+          .trim();
+
+        // If the response was JSON format but contained HTML in the message field
+        try {
+          const jsonData = JSON.parse(errorText);
+          if (jsonData.message) {
+            cleanMessage = jsonData.message
+              .replace(/<[^>]*>/g, '')
+              .replace(/&nbsp;/g, ' ')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>')
+              .replace(/&amp;/g, '&')
+              .replace(/&quot;/g, '"')
+              .replace(/&#39;/g, "'")
+              .replace(/\s+/g, ' ')
+              .trim();
+          }
+        } catch (jsonError) {
+          // If it's not JSON, we already cleaned the text
+        }
+
+        throw new Error(cleanMessage || `Authentication failed: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -92,7 +131,10 @@ class WordPressAuthService {
             roles: userData.roles || [],
           };
         } else {
-          throw new Error('Could not retrieve user information after login');
+          const errorText = await userResponse.text();
+          // Remove HTML tags if present
+          const cleanMessage = errorText.replace(/<[^>]*>/g, '').trim();
+          throw new Error(cleanMessage || 'Could not retrieve user information after login');
         }
       }
       
@@ -119,7 +161,21 @@ class WordPressAuthService {
       return { user, token: data.token };
     } catch (error) {
       console.error('Login error:', error);
-      return { error: (error as Error).message || 'Login failed' };
+      let errorMessage = (error as Error).message || 'Login failed';
+      // Clean HTML tags and entities if present in the error message
+      if (typeof errorMessage === 'string') {
+        errorMessage = errorMessage
+          .replace(/<[^>]*>/g, '')  // Remove HTML tags
+          .replace(/&nbsp;/g, ' ')  // Replace HTML entities
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\s+/g, ' ')  // Replace multiple spaces with single space
+          .trim();
+      }
+      return { error: errorMessage };
     }
   }
 
@@ -138,7 +194,10 @@ class WordPressAuthService {
       });
 
       if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        // Remove HTML tags if present
+        const cleanMessage = errorText.replace(/<[^>]*>/g, '').trim();
+        throw new Error(cleanMessage || `Authentication failed: ${response.status} ${response.statusText}`);
       }
 
       const userData = await response.json();
@@ -158,7 +217,12 @@ class WordPressAuthService {
       return { user, token: credentials };
     } catch (error) {
       console.error('App Password Login error:', error);
-      return { error: (error as Error).message || 'Login failed' };
+      let errorMessage = (error as Error).message || 'Login failed';
+      // Clean HTML tags if present in the error message
+      if (typeof errorMessage === 'string') {
+        errorMessage = errorMessage.replace(/<[^>]*>/g, '').trim();
+      }
+      return { error: errorMessage };
     }
   }
 
@@ -226,10 +290,17 @@ class WordPressAuthService {
           try {
             const errorData = await response.json();
             if (errorData.message) {
-              errorMessage = errorData.message;
+              // Clean up HTML tags from error message
+              errorMessage = errorData.message.replace(/<[^>]*>/g, '').trim();
             }
-          } catch (e) {
-            // If we can't parse error response, use the status-based message
+          } catch (jsonError) {
+            // If we can't parse JSON, try to get text and clean HTML tags
+            try {
+              const errorText = await response.text();
+              errorMessage = errorText.replace(/<[^>]*>/g, '').trim();
+            } catch (textError) {
+              // If we can't parse either JSON or text, use the status-based message
+            }
           }
           
           throw new Error(errorMessage);
@@ -300,8 +371,14 @@ class WordPressAuthService {
         };
       }
       
+      let errorMessage = (error as Error).message || 'An unexpected error occurred during registration. Please try again later.';
+      // Clean HTML tags if present in the error message
+      if (typeof errorMessage === 'string') {
+        errorMessage = errorMessage.replace(/<[^>]*>/g, '').trim();
+      }
+      
       return { 
-        error: (error as Error).message || 'An unexpected error occurred during registration. Please try again later.' 
+        error: errorMessage
       };
     }
   }
@@ -442,7 +519,10 @@ class WordPressAuthService {
       });
 
       if (!response.ok) {
-        throw new Error(`Update failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        // Remove HTML tags if present
+        const cleanMessage = errorText.replace(/<[^>]*>/g, '').trim();
+        throw new Error(cleanMessage || `Update failed: ${response.status} ${response.statusText}`);
       }
 
       const updatedUser = await response.json();
@@ -461,7 +541,12 @@ class WordPressAuthService {
       return { user };
     } catch (error) {
       console.error('Update user error:', error);
-      return { error: (error as Error).message || 'Update failed' };
+      let errorMessage = (error as Error).message || 'Update failed';
+      // Clean HTML tags if present in the error message
+      if (typeof errorMessage === 'string') {
+        errorMessage = errorMessage.replace(/<[^>]*>/g, '').trim();
+      }
+      return { error: errorMessage };
     }
   }
 }

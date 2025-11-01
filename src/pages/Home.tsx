@@ -20,7 +20,10 @@ const Home = () => {
       <BannerSlider />
       <div className='px-10 max-lg:px-5'>
       <WhatsNew />
-      <RoutineBuilder />
+
+      </div>
+      <div className='px-10 max-lg:px-5'>
+              <RoutineBuilder />
       </div>
       <Science/>
       <div className='px-10 max-lg:px-5'>

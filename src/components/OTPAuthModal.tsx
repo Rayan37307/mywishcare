@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 interface OTPAuthModalProps {
   isOpen: boolean;
@@ -15,8 +16,6 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState(''); // For registration
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const [isLogin, setIsLogin] = useState(true); // Switch between login and register
 
 
@@ -25,20 +24,20 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
     setLoading(true);
 
     try {
       const result = await login(email, password, false); // Use regular login, not app password
       if (result.success) {
-        setMessage('Authenticated successfully! Redirecting...');
+        toast.success('Authenticated successfully!');
         setTimeout(onClose, 1500);
       } else {
-        setError(result.error || 'Login failed');
+        const errorMessage = result.error || 'Login failed';
+        // The specific error messages are now handled in the useAuth hook
+        // Just show the cleaned error message from the hook
       }
-    } catch {
-      setError('Failed to login. Please try again.');
+    } catch (error) {
+      toast.error('Failed to login. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -46,20 +45,19 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
     setLoading(true);
 
     try {
       const result = await register(username, email, password, username); // Use username as display name
       if (result.success) {
-        setMessage('Account created successfully! Redirecting...');
+        toast.success('Account created successfully!');
         setTimeout(onClose, 1500);
       } else {
-        setError(result.error || 'Registration failed');
+        // The specific error messages are now handled in the useAuth hook
+        // Just show a generic message since the hook already handles specific cases
       }
-    } catch {
-      setError('Failed to register. Please try again.');
+    } catch (error) {
+      toast.error('Failed to register. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,8 +67,6 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
     setEmail('');
     setPassword('');
     setUsername('');
-    setError('');
-    setMessage('');
     onClose();
   };
 
@@ -100,12 +96,6 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
 
         {/* Right Form */}
         <div className="w-full md:w-1/3 px-4 flex flex-col justify-center rounded-lg pt-5 bg-[#EBE4FD]">
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>
-          )}
-          {message && (
-            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded text-sm">{message}</div>
-          )}
 
           {isLogin ? (
             <form onSubmit={handleLogin} className="flex flex-col justify-center text-center">

@@ -46,7 +46,7 @@ const Cart = () => {
                   />
                   <div className="ml-4 flex-1">
                     <h3 className="font-bold">{item.product.name}</h3>
-                    <p className="text-gray-600">₹{item.product.price}</p>
+                    <p className="text-gray-600">৳{item.product.price}</p>
                   </div>
                   <div className="flex items-center">
                     <button 
@@ -77,7 +77,7 @@ const Cart = () => {
                   </div>
                   <div className="ml-4">
                     <p className="font-bold">
-                      ₹{
+                      ৳{
                         (() => {
                           let price: number;
                           if (typeof item.product.price === 'string') {
@@ -134,7 +134,7 @@ const Cart = () => {
               
               <div className="flex justify-between mb-2">
                 <span>Subtotal</span>
-                <span>₹{totalPrice.toFixed(2)}</span>
+                <span>৳{totalPrice.toFixed(2)}</span>
               </div>
               
               <div className="flex justify-between mb-2">
@@ -144,12 +144,12 @@ const Cart = () => {
               
               <div className="flex justify-between mb-2">
                 <span>Tax</span>
-                <span>₹0.00</span>
+                <span>৳0.00</span>
               </div>
               
               <div className="border-t pt-2 mt-2 flex justify-between font-bold">
                 <span>Total</span>
-                <span>₹{totalPrice.toFixed(2)}</span>
+                <span>৳{totalPrice.toFixed(2)}</span>
               </div>
               
               <button 

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Mousewheel, FreeMode } from 'swiper/modules';
-import type { Product } from '../types/product';
 import { Link } from 'react-router-dom';
+import type { Product } from '../types/product';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
 import { ArrowRightIcon } from 'lucide-react';
@@ -13,148 +11,74 @@ const WhatsNew = () => {
   const { whatsNewProducts, loading, error, fetchWhatsNewProducts } = useProductStore();
   const { addItem, isAddingItem } = useCartStore();
 
-  const handleAddToCart = (product: Product) => {
-    addItem(product, 1);
-  };
+  const handleAddToCart = (product: Product) => addItem(product, 1);
 
   useEffect(() => {
-    if (whatsNewProducts.length === 0) {
-      fetchWhatsNewProducts();
-    }
-  }, [whatsNewProducts.length]); // Removed fetchWhatsNewProducts from dependency to prevent infinite loop
+    if (whatsNewProducts.length === 0) fetchWhatsNewProducts();
+  }, [whatsNewProducts.length]);
 
-  // Loading skeleton for the whole component
+  // Loading Skeleton
   if (loading && whatsNewProducts.length === 0) {
     return (
       <div className="py-8">
-        <div className="flex gap-4 items-center mb-8">
-          <Skeleton variant="text" className="h-8 w-48" />
-          <Skeleton variant="text" className="h-4 w-20" />
-        </div>
-        <div className="relative">
-          <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide">
-            {Array.from({ length: 4 }, (_, index) => (
-              <div 
-                key={`skeleton-${index}`}
-                className="bg-white rounded-lg overflow-hidden p-2 max-w-[250px] flex flex-col min-w-[250px]"
-              >
-                <div className="w-full aspect-[5/5.5]">
-                  <Skeleton 
-                    variant="rectangular" 
-                    className="w-full h-full rounded-lg" 
-                  />
-                </div>
-                <div className="text-center flex-grow mt-2">
-                  <Skeleton 
-                    variant="text" 
-                    className="h-4 w-3/4 mx-auto mb-2" 
-                  />
-                  <Skeleton 
-                    variant="text" 
-                    className="h-3 w-full mx-auto mb-4" 
-                  />
-                  <div className="flex gap-2 justify-center items-center py-2">
-                    <Skeleton 
-                      variant="text" 
-                      className="h-4 w-1/3" 
-                    />
-                  </div>
-                </div>
-                <Skeleton 
-                  variant="rectangular" 
-                  className="w-full h-10 rounded-md" 
-                />
-              </div>
-            ))}
-          </div>
+        <Header />
+        <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       </div>
     );
   }
 
-  if (error && whatsNewProducts.length === 0) {
+  // Error or No Products
+  if ((error || whatsNewProducts.length === 0) && !loading) {
     return (
       <div className="py-8">
-        <div className='flex gap-4 items-center'>
-          <h2 className="text-3xl font-bold mb-8 text-left pt-7">What's New</h2>
-          <Link to='/collections/whatsnew' className='flex items-center gap-2'>View All <ArrowRightIcon/></Link>
-        </div>
-        <p>Error loading products: {error}</p>
+        <Header />
+        {error ? <p className="text-red-500">Error loading products: {error}</p> : <NoProductsFound message="No new products found" />}
       </div>
     );
   }
 
-  // Show "No Products Found" when there are no products after loading
-  if (!loading && whatsNewProducts.length === 0) {
-    return (
-      <div className="py-8">
-        <div className='flex gap-4 items-center'>
-          <h2 className="text-3xl font-bold mb-8 text-left pt-7">What's New</h2>
-          <Link to='/collections/whatsnew' className='flex items-center gap-2'>View All <ArrowRightIcon/></Link>
-        </div>
-        <NoProductsFound message="No new products found" />
-      </div>
-    );
-  }
-
+  // Render Products
   return (
     <div className="py-8">
-       <div className='flex gap-4 items-center'>
-        <h2 className="text-3xl font-bold mb-8 text-left pt-7">What's New</h2>
-        <Link to='/collections/whatsnew' className="flex gap-2 items-center justify-center">View All <ArrowRightIcon/></Link>
-        </div>
-     <Swiper
-  modules={[Mousewheel, FreeMode]}
-  spaceBetween={20}               // gap between cards
-  slidesPerView={'auto'}          // allows natural horizontal scroll
-  freeMode={{ enabled: true, momentum: false }} // smooth scrolling
-  mousewheel={true}
-  className="mySwiper"
->
-  {whatsNewProducts.map((product) => (
-    <SwiperSlide
-      key={product.id}
-      className="!w-[250px] sm:!w-[280px] md:!w-[300px]" // keeps cards consistent width
-    >
-      <WhatsNewCardItem 
-        product={product} 
-        handleAddToCart={handleAddToCart} 
-        isAddingItem={isAddingItem} 
-      />
-    </SwiperSlide>
-  ))}
-</Swiper>
-
-
-      <style>{`
-        .swiper-button-next,
-        .swiper-button-prev {
-          background-color: #fff;
-          color: #000;
-          border-radius: 50%;
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.3s ease;
-          border: 2px solid #ccc;
-        }
-        .swiper-button-next:hover,
-        .swiper-button-prev:hover {
-          background-color: #f0f0f0;
-          transform: scale(1.05);
-        }
-        .swiper-button-next::after,
-        .swiper-button-prev::after {
-          font-size: 12px;
-          font-weight: bold;
-        }
-      `}</style>
-   
+      <Header />
+      <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {whatsNewProducts.map((product) => (
+          <div key={product.id} className="flex-shrink-0 w-[250px]">
+            <WhatsNewCardItem
+              product={product}
+              handleAddToCart={handleAddToCart}
+              isAddingItem={isAddingItem}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
+
+const Header = () => (
+  <div className="flex gap-4 items-center mb-6 px-2">
+    <h2 className="text-3xl font-bold text-left">What's New</h2>
+    <Link to="/collections/whatsnew" className="flex items-center gap-2 text-sm font-medium">
+      View All <ArrowRightIcon size={16} />
+    </Link>
+  </div>
+);
+
+const SkeletonCard = () => (
+  <div className="bg-white rounded-lg overflow-hidden p-2 w-[250px] flex flex-col">
+    <Skeleton variant="rectangular" className="w-full aspect-[5/5.5] rounded-lg" />
+    <div className="mt-2 flex flex-col gap-2">
+      <Skeleton variant="text" className="h-4 w-3/4 mx-auto" />
+      <Skeleton variant="text" className="h-3 w-full mx-auto" />
+      <Skeleton variant="rectangular" className="w-full h-10 rounded-md" />
+    </div>
+  </div>
+);
 
 interface WhatsNewCardItemProps {
   product: Product;
@@ -162,57 +86,57 @@ interface WhatsNewCardItemProps {
   isAddingItem: (productId: number) => boolean;
 }
 
-const WhatsNewCardItem: React.FC<WhatsNewCardItemProps> = ({ 
-  product, 
-  handleAddToCart, 
-  isAddingItem 
+const WhatsNewCardItem: React.FC<WhatsNewCardItemProps> = ({
+  product,
+  handleAddToCart,
+  isAddingItem,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-
-  // Get the image to show based on hover state
   const getDisplayImage = () => {
-    if (product.images && product.images.length > 1 && isHovered) {
-      // Show the second image (index 1) if hovered and more than one image exists
-      return product.images[1]?.src || product.images[0]?.src || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxwYXRoIGQ9Ik0yMiAydi0yYTIgMiAwIDAgMC0yLTJIMTRhMiAyIDAgMCAwLTIgMnYySDRhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE2YTIgMiAwIDAgMCAyLTJWMnptLTQgMTZINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyeiIgLz4KPC9zdmc+';
-    }
-    // Show the first image by default
-    return product.images[0]?.src || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxwYXRoIGQ9Ik0yMiAydi0yYTIgMiAwIDAgMC0yLTJIMTRhMiAyIDAgMCAwLTIgMnYySDRhMiAyIDAgMCAwLTIgMnYxNGEyIDIgMCAwIDAgMiAyaDE2YTIgMiAwIDAgMCAyLTJWMnptLTQgMTZINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyem0wLTRINnYtMmgxMnYyeiIgLz4KPC9zdmc+';
+    if (product.images?.length > 1 && isHovered) return product.images[1]?.src;
+    return product.images?.[0]?.src;
   };
 
+  const imageSrc = product.images?.length > 1 && isHovered
+    ? product.images[1]?.src
+    : product.images?.[0]?.src;
+
   return (
-    <Link to={`/products/${product.id}`} className="h-full">
-      <div 
-        className="bg-white rounded-lg overflow-hidden p-2 max-w-[250px] h-full flex flex-col"
+    <Link to={`/products/${product.id}`} className="block">
+      <div
+        className="bg-white rounded-lg overflow-hidden p-2 flex flex-col h-[420px] min-w-[250px]" // fixed height
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="w-full aspect-[5/5.5] relative">
-          <img 
-            src={getDisplayImage()} 
-            alt={product.name} 
+        <div className="w-full aspect-[5/5.5]">
+          <img
+            src={getDisplayImage()}
+            alt={product.name}
             className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
           />
         </div>
-        <div className="text-center flex-grow mt-2">
-          <h3 className="text-[15px]">{product.name}</h3>
+
+        <div className="flex flex-col flex-grow mt-2">
+          <h3 className="text-[15px] font-medium line-clamp-2 text-center">{product.name}</h3>
           <p
-                className="text-[10px] text-black"
-                dangerouslySetInnerHTML={{ __html: product.short_description }}
-              />
-          <div className="flex gap-2 justify-center items-center py-2">
-            {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
+            className="text-[10px] text-gray-600 mt-1 text-center flex-grow overflow-hidden"
+            dangerouslySetInnerHTML={{ __html: product.short_description }}
+          />
+          <div className="flex justify-center items-center gap-2 mt-2">
+            {product.sale_price && product.sale_price !== product.regular_price ? (
               <>
-                <p className="text-gray-500 text-sm line-through mb-1">₹{product.regular_price}</p>
-                <p className="text-gray-800 mb-2 mt-1">₹{product.sale_price}</p>
+                <p className="text-gray-500 text-sm line-through">৳{product.regular_price}</p>
+                <p className="text-black text-base font-semibold">৳{product.sale_price}</p>
               </>
             ) : (
-              <p className="text-black mb-2 mt-2">₹{product.price}</p>
+              <p className="text-black font-semibold">৳{product.price}</p>
             )}
           </div>
         </div>
-        <button 
-          className={`w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2 ${
-            isAddingItem(product.id) ? 'bg-gray-300' : ''
+
+        <button
+          className={`w-full py-2 bg-[#D4F871] uppercase rounded-md border border-black text-sm flex justify-center items-center gap-2 mt-2 ${
+            isAddingItem(product.id) ? 'opacity-60' : ''
           }`}
           onClick={(e) => {
             e.preventDefault();
@@ -221,13 +145,6 @@ const WhatsNewCardItem: React.FC<WhatsNewCardItemProps> = ({
           disabled={isAddingItem(product.id)}
         >
           {isAddingItem(product.id) ? 'Adding...' : 'Add to cart'}
-          {!isAddingItem(product.id) && (
-            <span className="mb-[3px]">
-            <svg aria-hidden="true" fill="none" focusable="false" width="15" viewBox="0 0 24 24">
-              <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-            </svg>
-            </span>
-          )}
         </button>
       </div>
     </Link>

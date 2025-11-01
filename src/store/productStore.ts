@@ -64,6 +64,7 @@ interface ProductState {
   fetchSunCareProducts: () => Promise<void>;
   fetchAllProductsCollection: () => Promise<void>;
   getProductsByCollection: (collection: CollectionType) => Product[];
+  getProductById: (id: number) => Product | null;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({

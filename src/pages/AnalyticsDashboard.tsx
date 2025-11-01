@@ -155,7 +155,7 @@ const AnalyticsDashboard: React.FC = () => {
                         {overviewStats.mostViewedProducts.map((product, index) => (
                           <tr key={index}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{product.price}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">৳{product.price}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {new Date(product.timestamp).toLocaleString()}
                             </td>
@@ -223,7 +223,7 @@ const AnalyticsDashboard: React.FC = () => {
                                 {checkout.formData.email}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                ₹{checkout.value.toFixed(2)}
+                                ৳{checkout.value.toFixed(2)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(checkout.timestamp).toLocaleTimeString()}

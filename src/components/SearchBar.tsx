@@ -134,11 +134,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSubmit, autoFocus = false }) =>
                         <div className="text-sm text-gray-600">
                           {product.sale_price && product.sale_price !== '' && product.sale_price !== product.regular_price ? (
                             <div className="flex items-center">
-                              <span className="text-red-500 line-through text-xs mr-2">₹{product.regular_price}</span>
-                              <span>₹{product.sale_price}</span>
+                              <span className="text-red-500 line-through text-xs mr-2">৳{product.regular_price}</span>
+                              <span>৳{product.sale_price}</span>
                             </div>
                           ) : (
-                            <span>₹{product.price}</span>
+                            <span>৳{product.price}</span>
                           )}
                         </div>
                       </div>

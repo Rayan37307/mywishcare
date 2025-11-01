@@ -2,7 +2,7 @@ import type { Product } from '../types/product';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import NoProductsFound from './NoProductsFound';
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 
 export type ProductCategory =
   | 'acne'
@@ -26,19 +26,8 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
   category,
   className = "py-8"
 }) => {
-  const { addItem, isAddingItem } = useCartStore();
-  
-  const handleAddToCart = (product: Product) => {
-    addItem(product, 1);
-  };
-
-  // Check if a product is currently being added to the cart
-  const isAddingToCart = (productId: number) => {
-    return isAddingItem(productId);
-  };
-
   // Format price with proper number formatting
-  const formatPrice = (price: string | number | undefined): string => {
+  const formatPrice = useCallback((price: string | number | undefined): string => {
     if (price === undefined) return '0.00';
     if (typeof price === 'number') {
       return price.toString();
@@ -52,7 +41,7 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
       return '0.00';
     }
     return '0.00';
-  };
+  }, []);
 
   // Show "No Products Found" when there are no products
   if (products.length === 0) {
@@ -81,44 +70,45 @@ const UniversalProductCard: React.FC<UniversalProductCardProps> = ({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
-  {products.map((product) => (
-    <UniversalProductCardItem 
-      key={product.id} 
-      product={product} 
-      isAddingToCart={isAddingToCart}
-      handleAddToCart={handleAddToCart}
-      formatPrice={formatPrice}
-    />
-  ))}
-</div>
-
+      {products.map((product) => (
+        <MemoizedUniversalProductCardItem 
+          key={product.id} 
+          product={product} 
+          formatPrice={formatPrice}
+        />
+      ))}
+    </div>
   );
 };
 
 interface UniversalProductCardItemProps {
   product: Product;
-  isAddingToCart: (productId: number) => boolean;
-  handleAddToCart: (product: Product) => void;
   formatPrice: (price: string | number | undefined) => string;
 }
 
 const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
   product,
-  isAddingToCart,
-  handleAddToCart,
   formatPrice
 }) => {
+  const { addItem, isAddingItem } = useCartStore();
   const [isHovered, setIsHovered] = useState(false);
 
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    addItem(product, 1);
+  }, [addItem, product]);
+
+  const isAddingToCart = isAddingItem(product.id);
+
   // Get the image to show based on hover state
-  const getDisplayImage = () => {
+  const getDisplayImage = useCallback(() => {
     if (product.images && product.images.length > 1 && isHovered) {
       // Show the second image (index 1) if hovered and more than one image exists
       return product.images[1]?.src || product.images[0]?.src || '/placeholder.webp';
     }
     // Show the first image by default
     return product.images[0]?.src || '/placeholder.webp';
-  };
+  }, [product.images, isHovered]);
 
   return (
     <div
@@ -133,10 +123,11 @@ const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
             src={getDisplayImage()}
             alt={product.name}
             className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
+            loading="lazy"
           />
         </div>
         <div className="text-center flex-grow mt-2">
-          <h3 className="text-[15px]">{product.name}</h3>
+          <h3 className="text-[15px] truncate">{product.name}</h3>
           <p
             className="text-[10px] text-black truncate"
             dangerouslySetInnerHTML={{ __html: product.short_description }}
@@ -147,34 +138,29 @@ const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
             product.sale_price !== product.regular_price ? (
               <>
                 <p className="text-gray-500 text-[11px] line-through mb-1">
-                  ₹{formatPrice(product.regular_price)}
+                  ৳{formatPrice(product.regular_price)}
                 </p>
                 <p className="text-gray-800 text-[17px] font-semibold mb-2 mt-1">
-                  ₹{formatPrice(product.sale_price)}
+                  ৳{formatPrice(product.sale_price)}
                 </p>
               </>
             ) : (
-              <p className="text-black mb-2 mt-2">₹{formatPrice(product.price)}</p>
+              <p className="text-black mb-2 mt-2">৳{formatPrice(product.price)}</p>
             )}
           </div>
         </div>
       </Link>
       <button
         className={`w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2 ${
-          isAddingToCart(product.id)
+          isAddingToCart
             ? 'bg-gray-300 cursor-default'
             : 'bg-[#D4F871] hover:bg-[#c0e05d] transition-colors'
         }`}
-        onClick={(e) => {
-          e.preventDefault();
-          if (!isAddingToCart(product.id)) {
-            handleAddToCart(product);
-          }
-        }}
-        disabled={isAddingToCart(product.id)}
+        onClick={handleAddToCart}
+        disabled={isAddingToCart}
       >
-        {isAddingToCart(product.id) ? 'Adding...' : 'Add to cart'}
-        {!isAddingToCart(product.id) && (
+        {isAddingToCart ? 'Adding...' : 'Add to cart'}
+        {!isAddingToCart && (
           <span className="mb-[3px]">
             <svg
               aria-hidden="true"
@@ -198,4 +184,6 @@ const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
   );
 };
 
-export default UniversalProductCard;
+const MemoizedUniversalProductCardItem = memo(UniversalProductCardItem);
+
+export default memo(UniversalProductCard);

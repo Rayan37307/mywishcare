@@ -15,7 +15,7 @@ const HairCare1 = () => {
   }, [fetchHairCare1Products]);
 
   return (
-    <div className='px-10'>
+    <div className=' md:px-10 max-md:px-4'>
       <ProblemCategory />
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 import type { CartState, CartItem } from '../types/cart';
 import type { Product } from '../types/product';
 import { APP_CONSTANTS } from '../constants/app';
+import toast from 'react-hot-toast';
 
 
 
@@ -67,14 +68,19 @@ export const useCartStore = create<CartState>()(
         const existingItemIndex = items.findIndex(item => item.product.id === product.id);
         
         let updatedItems: CartItem[];
+        let isNewItem = false;
         
         if (existingItemIndex >= 0) {
           // Update quantity if item already exists
           updatedItems = [...items];
+          const previousQuantity = updatedItems[existingItemIndex].quantity;
           updatedItems[existingItemIndex] = {
             ...updatedItems[existingItemIndex],
             quantity: updatedItems[existingItemIndex].quantity + quantity
           };
+          
+          // Show toast for quantity update
+          toast.success(`${product.name} quantity updated to ${updatedItems[existingItemIndex].quantity} in cart`);
         } else {
           // Add new item
           const newItem: CartItem = {
@@ -82,6 +88,10 @@ export const useCartStore = create<CartState>()(
             quantity
           };
           updatedItems = [...items, newItem];
+          isNewItem = true;
+          
+          // Show toast for new item added
+          toast.success(`${product.name} added to cart!`);
         }
         
         // Update state and remove from loading state in a single batch
@@ -100,25 +110,35 @@ export const useCartStore = create<CartState>()(
       removeItem: (productId: number) => {
         try {
           const { items } = get();
+          const itemToRemove = items.find(item => item.product.id === productId);
           const updatedItems = items.filter(item => item.product.id !== productId);
           set({ items: updatedItems });
           get().calculateTotals();
+          
+          if (itemToRemove) {
+            toast.success(`${itemToRemove.product.name} removed from cart`);
+          }
         } catch (error) {
           console.error('Error removing item from cart:', error);
+          toast.error('Error removing item from cart');
         }
       },
       
       updateQuantity: (productId: number, quantity: number) => {
         try {
-          if (quantity <= 0) {
-            get().removeItem(productId);
-            return;
-          }
-          
           const { items } = get();
           const existingItemIndex = items.findIndex(item => item.product.id === productId);
           
           if (existingItemIndex >= 0) {
+            const item = items[existingItemIndex];
+            const productName = item.product.name;
+            
+            if (quantity <= 0) {
+              get().removeItem(productId);
+              toast.success(`${productName} removed from cart`);
+              return;
+            }
+            
             const updatedItems = [...items];
             updatedItems[existingItemIndex] = {
               ...updatedItems[existingItemIndex],
@@ -126,18 +146,28 @@ export const useCartStore = create<CartState>()(
             };
             set({ items: updatedItems });
             get().calculateTotals();
+            
+            toast.success(`${productName} quantity updated to ${quantity}`);
           }
         } catch (error) {
           console.error('Error updating cart item quantity:', error);
+          toast.error('Error updating cart item quantity');
         }
       },
       
       clearCart: () => {
         try {
+          const { items } = get();
+          const itemCount = items.length;
           set({ items: [] });
           get().calculateTotals();
+          
+          if (itemCount > 0) {
+            toast.success('Cart cleared successfully');
+          }
         } catch (error) {
           console.error('Error clearing cart:', error);
+          toast.error('Error clearing cart');
         }
       },
       
