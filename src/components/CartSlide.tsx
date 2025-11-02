@@ -205,12 +205,23 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                         </button>
                         <span>{item.quantity}</span>
                         <button
-                          className="px-2 py-1 border border-gray-300 rounded-md"
+                          className={`px-2 py-1 border border-gray-300 rounded-md ${
+                            item.product.manage_stock && 
+                            item.product.stock_quantity !== null && 
+                            item.quantity >= item.product.stock_quantity
+                              ? 'opacity-50 cursor-not-allowed'
+                              : ''
+                          }`}
                           onClick={() =>
                             updateQuantity(
                               item.product.id,
                               item.quantity + 1
                             )
+                          }
+                          disabled={
+                            item.product.manage_stock && 
+                            item.product.stock_quantity !== null && 
+                            item.quantity >= item.product.stock_quantity
                           }
                         >
                           +

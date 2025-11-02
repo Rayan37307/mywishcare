@@ -111,6 +111,8 @@ const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
     return product.images[0]?.src || '/placeholder.webp';
   }, [product.images, isHovered]);
 
+  const isOutOfStock = product.stock_status === 'outofstock';
+  
   return (
     <div
       className="bg-white rounded-lg overflow-hidden p-2 flex flex-col"
@@ -123,9 +125,14 @@ const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
           <img
             src={getDisplayImage()}
             alt={product.name}
-            className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
+            className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${isOutOfStock ? 'opacity-60' : ''}`}
             loading="lazy"
           />
+          {isOutOfStock && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <span className="text-white font-bold text-sm">OUT OF STOCK</span>
+            </div>
+          )}
         </div>
         <div className="text-center flex-grow mt-2">
           <h3 className="text-[15px] truncate">{product.name}</h3>
@@ -152,16 +159,22 @@ const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
         </div>
       </Link>
       <button
-        className={`w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2 ${
-          isAddingToCart
-            ? 'bg-gray-300 cursor-default'
-            : 'bg-[#D4F871] hover:bg-[#c0e05d] transition-colors'
+        className={`w-full py-2 uppercase rounded-md border-1 text-sm flex justify-center items-center gap-2 ${
+          isOutOfStock
+            ? 'bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed'
+            : isAddingToCart
+              ? 'bg-gray-300 cursor-default border-black'
+              : 'bg-[#D4F871] hover:bg-[#c0e05d] transition-colors border-black'
         }`}
         onClick={handleAddToCart}
-        disabled={isAddingToCart}
+        disabled={isAddingToCart || isOutOfStock}
       >
-        {isAddingToCart ? 'Adding...' : 'Add to cart'}
-        {!isAddingToCart && (
+        {isOutOfStock 
+          ? 'Out of Stock' 
+          : isAddingToCart 
+            ? 'Adding...' 
+            : 'Add to cart'}
+        {!isAddingToCart && !isOutOfStock && (
           <span className="mb-[3px]">
             <svg
               aria-hidden="true"

@@ -843,6 +843,65 @@ class WooCommerceService {
       throw error;
     }
   }
+
+  // Coupon Methods
+  async validateCoupon(code: string): Promise<boolean> {
+    try {
+      const coupon = await this.getCouponByCode(code);
+      return !!coupon; // Return true if coupon exists and is valid
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      return false;
+    }
+  }
+
+  async getCouponByCode(code: string): Promise<any> {
+    try {
+      // First, get all coupons and find by code
+      const endpoint = this.buildAuthURL('/coupons');
+      console.log(`Getting coupon by code "${code}" at endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      if (!response.ok) {
+        console.error(`Get coupon API error: ${response.status}`);
+        return null;
+      }
+
+      const coupons = await response.json();
+      const coupon = coupons.find((c: any) => 
+        c.code.toLowerCase() === code.toLowerCase() && 
+        c.status === 'publish' && 
+        (c.date_expires_gmt ? new Date(c.date_expires_gmt) >= new Date() : true) &&
+        (c.date_expires ? new Date(c.date_expires) >= new Date() : true)
+      );
+      
+      return coupon || null;
+    } catch (error) {
+      console.error('Error getting coupon by code:', error);
+      return null;
+    }
+  }
+  
+  // Method to get a specific coupon by its ID (more direct approach)
+  async getCouponById(id: number): Promise<any> {
+    try {
+      const endpoint = this.buildAuthURL(`/coupons/${id}`);
+      console.log(`Getting coupon by ID "${id}" at endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      if (!response.ok) {
+        console.error(`Get coupon by ID API error: ${response.status}`);
+        return null;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting coupon by ID:', error);
+      return null;
+    }
+  }
 }
 
 export const woocommerceService = new WooCommerceService();

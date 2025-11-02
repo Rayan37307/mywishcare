@@ -31,16 +31,23 @@ const ProductDetail = () => {
   const [showMobileBottomBar, setShowMobileBottomBar] = useState(false);
 
   const handleAddToCart = () => {
-    if (product) addItem(product, quantity);
+    if (product) {
+      // The stock check is now handled in the cart store
+      addItem(product, quantity);
+    }
   };
 
   const handleBuyNow = () => {
     if (product) {
       // Add product to cart and set navigation flag
+      // The stock check is now handled in the cart store
       addItem(product, quantity);
       setShouldNavigate(true);
     }
   };
+
+  // Check if product is out of stock
+  const isOutOfStock = product?.stock_status === 'outofstock';
 
   // Effect to navigate when cart is updated after buy now
   useEffect(() => {
@@ -161,13 +168,20 @@ const ProductDetail = () => {
             </div>
           </div>
           <button 
-            className="bg-black text-white px-4 py-3 uppercase text-sm font-semibold flex items-center justify-center gap-1"
+            className={`px-4 py-3 uppercase text-sm font-semibold flex items-center justify-center gap-1 ${
+              isOutOfStock 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-black text-white'
+            }`}
             onClick={handleAddToCart}
+            disabled={isOutOfStock}
           >
-            Add to cart
-            <svg style={{ marginLeft: '6px', width: '16px', marginTop: '-3px' }} aria-hidden="true" fill="none" viewBox="0 0 24 24">
-              <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-            </svg>
+            {isOutOfStock ? 'Out of Stock' : 'Add to cart'}
+            {!isOutOfStock && (
+              <svg style={{ marginLeft: '6px', width: '16px', marginTop: '-3px' }} aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+              </svg>
+            )}
           </button>
         </div>
       )}
@@ -176,16 +190,31 @@ const ProductDetail = () => {
       {showMobileBottomBar && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-md p-3 flex gap-3 justify-center md:hidden">
           <button 
-            className="flex-1 py-3 uppercase flex items-center rounded-xl bg-black text-white border-1 justify-center gap-2 font-semibold"
+            className={`flex-1 py-3 uppercase flex items-center rounded-xl border-1 justify-center gap-2 font-semibold ${
+              isOutOfStock 
+                ? 'bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed' 
+                : 'bg-black text-white border-1'
+            }`}
             onClick={handleAddToCart}
+            disabled={isOutOfStock}
           >
-            Add to Cart
-            <svg aria-hidden="true" fill="none" focusable="false" width="15" viewBox="0 0 24 24">
-              <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-            </svg>
+            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+            {!isOutOfStock && (
+              <svg aria-hidden="true" fill="none" focusable="false" width="15" viewBox="0 0 24 24">
+                <path d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+              </svg>
+            )}
           </button>
-          <button className="flex-1 py-3 bg-[#D4F871] text-black rounded-xl border-1 border-black uppercase flex items-center justify-center gap-2 font-semibold" onClick={handleBuyNow}>
-            Buy it now <CheckCircleIcon />
+          <button 
+            className={`flex-1 py-3 rounded-xl border-1 uppercase flex items-center justify-center gap-2 font-semibold ${
+              isOutOfStock 
+                ? 'bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed' 
+                : 'bg-[#D4F871] text-black border-1'
+            }`}
+            onClick={handleBuyNow}
+            disabled={isOutOfStock}
+          >
+            {isOutOfStock ? 'Out of Stock' : 'Buy it now'} {!isOutOfStock && <CheckCircleIcon />}
           </button>
         </div>
       )}
@@ -259,12 +288,28 @@ const ProductDetail = () => {
 
             {/* Original Add to Cart Section */}
             <div ref={addToCartRef} className="flex items-center gap-4 mt-4">
-              <button className="w-full py-3 bg-transparent uppercase flex items-center justify-center gap-2 border-1 text-[13px] border-gray-600 font-semibold" onClick={handleAddToCart}>
-                Add to Cart
+              <button 
+                className={`w-full py-3 bg-transparent uppercase flex items-center justify-center gap-2 border-1 text-[13px] font-semibold ${
+                  isOutOfStock 
+                    ? 'border-gray-300 text-gray-400 cursor-not-allowed' 
+                    : 'border-gray-600 text-gray-700'
+                }`}
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+              >
+                {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
               </button>
             </div>
-            <button className="mt-4 w-full py-3 bg-black text-white uppercase flex items-center justify-center gap-2 border-1 text-[13px] border-black font-semibold" onClick={handleBuyNow}>
-              Buy it now
+            <button 
+              className={`mt-4 w-full py-3 uppercase flex items-center justify-center gap-2 border-1 text-[13px] font-semibold ${
+                isOutOfStock 
+                  ? 'bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed' 
+                  : 'bg-black text-white border-black'
+              }`}
+              onClick={handleBuyNow}
+              disabled={isOutOfStock}
+            >
+              {isOutOfStock ? 'Out of Stock' : 'Buy it now'}
             </button>
 
             {/* Description & WishCare sections */}

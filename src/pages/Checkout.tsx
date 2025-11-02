@@ -32,6 +32,11 @@ const Checkout = () => {
     paymentMethod: 'cod',
     notes: '',
   });
+  const [couponCode, setCouponCode] = useState('');
+  const [isCouponLoading, setIsCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const hasTrackedStart = useRef(false);
@@ -82,6 +87,53 @@ const Checkout = () => {
 
   const getIP = (): string => localStorage.getItem('userIP') || 'unknown';
 
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return false;
+    }
+
+    setIsCouponLoading(true);
+    setCouponError('');
+    setCouponSuccess('');
+
+    try {
+      // Check if coupon is valid using WooCommerce API
+      const couponData = await woocommerceService.getCouponByCode(couponCode.trim());
+      
+      if (!couponData) {
+        setCouponError('Invalid coupon code');
+        setIsCouponLoading(false);
+        return false;
+      }
+
+      // Check if coupon is valid for current cart total (if minimum amount is set)
+      if (couponData.minimum_amount && parseFloat(couponData.minimum_amount) > totalPrice) {
+        setCouponError(`Minimum order amount of BDT ${couponData.minimum_amount} required`);
+        setIsCouponLoading(false);
+        return false;
+      }
+
+      // Set success message and apply coupon
+      setCouponSuccess(`Coupon applied: ${couponData.code} (${couponData.discount_type === 'percent' ? couponData.amount + '%' : 'BDT' + couponData.amount} off)`);
+      setAppliedCoupon(couponData);
+      setIsCouponLoading(false);
+      return true;
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      setCouponError('Failed to validate coupon. Please try again.');
+      setIsCouponLoading(false);
+      return false;
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponCode('');
+    setCouponError('');
+    setCouponSuccess('');
+    setAppliedCoupon(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -126,6 +178,15 @@ const Checkout = () => {
       line_items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
       customer_note: formData.notes,
     };
+
+    // Add coupon code if one is applied
+    if (appliedCoupon) {
+      orderData.coupon_lines = [
+        {
+          code: couponCode.trim()
+        }
+      ];
+    }
 
     if (isAuthenticated && user) orderData.customer_id = user.id;
 
@@ -357,23 +418,52 @@ const Checkout = () => {
                   </div>
                 </div>
                 
-                <div className="mb-4">
-                  <label htmlFor="TextField4448" className="block text-sm font-medium mb-1">
-                    Phone <span className="text-red-500">*</span>
-                  </label>
-                  <input 
-                    id="TextField4448" 
-                    name="phone" 
-                    placeholder="Phone" 
-                    required 
-                    type="tel" 
-                    aria-required="true" 
-                    value={formData.phone}
-                    onChange={handleChange}
-                    autoComplete="shipping tel" 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+               <div className="mb-4">
+  <label
+    htmlFor="TextField4448"
+    className="block text-sm font-medium mb-1"
+  >
+    Phone <span className="text-red-500">*</span>
+  </label>
+
+  <div className="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 overflow-hidden">
+    {/* Prefix section */}
+    <div className="flex items-center gap-2 bg-gray-50 px-3">
+      <img
+        src="https://flagcdn.com/w20/bd.png"
+        alt="Bangladesh Flag"
+        className="w-5 h-4 object-cover"
+      />
+      <span className="text-gray-700 text-sm">+880</span>
+    </div>
+
+    {/* Divider */}
+    <div className="h-6 w-px bg-gray-300"></div>
+
+    {/* Input */}
+    <input
+      id="TextField4448"
+      name="phone"
+      placeholder="1XXXXXXXXX"
+      required
+      type="tel"
+      aria-required="true"
+      value={formData.phone}
+      onChange={(e) => {
+        const value = e.target.value.replace(/[^0-9]/g, ''); // only digits
+        if (value.length <= 10) {
+          setFormData(prev => ({ ...prev, phone: value }));
+          if (sessionId) checkoutTrackingService.trackFormChange(sessionId, { ...formData, phone: value });
+        }
+      }}
+      pattern="[0-9]{10}"
+      title="Enter a valid Bangladeshi phone number (without +880)"
+      autoComplete="tel-national"
+      className="w-full px-4 py-2 focus:outline-none text-gray-800"
+    />
+  </div>
+</div>
+
                 
                 <div className="mb-4">
                   <label htmlFor="email" className="block text-sm font-medium mb-1">
@@ -430,6 +520,42 @@ const Checkout = () => {
                       </label>
                     </div>
                   </div>
+                </div>
+                
+                {/* Coupon Code Section */}
+                <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+                  <h3 className="text-lg font-medium mb-3">Have a discount code?</h3>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Enter coupon code"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isCouponLoading || appliedCoupon !== null}
+                    />
+                    {appliedCoupon ? (
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                        disabled={isCouponLoading}
+                      >
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={validateCoupon}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                        disabled={isCouponLoading || !couponCode.trim()}
+                      >
+                        {isCouponLoading ? 'Applying...' : 'Apply'}
+                      </button>
+                    )}
+                  </div>
+                  {couponError && <p className="text-red-500 text-sm mt-2">{couponError}</p>}
+                  {couponSuccess && <p className="text-green-500 text-sm mt-2">{couponSuccess}</p>}
                 </div>
                 
                 <div className="mt-6">
@@ -591,7 +717,13 @@ const Checkout = () => {
                   disabled={isLoading}
                   className="w-full py-4 bg-black text-white font-bold uppercase"
                 >
-                  {isLoading ? 'Processing...' : `Pay BDT ${totalPrice.toFixed(2)}`}
+                  {isLoading ? 'Processing...' : `Pay BDT 
+                    ${appliedCoupon 
+                      ? (appliedCoupon.discount_type === 'percent' 
+                          ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100)).toFixed(2)
+                          : (totalPrice - parseFloat(appliedCoupon.amount)).toFixed(2))
+                      : totalPrice.toFixed(2)
+                    }`}
                 </button>
               </div>
             </form>
@@ -615,6 +747,19 @@ const Checkout = () => {
                   <span>Subtotal</span>
                   <span>BDT {totalPrice.toFixed(2)}</span>
                 </div>
+                
+                {/* Coupon Discount Section */}
+                {appliedCoupon && (
+                  <div className="flex justify-between">
+                    <span>Discount ({couponCode}): </span>
+                    <span className="text-red-600">
+                      {appliedCoupon.discount_type === 'percent' 
+                        ? `-${appliedCoupon.amount}%` 
+                        : `-BDT${appliedCoupon.amount}`}
+                    </span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between"> <span>Shipping</span> <span>Free</span> </div>
                 <div className="flex justify-between font-semibold pt-2 border-t">
                   <span>Payment Method</span>
@@ -622,7 +767,14 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between font-bold pt-2 border-t text-lg">
                   <span>Total</span>
-                  <span>BDT {totalPrice.toFixed(2)}</span>
+                  <span>BDT 
+                    {appliedCoupon 
+                      ? (appliedCoupon.discount_type === 'percent' 
+                          ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100)).toFixed(2)
+                          : (totalPrice - parseFloat(appliedCoupon.amount)).toFixed(2))
+                      : totalPrice.toFixed(2)
+                    }
+                  </span>
                 </div>
               </div>
             </div>
@@ -637,7 +789,13 @@ const Checkout = () => {
             disabled={isLoading}
             className="w-full py-4 bg-black text-white font-bold uppercase"
           >
-            {isLoading ? 'Processing...' : `Pay BDT ${totalPrice.toFixed(2)}`}
+            {isLoading ? 'Processing...' : `Pay BDT 
+              ${appliedCoupon 
+                ? (appliedCoupon.discount_type === 'percent' 
+                    ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100)).toFixed(2)
+                    : (totalPrice - parseFloat(appliedCoupon.amount)).toFixed(2))
+                : totalPrice.toFixed(2)
+              }`}
           </button>
         </div>
       </div>

@@ -73,6 +73,7 @@ export interface Product {
   description: string;
   short_description: string;
   stock_quantity: number | null;
+  manage_stock: boolean; // Add stock management property
   stock_status: 'instock' | 'outofstock' | 'onbackorder';
   categories: Array<{ id: number; name: string }>;
   wishCare?: WishCareProductData;

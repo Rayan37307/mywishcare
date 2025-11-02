@@ -115,6 +115,7 @@ class WooCommerceService {
       description: wooProduct.description || 'No description available',
       short_description: wooProduct.short_description || wooProduct.description || 'No description available',
       stock_quantity: wooProduct.stock_quantity,
+      manage_stock: Boolean(wooProduct.manage_stock), // Include manage_stock property
       stock_status: wooProduct.stock_status as 'instock' | 'outofstock' | 'onbackorder',
       categories: (wooProduct.categories || []).map((cat: any) => ({
         id: cat.id,

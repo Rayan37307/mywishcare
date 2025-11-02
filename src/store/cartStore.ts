@@ -59,6 +59,23 @@ export const useCartStore = create<CartState>()(
       loadingItems: [], // Track which products are currently being added
       
       addItem: (product: Product, quantity: number = 1) => {
+        // Check stock status before adding to cart
+        if (product.stock_status === 'outofstock') {
+          toast.error(`${product.name} is out of stock!`);
+          return;
+        }
+        
+        // For managed stock, check if there's enough quantity available
+        if (product.manage_stock && product.stock_quantity !== null) {
+          const currentCartQuantity = get().getProductQuantity(product.id);
+          const totalRequested = currentCartQuantity + quantity;
+          
+          if (totalRequested > product.stock_quantity) {
+            toast.error(`Only ${product.stock_quantity} ${product.name} items available in stock!`);
+            return;
+          }
+        }
+        
         set(state => ({
           loadingItems: [...state.loadingItems, product.id]
         }));
@@ -133,6 +150,12 @@ export const useCartStore = create<CartState>()(
             if (quantity <= 0) {
               get().removeItem(productId);
               toast.success(`${productName} removed from cart`);
+              return;
+            }
+            
+            // Check if the requested quantity exceeds available stock
+            if (item.product.manage_stock && item.product.stock_quantity !== null && quantity > item.product.stock_quantity) {
+              toast.error(`Only ${item.product.stock_quantity} ${productName} items available in stock!`);
               return;
             }
             
