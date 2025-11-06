@@ -28,7 +28,7 @@ const BestSellersCard: React.FC<BestSellersCardProps> = ({ products = [] }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
         {products.map((product) => (
           <div key={product.id} className="bg-white rounded-lg overflow-hidden p-2 flex flex-col transition-all h-full">
-            <Link to={`/products/${product.id}`}>
+            <Link to={`/products/${product.slug}`}>
               <div className="w-full aspect-[5/5.5]">
                 <img
                   src={product.images[0]?.src || '/placeholder.webp'}
@@ -39,7 +39,7 @@ const BestSellersCard: React.FC<BestSellersCardProps> = ({ products = [] }) => {
               <div className="text-center flex-grow mt-2">
                 <h3 className="text-[15px]">{product.name}</h3>
                 <p
-                  className="text-[10px] text-black"
+                  className="text-[10px] text-black truncate"
                   dangerouslySetInnerHTML={{ __html: product.short_description }}
                 />
                 <div className="flex items-center justify-center gap-2 py-2">

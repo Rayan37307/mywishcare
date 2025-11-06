@@ -2,7 +2,7 @@
 import type { Product } from '../types/product';
 
 // WooCommerce API Configuration
-const WOOCOMMERCE_API_URL = import.meta.env.VITE_WC_API_URL || 'https://sajcaree.com/wp-json/wc/v3';
+const WOOCOMMERCE_API_URL = import.meta.env.VITE_WC_API_URL || 'https://wishcarebd.com/wp-json/wc/v3';
 const CONSUMER_KEY = import.meta.env.VITE_WC_CONSUMER_KEY || 'ck_23112f91dee60de7b243c658e5f4ddbb5250b745';
 const CONSUMER_SECRET = import.meta.env.VITE_WC_CONSUMER_SECRET || 'cs_bb75d74565ffe29d3f47ea79948397214d7fb18a';
 

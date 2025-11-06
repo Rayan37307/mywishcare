@@ -66,7 +66,7 @@ const TrendingProducts = ({ currentProductId }: TrendingProductsProps) => {
             key={product.id} 
             className="flex-shrink-0 w-[250px] sm:w-[280px] md:w-[300px] bg-white rounded-lg overflow-hidden p-2"
           >
-            <Link to={`/products/${product.id}`} className="block">
+            <Link to={`/products/${product.slug}`} className="block">
               <div
                 className="bg-white rounded-lg overflow-hidden p-2 flex flex-col h-full"
               >
@@ -80,7 +80,7 @@ const TrendingProducts = ({ currentProductId }: TrendingProductsProps) => {
                 <div className="text-center mt-2 flex flex-col flex-grow">
                   <h3 className="text-[15px]">{product.name}</h3>
                   <p
-                    className="text-[10px] text-black"
+                    className="text-[10px] text-black truncate"
                     dangerouslySetInnerHTML={{ __html: product.short_description }}
                   />
                   <div className="flex items-center justify-center gap-2 py-2">

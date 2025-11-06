@@ -41,6 +41,12 @@ const Checkout = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const hasTrackedStart = useRef(false);
 
+  // Calculate delivery charge based on selected district
+  const deliveryCharge = 
+    formData.district.toLowerCase() === 'dhaka' ? 61 : 
+    (formData.district.toLowerCase() === 'gazipur' || formData.district.toLowerCase() === 'narayanganj') ? 101 : 
+    121;
+
   // Pre-fill user info if authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -64,7 +70,7 @@ const Checkout = () => {
       hasTrackedStart.current = true;
 
       analyticsService.trackCheckoutStart({
-        value: totalPrice,
+        value: totalPrice + deliveryCharge,
         currency: 'BDT',
         contents: items.map(item => ({
           id: item.product.id,
@@ -145,7 +151,7 @@ const Checkout = () => {
       phone: formData.phone,
       email: formData.email,
       items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
-      total: totalPrice,
+      total: totalPrice + deliveryCharge,
       ip: getIP(),
       timestamp: Date.now(),
     };
@@ -176,6 +182,13 @@ const Checkout = () => {
         country: formData.countryCode,
       },
       line_items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
+      shipping_lines: [
+        {
+          method_id: 'flat_rate',
+          method_title: 'Standard Shipping',
+          total: deliveryCharge.toString(),
+        }
+      ],
       customer_note: formData.notes,
     };
 
@@ -195,7 +208,7 @@ const Checkout = () => {
 
       if (newOrder?.id) {
         analyticsService.trackPurchase({
-          value: totalPrice,
+          value: totalPrice + deliveryCharge,
           currency: 'BDT',
           contents: items.map(item => ({
             id: item.product.id,
@@ -207,7 +220,7 @@ const Checkout = () => {
 
         pixelConfirmationService.trackOrder({
           orderId: newOrder.id.toString(),
-          value: totalPrice,
+          value: totalPrice + deliveryCharge,
           currency: 'BDT',
           contents: items.map(item => ({
             id: item.product.id,
@@ -451,13 +464,13 @@ const Checkout = () => {
       value={formData.phone}
       onChange={(e) => {
         const value = e.target.value.replace(/[^0-9]/g, ''); // only digits
-        if (value.length <= 10) {
+        if (value.length <= 11) {
           setFormData(prev => ({ ...prev, phone: value }));
           if (sessionId) checkoutTrackingService.trackFormChange(sessionId, { ...formData, phone: value });
         }
       }}
-      pattern="[0-9]{10}"
-      title="Enter a valid Bangladeshi phone number (without +880)"
+      pattern="[0-9]{10,11}"
+      title="Enter a valid Bangladeshi phone number (without +880) - 10 or 11 digits"
       autoComplete="tel-national"
       className="w-full px-4 py-2 focus:outline-none text-gray-800"
     />
@@ -720,9 +733,9 @@ const Checkout = () => {
                   {isLoading ? 'Processing...' : `Pay BDT 
                     ${appliedCoupon 
                       ? (appliedCoupon.discount_type === 'percent' 
-                          ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100)).toFixed(2)
-                          : (totalPrice - parseFloat(appliedCoupon.amount)).toFixed(2))
-                      : totalPrice.toFixed(2)
+                          ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100) + deliveryCharge).toFixed(2)
+                          : (totalPrice - parseFloat(appliedCoupon.amount) + deliveryCharge).toFixed(2))
+                      : (totalPrice + deliveryCharge).toFixed(2)
                     }`}
                 </button>
               </div>
@@ -760,7 +773,7 @@ const Checkout = () => {
                   </div>
                 )}
                 
-                <div className="flex justify-between"> <span>Shipping</span> <span>Free</span> </div>
+                <div className="flex justify-between"> <span>Shipping</span> <span>BDT {deliveryCharge.toFixed(2)}</span> </div>
                 <div className="flex justify-between font-semibold pt-2 border-t">
                   <span>Payment Method</span>
                   <span>Cash on Delivery</span>
@@ -770,9 +783,9 @@ const Checkout = () => {
                   <span>BDT 
                     {appliedCoupon 
                       ? (appliedCoupon.discount_type === 'percent' 
-                          ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100)).toFixed(2)
-                          : (totalPrice - parseFloat(appliedCoupon.amount)).toFixed(2))
-                      : totalPrice.toFixed(2)
+                          ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100) + deliveryCharge).toFixed(2)
+                          : (totalPrice - parseFloat(appliedCoupon.amount) + deliveryCharge).toFixed(2))
+                      : (totalPrice + deliveryCharge).toFixed(2)
                     }
                   </span>
                 </div>
@@ -792,9 +805,9 @@ const Checkout = () => {
             {isLoading ? 'Processing...' : `Pay BDT 
               ${appliedCoupon 
                 ? (appliedCoupon.discount_type === 'percent' 
-                    ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100)).toFixed(2)
-                    : (totalPrice - parseFloat(appliedCoupon.amount)).toFixed(2))
-                : totalPrice.toFixed(2)
+                    ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100) + deliveryCharge).toFixed(2)
+                    : (totalPrice - parseFloat(appliedCoupon.amount) + deliveryCharge).toFixed(2))
+                : (totalPrice + deliveryCharge).toFixed(2)
               }`}
           </button>
         </div>

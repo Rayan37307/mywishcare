@@ -44,7 +44,7 @@ Remove the Navigation component from the render method:
 ### Environment Variables
 Remove these from your `.env` file:
 ```
-VITE_WP_API_URL=https://sajcaree.com/wp-json
+VITE_WP_API_URL=https://wishcarebd.com/wp-json
 ```
 
 ## Data Cleanup

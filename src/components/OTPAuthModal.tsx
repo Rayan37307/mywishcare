@@ -9,18 +9,54 @@ interface OTPAuthModalProps {
   onClose: () => void;
 }
 
-
-
 const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState(''); // For registration
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true); // Switch between login and register
-
-
+  const [isForgotPassword, setIsForgotPassword] = useState(false); // Toggle for forgot password view
 
   const { login, register } = useAuth();
+
+  // Function to handle password reset request
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // First, get the nonce from WordPress
+      const nonceResponse = await fetch('https://wishcarebd.com/wp-json/custom/v1/password-reset-nonce');
+      const nonceData = await nonceResponse.json();
+      const nonce = nonceData.nonce;
+
+      // Now make the password reset request with the nonce
+      const response = await fetch('https://wishcarebd.com/wp-admin/admin-ajax.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=custom_lost_password&user_login=${encodeURIComponent(email)}&nonce=${encodeURIComponent(nonce)}`,
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(data.data || 'Password reset link sent to your email!');
+        setTimeout(() => {
+          setIsForgotPassword(false);
+          setEmail(''); // Clear email field
+        }, 3000);
+      } else {
+        toast.error(data.data || 'Failed to send password reset email');
+      }
+    } catch (error) {
+      console.error('Password reset error:', error);
+      toast.error('Failed to send password reset email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +102,7 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
     setEmail('');
     setPassword('');
     setUsername('');
+    setIsForgotPassword(false); // Reset to login view
     onClose();
   };
 
@@ -95,8 +132,43 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
 
         {/* Right Form */}
         <div className="w-full md:w-1/3 px-4 flex flex-col justify-center rounded-lg pt-5 bg-[#EBE4FD]">
+          {isForgotPassword ? (
+            // Password Reset Form
+            <form onSubmit={handleForgotPassword} className="flex flex-col justify-center text-center">
+              <div className="mb-4">
+                <h1 className="text-xl text-center">Reset Password</h1>
+                <p className="text-sm text-gray-600 mb-4">Enter your email to receive a password reset link</p>
+                
+                <label
+                  htmlFor="reset-email"
+                  className="block text-md font-medium text-gray-700 mb-8 mt-4"
+                >
+                  Email Address
+                </label>
 
-          {isLogin ? (
+                <div className="flex items-center w-full border border-gray-300 bg-gray-50 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-indigo-400">
+                  <input
+                    type="email"
+                    id="reset-email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-1 px-3 py-2 outline-none border-none bg-transparent"
+                    placeholder="Enter Email Address"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !email}
+                className="w-full bg-transparent border border-gray-300 text-black font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : 'Send Reset Link'}
+              </button>
+            </form>
+          ) : isLogin ? (
+            // Login Form
             <form onSubmit={handleLogin} className="flex flex-col justify-center text-center">
               <div className="mb-4">
                 <h1 className="text-xl text-center">Login</h1>
@@ -146,8 +218,23 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
               >
                 {loading ? 'Logging in...' : 'Login'}
               </button>
+              
+              {/* Forgot Password Link */}
+              <p className="mt-4 text-xs text-gray-500 text-center">
+                <a 
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsForgotPassword(true);
+                  }}
+                  className="underline"
+                >
+                  Forgot your password?
+                </a>
+              </p>
             </form>
           ) : (
+            // Register Form
             <form onSubmit={handleRegister} className="flex flex-col justify-center text-center">
               <div className="mb-4">
                 <h1 className="text-xl text-center">Register</h1>
@@ -219,18 +306,35 @@ const OTPAuthModal: React.FC<OTPAuthModalProps> = ({ isOpen, onClose }) => {
             </form>
           )}
 
-          <p className="mt-4 text-xs text-gray-500 text-center">
-            <a 
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setIsLogin(!isLogin);
-              }}
-              className="underline"
-            >
-              {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
-            </a>
-          </p>
+          {isForgotPassword ? (
+            // Back to login link when on forgot password view
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsForgotPassword(false);
+                }}
+                className="underline"
+              >
+                Back to Login
+              </a>
+            </p>
+          ) : (
+            // Switch between login/register when not on forgot password view
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              <a 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsLogin(!isLogin);
+                }}
+                className="underline"
+              >
+                {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
+              </a>
+            </p>
+          )}
           
           <p className="mt-4 text-xs text-gray-500 text-center">
             I accept that I have read & understood Gokwik's Privacy Policy and T&Cs.

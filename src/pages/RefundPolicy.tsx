@@ -4,50 +4,41 @@ const RefundPolicy = () => {
   return (
     <div className='flex justify-center items-center flex-col py-10 px-10'>
       <br />
-      <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>REFUND POLICY</h3>
+      <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>Refund Policy</h3>
       <br />
-      <p className='text-sm max-w-4xl'>
-        <div className='font-bold py-6'>Returns</div>
-
-        We maintain industry standard 7 days return policy.
+      <div className='text-sm max-w-4xl'>
+        <p>At WishCare BD, customer satisfaction is important to us. Please read our return and cancellation policy carefully:</p>
         <br />
-        To be eligible for a return, your item must be unused and in the sealed original packaging.
-        <br /><br />
 
-        Several types of goods are exempt from being returned. Perishable goods such as food, flowers, newspapers or Hygiene goods cannot be returned.
-        <br /><br />
-
-        To complete your return, we require a receipt or proof of purchase.
+        <div className='font-bold py-2'>Return Policy</div>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Products can only be returned in case of manufacturing defect.</li>
+          <li>No return will be accepted for personal dislike, change of mind, or product not suiting skin/hair.</li>
+          <li>Return request must be raised within 48 hours of delivery with clear photos/videos.</li>
+          <li>Delivery charges for return will be paid by the customer.</li>
+          <li>Once verified, a replacement product will be sent (subject to availability).</li>
+        </ul>
         <br />
-        Please do not send your purchase back to the manufacturer.
-        <br /><br />
 
-        <span className='font-bold pt-6'>Refunds (if applicable)</span><br /><br />
-        Once your return is received and inspected, we will send you an email to notify you that we have received your returned item.
+        <div className='font-bold py-2'>Cancellation Policy</div>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Orders can be canceled before shipment.</li>
+          <li>Once an order is shipped, cancellation is not possible.</li>
+          <li>For prepaid orders, refunds (if eligible) will be processed within 7–10 working days.</li>
+        </ul>
         <br />
-        If you are approved, we will issue you an exclusive discount coupon of agreed refund amount which will have no validity and can be used on any of your future purchase.
-        <br /><br />
 
-        Refund processing may take upto 5 - 7 business days.
-        <br /><br />
+        <div className='font-bold py-2'>Important Notes</div>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Products damaged due to customer mishandling will not be eligible for return.</li>
+          <li>We encourage customers to check product details, usage instructions, and suitability before purchase.</li>
+          <li>For assistance, contact us at hello@wishcarebd.com or message us on Facebook/Instagram.</li>
+        </ul>
+        <br />
 
-        <span className='font-style: italic'>For International Shipment</span>  - Refunds on International shipment is only possible for the product value. Shipping charges on international shipment will be not borne by us once the shipment has left our facility.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Product Bought in Sale (if applicable)</span><br /><br />
-        Unfortunately, products bought during sale period cannot be refunded/returned/exchanged if the product is not damaged.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Exchanges (if applicable)</span><br /><br />
-        We only replace items if they are defective or damaged. If you need to exchange it for the same item, send us an email at hello@mywishcare.com and send your item to: 28, B. T. Road, Lohia Press, 700002 KOLKATA WB, India.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Shipping</span><br /><br />
-        To return your product, you should mail your product to: 28, B. T. Road, Lohia Press, 700002 KOLKATA WB, India
-        <br /><br />
-
-        Depending on where you live, the time it may take for your exchanged product to reach you, may vary.
-      </p>
+        <div className='font-bold py-2'>Contact Us</div>
+        <p>If you have any questions about our Refund, Return, and Cancellation Policy, please contact us at +8801921521717. We are here to assist you and ensure your shopping experience with us is positive and satisfying.</p>
+      </div>
     </div>
   )
 }

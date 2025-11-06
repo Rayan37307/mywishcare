@@ -97,7 +97,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchAllProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProducts();
+      let products = await woocommerceService.fetchProducts(false, 100); // includeWishCareData=false, perPage=100
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         products,
         loading: false 
@@ -113,8 +119,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchWhatsNewProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // Fetch products ordered by date (newest first) - using woocommerce API parameter
-      const products = await woocommerceService.fetchProductsByOrder('date', 'desc');
+      // Fetch products from 'whatsnew' category
+      let products = await woocommerceService.fetchProductsByCategorySlug('whatsnew');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       const newProducts = products.slice(0, 6);
       set({ 
         whatsNewProducts: newProducts,
@@ -131,8 +143,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchBestSellingProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // Fetch best selling products by ordering by popularity
-      const products = await woocommerceService.fetchBestSellingProducts();
+      // Fetch products from 'bestsellers' category
+      let products = await woocommerceService.fetchProductsByCategorySlug('bestsellers');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         bestSellingProducts: products,
         loading: false 
@@ -148,8 +166,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchRoutineBuilderProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // Fetch products by 'routine-builder' tag
-      const products = await woocommerceService.fetchProductsByTagSlug('routine-builder');
+      // Fetch products by 'routine-builder' category
+      let products = await woocommerceService.fetchProductsByCategorySlug('routine-builder', 100); // perPage=100
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         routineBuilderProducts: products,
         loading: false 
@@ -192,9 +216,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
         product = await woocommerceService.fetchProductById(productId, true);
       }
       
+      // If product was found by slug, fetch it again by ID to ensure WishCare data is included
       if (product) {
+        const productWithWishCare = await woocommerceService.fetchProductById(product.id, true);
         set({ loading: false });
-        return product;
+        return productWithWishCare;
       } else {
         set({ 
           error: 'Product not found', 
@@ -215,7 +241,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   searchProducts: async (query: string) => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.searchProducts(query);
+      let products = await woocommerceService.searchProducts(query);
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ loading: false });
       return products;
     } catch {
@@ -231,7 +263,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchProductsByCategory: async (categoryId: number) => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByCategory(categoryId);
+      let products = await woocommerceService.fetchProductsByCategory(categoryId);
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         products,
         loading: false 
@@ -248,7 +286,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchProductsByTag: async (tagId: number) => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTag(tagId);
+      let products = await woocommerceService.fetchProductsByTag(tagId);
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         products,
         loading: false 
@@ -264,7 +308,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchProductsByTagSlug: async (tagSlug: string) => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug(tagSlug);
+      let products = await woocommerceService.fetchProductsByTagSlug(tagSlug);
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         products,
         loading: false 
@@ -281,7 +331,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchLipBalmProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('lip-balm');
+      let products = await woocommerceService.fetchProductsByCategorySlug('lip-balm');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         lipBalmProducts: products,
         loading: false 
@@ -297,7 +353,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchHairCare1Products: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('hair-care-1');
+      let products = await woocommerceService.fetchProductsByCategorySlug('hair-care-1');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         hairCare1Products: products,
         loading: false 
@@ -313,9 +375,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchAcneProducts: async () => {
     set({ loading: true, error: null });
     try {
-      // In a real implementation, you would fetch by specific tag ID for acne products
-      // For now, using tag slug - you would replace 'acne' with the actual tag slug in your WooCommerce store
-      const products = await woocommerceService.fetchProductsByTagSlug('acne');
+      let products = await woocommerceService.fetchProductsByCategorySlug('acne');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         acneProducts: products,
         loading: false 
@@ -331,7 +397,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchPigmentationProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('pigmentation');
+      let products = await woocommerceService.fetchProductsByCategorySlug('pigmentation');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         pigmentationProducts: products,
         loading: false 
@@ -347,7 +419,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchHairfallProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('hairfall');
+      let products = await woocommerceService.fetchProductsByCategorySlug('hairfall');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         hairfallProducts: products,
         loading: false 
@@ -363,7 +441,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchDandruffProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('dandruff');
+      let products = await woocommerceService.fetchProductsByCategorySlug('dandruff');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         dandruffProducts: products,
         loading: false 
@@ -379,7 +463,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchDullSkinProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('dull-skin');
+      let products = await woocommerceService.fetchProductsByCategorySlug('dull-skin');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         dullSkinProducts: products,
         loading: false 
@@ -395,7 +485,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchDetanProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('detan');
+      let products = await woocommerceService.fetchProductsByCategorySlug('detan');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         detanProducts: products,
         loading: false 
@@ -411,7 +507,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchDamagedHairProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('damaged-hair');
+      let products = await woocommerceService.fetchProductsByCategorySlug('damaged-hair');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         damagedHairProducts: products,
         loading: false 
@@ -427,7 +529,13 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchSunCareProducts: async () => {
     set({ loading: true, error: null });
     try {
-      const products = await woocommerceService.fetchProductsByTagSlug('sun-care');
+      let products = await woocommerceService.fetchProductsByCategorySlug('sun-care');
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         sunCareProducts: products,
         loading: false 
@@ -443,8 +551,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchAllProductsCollection: async () => {
     set({ loading: true, error: null });
     try {
-      // Fetch all products (no specific tag filter)
-      const products = await woocommerceService.fetchProducts();
+      // Fetch all products (no specific tag filter) with unlimited results
+      let products = await woocommerceService.fetchProducts(false, 100); // includeWishCareData=false, perPage=100
+      // Sort products: in-stock first, out-of-stock last
+      products = products.sort((a, b) => {
+        const aOutOfStock = a.stock_status === 'outofstock' ? 1 : 0;
+        const bOutOfStock = b.stock_status === 'outofstock' ? 1 : 0;
+        return aOutOfStock - bOutOfStock;
+      });
       set({ 
         allProducts: products,
         loading: false 

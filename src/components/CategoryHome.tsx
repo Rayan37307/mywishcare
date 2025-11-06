@@ -56,7 +56,7 @@ const CategoryCardItem: React.FC<CategoryCardItemProps> = ({ category }) => {
 
   return (
     <Link 
-      to={`/collections/${category.link}`}
+      to={`/product-category/${category.link}`}
       className="cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

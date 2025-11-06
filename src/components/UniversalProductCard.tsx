@@ -120,19 +120,14 @@ const UniversalProductCardItem: React.FC<UniversalProductCardItemProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link to={`/products/${product.id}`} className="flex flex-col flex-grow">
+      <Link to={`/products/${product.slug}`} className="flex flex-col flex-grow">
         <div className="w-full aspect-[5/5.5] relative">
           <img
             src={getDisplayImage()}
             alt={product.name}
-            className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${isOutOfStock ? 'opacity-60' : ''}`}
+            className="w-full h-full object-cover rounded-lg transition-opacity duration-300"
             loading="lazy"
           />
-          {isOutOfStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-              <span className="text-white font-bold text-sm">OUT OF STOCK</span>
-            </div>
-          )}
         </div>
         <div className="text-center flex-grow mt-2">
           <h3 className="text-[15px] truncate">{product.name}</h3>

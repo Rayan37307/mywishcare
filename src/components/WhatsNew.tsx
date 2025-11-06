@@ -14,7 +14,7 @@ const WhatsNew = () => {
   const handleAddToCart = (product: Product) => addItem(product, 1);
 
   useEffect(() => {
-    if (whatsNewProducts.length === 0) fetchWhatsNewProducts();
+    if (!whatsNewProducts.length) fetchWhatsNewProducts();
   }, [whatsNewProducts.length]);
 
   // Loading Skeleton
@@ -63,7 +63,7 @@ const WhatsNew = () => {
 const Header = () => (
   <div className="flex gap-4 items-center mb-6 px-2">
     <h2 className="text-3xl font-bold text-left">What's New</h2>
-    <Link to="/collections/whatsnew" className="flex items-center gap-2 text-sm font-medium">
+    <Link to="/product-category/whatsnew" className="flex items-center gap-2 text-sm font-medium">
       View All <ArrowRightIcon size={16} />
     </Link>
   </div>
@@ -98,7 +98,7 @@ const WhatsNewCardItem: React.FC<WhatsNewCardItemProps> = ({
   };
 
   return (
-    <Link to={`/products/${product.id}`} className="block">
+    <Link to={`/products/${product.slug}`} className="block">
       <div
         className="bg-white rounded-lg overflow-hidden p-2 flex flex-col h-[420px] min-w-[250px]" // fixed height
         onMouseEnter={() => setIsHovered(true)}
@@ -115,7 +115,7 @@ const WhatsNewCardItem: React.FC<WhatsNewCardItemProps> = ({
         <div className="flex flex-col flex-grow mt-2">
           <h3 className="text-[15px] font-medium line-clamp-2 text-center">{product.name}</h3>
           <p
-            className="text-[10px] text-gray-600 mt-1 text-center flex-grow overflow-hidden"
+            className="text-[10px] text-gray-600 mt-1 text-center flex-grow overflow-hidden truncate"
             dangerouslySetInnerHTML={{ __html: product.short_description }}
           />
           <div className="flex justify-center items-center gap-2 mt-2">

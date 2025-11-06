@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 
 const ProblemCategory = () => {
 const problems = [
-    { id: 3, name: 'Hair Fall', image: '/hairfall.webp', link: '/collections/hairfall' },
-    { id: 6, name: 'Sun Care', image: '/skincare.webp', link: '/collections/sun-care' },
-    { id: 5, name: 'Sculp Care', image: '/sculpcare.webp', link: "/collections/hair-care-1" },
-    { id: 2, name: 'De-tan', image: '/detan.webp' , link: '/collections/detan' },
-    { id: 1, name: 'Dandruff', image: '/dandruff.webp', link: '/collections/dandruff' },
-    { id: 4, name: 'Lip Care', image: '/lipcare.webp',  link: '/collections/lip-balm' },
+    { id: 3, name: 'Hair Fall', image: '/hairfall.webp', link: '/product-category/hairfall' },
+    { id: 6, name: 'Sun Care', image: '/skincare.webp', link: '/product-category/sun-care' },
+    { id: 5, name: 'Sculp Care', image: '/sculpcare.webp', link: "/product-category/hair-care-1" },
+    { id: 2, name: 'De-tan', image: '/detan.webp' , link: '/product-category/detan' },
+    { id: 1, name: 'Dandruff', image: '/dandruff.webp', link: '/product-category/dandruff' },
+    { id: 4, name: 'Lip Care', image: '/lipcare.webp',  link: '/product-category/lip-balm' },
   ]
 
 

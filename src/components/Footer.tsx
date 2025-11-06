@@ -85,14 +85,13 @@ const Footer = () => {
           >
             <div className="text-gray-300 space-y-2">
               <p className="max-w-80">
-                Rabiko Lifestyle Private Limited <br />
-                GodrejGenesis, Unit No. 1609, Sector 5, Saltlake, West Bengal - 700091
+                Mohakhali Dhaka, Dhaka, Bangladesh, 1206
               </p>
               <p className="pb-2">
-                <a href="tel:+918336833230" className="underline">+91 83368 33230</a>
+                <a href="tel:+8801921521717" className="underline">+8801921521717</a>
               </p>
               <p>
-                <a href="mailto:hello@mywishcare.com" className="underline">hello@mywishcare.com</a>
+                <a href="mailto:hello@wishcarebd.com" className="underline">hello@wishcarebd.com</a>
               </p>
             </div>
           </FooterSection>

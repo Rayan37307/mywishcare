@@ -106,7 +106,7 @@ const Navbar = memo(({ toggleMenu, toggleCart, onUserIconClick }: NavbarProps) =
 <div className="absolute left-1/2 transform -translate-x-1/2">
   <Link to="/">
     <img
-      src="/logo.webp"
+      src="/logo.png"
       alt="MyWishCare Logo"
       className="w-36 md:w-44 lg:w-52 object-contain transition-all duration-300"
     />
@@ -118,11 +118,14 @@ const Navbar = memo(({ toggleMenu, toggleCart, onUserIconClick }: NavbarProps) =
         <div className="flex items-center space-x-5 max-md:space-x-2 ">
           {isAuthenticated && user ? (
             // Show user profile button when signed in
-            <UserDropdown 
-              user={user} 
-              navigate={navigate} 
-              handleLogout={handleLogout}
-            />
+            <button className='max-md:hidden'>
+
+              <UserDropdown 
+                user={user} 
+                navigate={navigate} 
+                handleLogout={handleLogout}
+              />
+            </button>
           ) : (
             // Show login button when not signed in
             <button 

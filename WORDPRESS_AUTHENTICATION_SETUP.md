@@ -326,7 +326,7 @@ fastcgi_param HTTP_AUTHORIZATION $http_authorization;
 
 Make sure your React app's `.env` file has the correct API URL:
 ```env
-VITE_WP_API_URL=https://sajcaree.com/wp-json
+VITE_WP_API_URL=https://wishcarebd.com/wp-json
 ```
 
 ## Step 8: Testing Your Setup
@@ -334,7 +334,7 @@ VITE_WP_API_URL=https://sajcaree.com/wp-json
 ### Testing JWT Login Endpoint
 Use a REST API client like Postman or curl:
 ```bash
-curl -X POST https://sajcaree.com/wp-json/jwt-auth/v1/token \
+curl -X POST https://wishcarebd.com/wp-json/jwt-auth/v1/token \
   -H "Content-Type: application/json" \
   -d '{
     "username": "your-username",
@@ -345,7 +345,7 @@ You should get a response with a JWT token, user info, and expiration time if su
 
 ### Testing Registration Endpoint
 ```bash
-curl -X POST https://sajcaree.com/wp-json/custom/v1/register \
+curl -X POST https://wishcarebd.com/wp-json/custom/v1/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",

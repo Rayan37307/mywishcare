@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 
 // Contexts
@@ -42,7 +42,6 @@ const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 // Component imports
-import Topbar from './components/Topbar'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import MobileMenu from './components/MobileMenu'
@@ -51,6 +50,7 @@ import ScrollToTop from './components/ScrollToTop'
 
 
 const ProfilePage = lazy(() => import('./components/ProfilePage'))
+const CollectionBySlug = lazy(() => import('./pages/CollectionBySlug'))
 import ProtectedRoute from './components/ProtectedRoute'
 import CartSlide from './components/CartSlide'
 
@@ -64,6 +64,9 @@ const PageLoader = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
   </div>
 )
+
+// Additional imports for password reset
+const PasswordReset = lazy(() => import('./components/PasswordResetForm'))
 
 // Menu item types
 interface MenuItemBase {
@@ -99,28 +102,28 @@ const App = () => {
 
   const menuItems: MenuItemType[] = [
     { name: 'Home', path: ROUTES.HOME },
-    { name: 'All Products', path: ROUTES.COLLECTIONS_ALL },
+    { name: 'All Products', path: '/product-category/all-products' },
     {
       name: 'Shop By Category',
       submenu: [
-        { name: 'Best Sellers', path: ROUTES.COLLECTIONS_BESTSELLERS },
-        { name: 'Sun Care', path: ROUTES.COLLECTIONS_SUN_CARE },
-        { name: 'Lip Balm', path: ROUTES.COLLECTIONS_LIP_BALM },
-        { name: 'Hairfall', path: ROUTES.COLLECTIONS_HAIRFALL },
-        { name: 'Hair Care 1', path: ROUTES.COLLECTIONS_HAIR_CARE_1 },
-        { name: 'Acne & Acne Marks', path: ROUTES.COLLECTIONS_ACNE },
-        { name: 'Pigmentation', path: ROUTES.COLLECTIONS_PIGMENTATION },
-        { name: 'Dull Skin', path: ROUTES.COLLECTIONS_DULL_SKIN },
-        { name: 'Detan', path: ROUTES.COLLECTIONS_DETAN },
-        { name: 'Damaged Hair', path: ROUTES.COLLECTIONS_DAMAGED_HAIR },
-        { name: 'Dandruff', path: ROUTES.COLLECTIONS_DANDRUFF },
+        { name: 'Best Sellers', path: '/product-category/bestsellers' },
+        { name: 'Sun Care', path: '/product-category/sun-care' },
+        { name: 'Lip Balm', path: '/product-category/lip-balm' },
+        { name: 'Hairfall', path: '/product-category/hairfall' },
+        { name: 'Hair Care 1', path: '/product-category/hair-care-1' },
+        { name: 'Acne & Acne Marks', path: '/product-category/acne' },
+        { name: 'Pigmentation', path: '/product-category/pigmentation' },
+        { name: 'Dull Skin', path: '/product-category/dull-skin' },
+        { name: 'Detan', path: '/product-category/detan' },
+        { name: 'Damaged Hair', path: '/product-category/damaged-hair' },
+        { name: 'Dandruff', path: '/product-category/dandruff' },
       ],
     },
     { name: 'Our bestsellers hairgrowth serum 💫', path: '/products/13' },
-    { name: 'lip balm sunscreens - trending 🚀', path: '/collections/bestsellers/13' },
-    { name: 'Head to sun toe protection 🌞', path: ROUTES.COLLECTIONS_SUN_CARE },
-    { name: 'BestSellers', path: ROUTES.COLLECTIONS_BESTSELLERS },
-    { name: 'New launches', path: ROUTES.COLLECTIONS_BESTSELLERS },
+    { name: 'lip balm sunscreens - trending 🚀', path: '/product-category/bestsellers/13' },
+    { name: 'Head to sun toe protection 🌞', path: '/product-category/sun-care' },
+    { name: 'BestSellers', path: '/product-category/bestsellers' },
+    { name: 'New launches', path: '/product-category/bestsellers' },
   ];
 
   // Pass the cart functions down to components that need them
@@ -140,7 +143,7 @@ const App = () => {
               {/* Main Content */}
               <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
                 {/* <Navigation /> */}
-                <Topbar />
+                {/* <Topbar /> */}
                 <Header 
                   toggleMenu={toggleMenu} 
                   toggleCart={toggleCart} 
@@ -159,9 +162,9 @@ const App = () => {
                           <Route path={ROUTES.POLICIES_PRIVACY} element={<PrivacyPolicy />} />
                           <Route path={ROUTES.POLICIES_SHIPPING} element={<ShippingPolicy />} />
                           <Route path={ROUTES.POLICIES_REFUND} element={<RefundPolicy />} />
+                          <Route path={ROUTES.PRODUCT_DETAIL_SLUG} element={<ProductDetail />} />
                           <Route path={ROUTES.PRODUCT_DETAIL_ID_SLUG} element={<ProductDetail />} />
                           <Route path={ROUTES.PRODUCT_DETAIL} element={<ProductDetail />} />
-                          <Route path={ROUTES.PRODUCT_DETAIL_SLUG} element={<ProductDetail />} />
                           <Route path={ROUTES.CART} element={<Cart />} />
                           <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
                           <Route path={ROUTES.ORDER_SUCCESS} element={<OrderSuccessPage />} />
@@ -179,39 +182,64 @@ const App = () => {
                           <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
                           <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
                           
-                          {/* Collection routes with pb-10 padding */}
-                          <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={
+                          {/* Password Reset Route */}
+                          <Route path="/reset-password" element={<PasswordReset />} />
+                          
+                          {/* Redirect old collection routes to new product-category routes */}
+                          <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<Navigate to="/product-category/bestsellers" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<Navigate to="/product-category/sun-care" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={<Navigate to="/product-category/lip-balm" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={<Navigate to="/product-category/hairfall" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_ACNE} element={<Navigate to="/product-category/acne" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={<Navigate to="/product-category/pigmentation" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={<Navigate to="/product-category/dull-skin" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_DETAN} element={<Navigate to="/product-category/detan" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={<Navigate to="/product-category/damaged-hair" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_DANDRUFF} element={<Navigate to="/product-category/dandruff" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<Navigate to="/product-category/hair-care-1" replace />} />
+                          <Route path={ROUTES.COLLECTIONS_ALL} element={<Navigate to="/product-category/all-products" replace />} />
+                          
+                          {/* New product-category routes - these should come after the redirects */}
+                          <Route path="/product-category/bestsellers" element={
                             <div className='pb-10'><BestSellers /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={
+                          <Route path="/product-category/sun-care" element={
                             <div className='pb-10'><SunCare /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_LIP_BALM} element={
+                          <Route path="/product-category/lip-balm" element={
                             <div className='pb-10'><LipBalm /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_HAIRFALL} element={
+                          <Route path="/product-category/hairfall" element={
                             <div className='pb-10'><Hairfall /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_ACNE} element={
+                          <Route path="/product-category/acne" element={
                             <div className='pb-10'><Acne /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_PIGMENTATION} element={
+                          <Route path="/product-category/pigmentation" element={
                             <div className='pb-10'><Pigmentation /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_DULL_SKIN} element={
+                          <Route path="/product-category/dull-skin" element={
                             <div className='pb-10'><DullSkin /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_DETAN} element={
+                          <Route path="/product-category/detan" element={
                             <div className='pb-10'><Detan /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_DAMAGED_HAIR} element={
+                          <Route path="/product-category/damaged-hair" element={
                             <div className='pb-10'><DamagedHair /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_DANDRUFF} element={
+                          <Route path="/product-category/dandruff" element={
                             <div className='pb-10'><Dandruff /></div>
                           } />
-                          <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={
+                          <Route path="/product-category/hair-care-1" element={
                             <div className='pb-10'><HairCare1 /></div>
+                          } />
+                          <Route path="/product-category/all-products" element={
+                            <div className='pb-10'><AllProducts /></div>
+                          } />
+                          
+                          {/* Dynamic collection route - this should be placed before the wildcard route */}
+                          <Route path="/product-category/:slug" element={
+                            <div className='pb-10'><CollectionBySlug /></div>
                           } />
                           
                           <Route path="*" element={<NotFound />} />

@@ -63,7 +63,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
     animateSlide();
   }, [animateSlide]);
 
-  const messages = ["Free Delivery on ৳299+", "5% extra off on Prepaid Orders"];
+  const messages = ["Get extra 5% off use code wcbd5 on BDT ৳2,999 shopping"];
   const memoizedMessages = useCallback(() => {
     const spacedDot = "|";
     const repeated = [...messages, ...messages];
@@ -125,7 +125,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
             {/* Banner */}
             <div className="w-full px-4 flex-shrink-0">
               <img
-                src="/cartdiwali.jpg"
+                src="/cartbanner.png"
                 alt=""
                 className="w-full h-auto object-cover max-h-32 rounded-md"
               />

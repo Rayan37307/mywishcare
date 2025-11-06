@@ -156,7 +156,7 @@ function custom_send_cors_headers_secure($value) {
         'http://localhost:5173',  // Vite default
         'http://localhost:3000',  // Create React App default
         'https://yourdomain.com',
-        'https://sajcaree.com'     // Your domain
+        'https://wishcarebd.com'     // Your domain
     ];
     
     $origin = get_http_origin();

@@ -1,6 +1,6 @@
 // src/utils/apiUtils.ts
 export const buildWooCommerceAPIURL = (endpoint: string, params: Record<string, string> = {}): string => {
-  const baseURL = import.meta.env.VITE_WP_API_URL || 'https://sajcaree.com/wp-json';
+  const baseURL = import.meta.env.VITE_WP_API_URL || 'https://wishcarebd.com/wp-json';
   const consumerKey = import.meta.env.VITE_WC_CONSUMER_KEY || 'ck_23112f91dee60de7b243c658e5f4ddbb5250b745';
   const consumerSecret = import.meta.env.VITE_WC_CONSUMER_SECRET || 'cs_bb75d74565ffe29d3f47ea79948397214d7fb18a';
   

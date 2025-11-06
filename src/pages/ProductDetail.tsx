@@ -17,9 +17,9 @@ import { CheckCircleIcon } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
-  const { fetchProductById, setLoading, setError } = useProductStore();
+  const { fetchProductById, fetchProductBySlug, setLoading, setError } = useProductStore();
   const { addItem, items } = useCartStore();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoadingState] = useState(true);
@@ -83,14 +83,33 @@ const ProductDetail = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch product
+  // Fetch product by ID or slug and redirect to slug-based URL if accessed via ID
   useEffect(() => {
     const getProduct = async () => {
-      if (!id) return;
+      if (!id && !slug) return;
+      
       setLoading(true);
       try {
-        const fetchedProduct = await fetchProductById(Number(id));
-        setProduct(fetchedProduct);
+        let fetchedProduct: Product | null = null;
+        
+        if (slug) {
+          // Try to fetch by slug first
+          fetchedProduct = await fetchProductBySlug(slug);
+        } else if (id) {
+          // Fallback to ID if no slug provided
+          fetchedProduct = await fetchProductById(Number(id));
+        }
+        
+        if (fetchedProduct) {
+          // If accessed by ID but slug exists, redirect to slug-based URL for SEO
+          if (id && fetchedProduct.slug && !slug) {
+            navigate(`/products/${fetchedProduct.slug}`, { replace: true });
+            return;
+          }
+          setProduct(fetchedProduct);
+        } else {
+          setError('Product not found');
+        }
       } catch {
         setError('Failed to fetch product');
       } finally {
@@ -99,7 +118,7 @@ const ProductDetail = () => {
       }
     };
     getProduct();
-  }, [id, fetchProductById, setLoading, setError]);
+  }, [id, slug, fetchProductById, fetchProductBySlug, setLoading, setError, navigate]);
 
   if (loading) {
     return (
@@ -159,7 +178,6 @@ const ProductDetail = () => {
                       <span className="text-red-500 mr-4">৳{product.sale_price}</span>
                       <span className="text-gray-500 line-through text-xs">৳{product.regular_price}</span>
                     </div>
-                    <p className="text-[11px] text-gray-600">Inclusive of all taxes</p>
                   </div>
                 ) : (
                   <span>৳{product.price}</span>
@@ -279,9 +297,8 @@ const ProductDetail = () => {
                 <div className="flex flex-col justify-center gap-2">
                   <div>
                     <span>৳{product.sale_price}</span>
-                    <span className="text-gray-500 line-through text-sm mr-2 ml-4">MRP ৳{product.regular_price}</span>
+                    <span className="text-gray-500 line-through text-sm mr-2 ml-4">BDT ৳{product.regular_price}</span>
                   </div>
-                  <p className="text-[13px] text-gray-600">Inclusive of all taxes</p>
                 </div>
               ) : <span>৳{product.price}</span>}
             </div>

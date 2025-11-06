@@ -14,6 +14,7 @@ export const ROUTES = {
   COLLECTIONS_DULL_SKIN: '/collections/dull-skin',
   COLLECTIONS_DETAN: '/collections/detan',
   COLLECTIONS_DAMAGED_HAIR: '/collections/damaged-hair',
+  PRODUCT_CATEGORY_DYNAMIC: '/product-category/:slug',
   PAGES_ABOUT: '/pages/about-us',
   POLICIES_TERMS: '/policies/terms-of-service',
   POLICIES_PRIVACY: '/policies/privacy-policy',

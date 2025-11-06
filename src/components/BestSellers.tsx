@@ -14,7 +14,7 @@ const BestSellers = () => {
   const handleAddToCart = (product: Product) => addItem(product, 1);
 
   useEffect(() => {
-    if (bestSellingProducts.length === 0) fetchBestSellingProducts();
+    if (!bestSellingProducts.length) fetchBestSellingProducts();
   }, [bestSellingProducts.length]);
 
   if (loading && bestSellingProducts.length === 0) {
@@ -69,7 +69,7 @@ const BestSellers = () => {
 const Header = () => (
   <div className="flex gap-4 items-center mb-6 px-2">
     <h2 className="text-3xl font-bold text-left">Best Sellers</h2>
-    <Link to="/collections/bestsellers" className="flex items-center gap-2 text-sm font-medium">
+    <Link to="/product-category/bestsellers" className="flex items-center gap-2 text-sm font-medium">
       View All <ArrowRightIcon size={16} />
     </Link>
   </div>
@@ -105,13 +105,13 @@ const BestSellersCardItem: React.FC<BestSellersCardItemProps> = ({
   };
 
   return (
-    <Link to={`/products/${product.id}`} className="block">
+    <Link to={`/products/${product.slug}`} className="block">
       <div
         className="bg-white rounded-lg overflow-hidden p-2 flex flex-col h-[420px] min-w-[250px]" // fixed height
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="w-full aspect-[5/5.5]">
+        <div className="w-full aspect-[5/5.5] relative">
           <img
             src={getDisplayImage()}
             alt={product.name}
@@ -122,7 +122,7 @@ const BestSellersCardItem: React.FC<BestSellersCardItemProps> = ({
         <div className="flex flex-col flex-grow mt-2">
           <h3 className="text-[15px] font-medium line-clamp-2 text-center">{product.name}</h3>
           <p
-            className="text-[10px] text-gray-600 mt-1 text-center flex-grow overflow-hidden"
+            className="text-[10px] text-gray-600 mt-1 text-center flex-grow overflow-hidden truncate"
             dangerouslySetInnerHTML={{ __html: product.short_description }}
           />
           <div className="flex justify-center items-center gap-2 mt-2">
@@ -137,18 +137,33 @@ const BestSellersCardItem: React.FC<BestSellersCardItemProps> = ({
           </div>
         </div>
 
-        <button
-          className={`w-full py-2 bg-[#D4F871] uppercase rounded-md border border-black text-sm flex justify-center items-center gap-2 mt-2 ${
-            isAddingItem(product.id) ? 'opacity-60' : ''
-          }`}
-          onClick={(e) => {
-            e.preventDefault();
-            handleAddToCart(product);
-          }}
-          disabled={isAddingItem(product.id)}
-        >
-          {isAddingItem(product.id) ? 'Adding...' : 'Add to cart'}
-        </button>
+        {/* Check if product is out of stock */}
+        {(() => {
+          const isOutOfStock = product.stock_status === 'outofstock';
+          
+          return (
+            <button
+              className={`w-full py-2 uppercase rounded-md border border-black text-sm flex justify-center items-center gap-2 mt-2 ${
+                isOutOfStock
+                  ? 'bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed'
+                  : isAddingItem(product.id)
+                    ? 'bg-gray-300 cursor-default'
+                    : 'bg-[#D4F871] hover:bg-[#c0e05d] transition-colors'
+              }`}
+              onClick={(e) => {
+                e.preventDefault();
+                handleAddToCart(product);
+              }}
+              disabled={isAddingItem(product.id) || isOutOfStock}
+            >
+              {isOutOfStock 
+                ? 'Out of Stock' 
+                : isAddingItem(product.id) 
+                  ? 'Adding...' 
+                  : 'Add to cart'}
+            </button>
+          );
+        })()}
       </div>
     </Link>
   );

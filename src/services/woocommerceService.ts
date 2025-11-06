@@ -261,123 +261,141 @@ class WooCommerceService {
     }
   }
 
-  async fetchProducts(includeWishCareData: boolean = false): Promise<Product[]> {
+  async fetchProducts(includeWishCareData: boolean = false, perPage: number = 100): Promise<Product[]> {
     try {
-      const endpoint = this.buildAuthURL('/products');
-      console.log(`Fetching products from endpoint: ${endpoint}`);
-      
-      const response = await fetch(endpoint);
-      
-      console.log(`Products API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Products API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
+      // Fetch all products with pagination handling
+      let allProducts: Product[] = [];
+      let page = 1;
+      let hasMorePages = true;
 
-      let products: Product[] = await response.json();
-      console.log(`Successfully fetched ${products.length} products`);
-      
-      // Parse WishCare metadata if requested
-      if (includeWishCareData) {
-        products = await Promise.all(products.map(async (product) => {
-          if (product.meta_data) {
-            const wishCareData: any = {};
-            product.meta_data.forEach(meta => {
-              switch (meta.key) {
-                case 'wishcare_active_offers':
-                  try {
-                    wishCareData.activeOffers = JSON.parse(meta.value);
-                  } catch {
-                    wishCareData.activeOffers = [meta.value];
-                  }
-                  break;
-                case 'wishcare_benefits':
-                  try {
-                    wishCareData.benefits = JSON.parse(meta.value);
-                  } catch {
-                    wishCareData.benefits = [meta.value];
-                  }
-                  break;
-                case 'wishcare_suitable_for':
-                  try {
-                    wishCareData.suitableFor = JSON.parse(meta.value);
-                  } catch {
-                    wishCareData.suitableFor = [meta.value];
-                  }
-                  break;
-                case 'wishcare_what_makes_it_great':
-                  wishCareData.whatMakesItGreat = meta.value;
-                  break;
-                case 'wishcare_what_makes_images':
-                  try {
-                    const parsed = JSON.parse(meta.value);
-                    wishCareData.whatMakesImages = Array.isArray(parsed) 
-                      ? parsed.map((item: any) => Number(item) || 0)
-                      : [];
-                  } catch {
-                    wishCareData.whatMakesImages = [];
-                  }
-                  break;
-                case 'wishcare_how_to_use':
-                  wishCareData.howToUse = meta.value;
-                  break;
-                case 'wishcare_how_to_images':
-                  try {
-                    const parsed = JSON.parse(meta.value);
-                    wishCareData.howToImages = Array.isArray(parsed) 
-                      ? parsed.map((item: any) => Number(item) || 0)
-                      : [];
-                  } catch {
-                    wishCareData.howToImages = [];
-                  }
-                  break;
-                case 'wishcare_ingredients':
-                  wishCareData.ingredients = meta.value;
-                  break;
-                case 'wishcare_ingredients_images':
-                  try {
-                    const parsed = JSON.parse(meta.value);
-                    wishCareData.ingredientsImages = Array.isArray(parsed) 
-                      ? parsed.map((item: any) => Number(item) || 0)
-                      : [];
-                  } catch {
-                    wishCareData.ingredientsImages = [];
-                  }
-                  break;
-                case 'wishcare_results':
-                  wishCareData.results = meta.value;
-                  break;
-                case 'wishcare_results_images':
-                  try {
-                    const parsed = JSON.parse(meta.value);
-                    wishCareData.resultsImages = Array.isArray(parsed) 
-                      ? parsed.map((item: any) => Number(item) || 0)
-                      : [];
-                  } catch {
-                    wishCareData.resultsImages = [];
-                  }
-                  break;
-                case 'wishcare_pairs_with':
-                  wishCareData.pairsWith = meta.value;
-                  break;
-                case 'wishcare_faqs':
-                  try {
-                    wishCareData.faqs = JSON.parse(meta.value);
-                  } catch {
-                    wishCareData.faqs = [];
-                  }
-                  break;
-              }
-            });
-            product.wishCare = wishCareData;
+      while (hasMorePages) {
+        const endpoint = this.buildAuthURL(`/products?page=${page}&per_page=${perPage}`);
+        console.log(`Fetching products page ${page} from endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint);
+        
+        console.log(`Products API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Products API error response: ${errorText}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const products: Product[] = await response.json();
+        console.log(`Successfully fetched ${products.length} products from page ${page}`);
+        
+        // Parse WishCare metadata if requested
+        if (includeWishCareData) {
+          for (let i = 0; i < products.length; i++) {
+            const product = products[i];
+            if (product.meta_data) {
+              const wishCareData: any = {};
+              product.meta_data.forEach(meta => {
+                switch (meta.key) {
+                  case 'wishcare_active_offers':
+                    try {
+                      wishCareData.activeOffers = JSON.parse(meta.value);
+                    } catch {
+                      wishCareData.activeOffers = [meta.value];
+                    }
+                    break;
+                  case 'wishcare_benefits':
+                    try {
+                      wishCareData.benefits = JSON.parse(meta.value);
+                    } catch {
+                      wishCareData.benefits = [meta.value];
+                    }
+                    break;
+                  case 'wishcare_suitable_for':
+                    try {
+                      wishCareData.suitableFor = JSON.parse(meta.value);
+                    } catch {
+                      wishCareData.suitableFor = [meta.value];
+                    }
+                    break;
+                  case 'wishcare_what_makes_it_great':
+                    wishCareData.whatMakesItGreat = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
+                    break;
+                  case 'wishcare_what_makes_images':
+                    try {
+                      const parsed = JSON.parse(meta.value);
+                      wishCareData.whatMakesImages = Array.isArray(parsed) 
+                        ? parsed.map((item: any) => Number(item) || 0)
+                        : [];
+                    } catch {
+                      wishCareData.whatMakesImages = [];
+                    }
+                    break;
+                  case 'wishcare_how_to_use':
+                    wishCareData.howToUse = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
+                    break;
+                  case 'wishcare_how_to_images':
+                    try {
+                      const parsed = JSON.parse(meta.value);
+                      wishCareData.howToImages = Array.isArray(parsed) 
+                        ? parsed.map((item: any) => Number(item) || 0)
+                        : [];
+                    } catch {
+                      wishCareData.howToImages = [];
+                    }
+                    break;
+                  case 'wishcare_ingredients':
+                    wishCareData.ingredients = meta.value;
+                    break;
+                  case 'wishcare_ingredients_images':
+                    try {
+                      const parsed = JSON.parse(meta.value);
+                      wishCareData.ingredientsImages = Array.isArray(parsed) 
+                        ? parsed.map((item: any) => Number(item) || 0)
+                        : [];
+                    } catch {
+                      wishCareData.ingredientsImages = [];
+                    }
+                    break;
+                  case 'wishcare_results':
+                    wishCareData.results = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
+                    break;
+                  case 'wishcare_results_images':
+                    try {
+                      const parsed = JSON.parse(meta.value);
+                      wishCareData.resultsImages = Array.isArray(parsed) 
+                        ? parsed.map((item: any) => Number(item) || 0)
+                        : [];
+                    } catch {
+                      wishCareData.resultsImages = [];
+                    }
+                    break;
+                  case 'wishcare_pairs_with':
+                    wishCareData.pairsWith = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
+                    break;
+                  case 'wishcare_faqs':
+                    try {
+                      wishCareData.faqs = JSON.parse(meta.value);
+                    } catch {
+                      wishCareData.faqs = [];
+                    }
+                    break;
+                }
+              });
+              product.wishCare = wishCareData;
+            }
           }
-          return product;
-        }));
+        }
+        
+        allProducts = allProducts.concat(products);
+        
+        // Check if there are more pages to fetch
+        // If we got less products than requested per page, we're done
+        if (products.length < perPage) {
+          hasMorePages = false;
+        } else {
+          page++;
+        }
       }
       
-      return products;
+      console.log(`Successfully fetched ${allProducts.length} total products`);
+      return allProducts;
     } catch (error) {
       console.error('Error fetching products:', error);
       throw error;
@@ -433,7 +451,7 @@ class WooCommerceService {
               }
               break;
             case 'wishcare_what_makes_it_great':
-              wishCareData.whatMakesItGreat = meta.value;
+              wishCareData.whatMakesItGreat = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
               break;
             case 'wishcare_what_makes_images':
               try {
@@ -446,7 +464,7 @@ class WooCommerceService {
               }
               break;
             case 'wishcare_how_to_use':
-              wishCareData.howToUse = meta.value;
+              wishCareData.howToUse = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
               break;
             case 'wishcare_how_to_images':
               try {
@@ -472,7 +490,7 @@ class WooCommerceService {
               }
               break;
             case 'wishcare_results':
-              wishCareData.results = meta.value;
+              wishCareData.results = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
               break;
             case 'wishcare_results_images':
               try {
@@ -485,7 +503,7 @@ class WooCommerceService {
               }
               break;
             case 'wishcare_pairs_with':
-              wishCareData.pairsWith = meta.value;
+              wishCareData.pairsWith = meta.value && meta.value.trim() !== '' ? meta.value : undefined;
               break;
             case 'wishcare_faqs':
               try {
@@ -530,73 +548,127 @@ class WooCommerceService {
     }
   }
 
-  async searchProducts(searchTerm: string): Promise<Product[]> {
+  async searchProducts(searchTerm: string, perPage: number = 100): Promise<Product[]> {
     try {
-      const encodedSearchTerm = encodeURIComponent(searchTerm);
-      const endpoint = this.buildAuthURL(`/products?search=${encodedSearchTerm}`);
-      console.log(`Searching products with term "${searchTerm}" from endpoint: ${endpoint}`);
-      
-      const response = await fetch(endpoint);
-      
-      console.log(`Search products API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Search products API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
+      // Fetch all search results with pagination handling
+      let allProducts: Product[] = [];
+      let page = 1;
+      let hasMorePages = true;
 
-      const products: Product[] = await response.json();
-      console.log(`Found ${products.length} products matching "${searchTerm}"`);
-      return products;
+      while (hasMorePages) {
+        const encodedSearchTerm = encodeURIComponent(searchTerm);
+        const endpoint = this.buildAuthURL(`/products?search=${encodedSearchTerm}&page=${page}&per_page=${perPage}`);
+        console.log(`Searching products page ${page} with term "${searchTerm}" from endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint);
+        
+        console.log(`Search products API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Search products API error response: ${errorText}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const products: Product[] = await response.json();
+        console.log(`Found ${products.length} products matching "${searchTerm}" on page ${page}`);
+        
+        allProducts = allProducts.concat(products);
+        
+        // Check if there are more pages to fetch
+        if (products.length < perPage) {
+          hasMorePages = false;
+        } else {
+          page++;
+        }
+      }
+      
+      console.log(`Successfully fetched ${allProducts.length} total products matching "${searchTerm}"`);
+      return allProducts;
     } catch (error) {
       console.error('Error searching products:', error);
       throw error;
     }
   }
 
-  async fetchProductsByCategory(categoryId: number): Promise<Product[]> {
+  async fetchProductsByCategory(categoryId: number, perPage: number = 100): Promise<Product[]> {
     try {
-      const endpoint = this.buildAuthURL(`/products?category=${categoryId}`);
-      console.log(`Fetching products by category ${categoryId} from endpoint: ${endpoint}`);
-      
-      const response = await fetch(endpoint);
-      
-      console.log(`Products by category API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Products by category API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
+      // Fetch all products in category with pagination handling
+      let allProducts: Product[] = [];
+      let page = 1;
+      let hasMorePages = true;
 
-      const products: Product[] = await response.json();
-      console.log(`Found ${products.length} products in category ${categoryId}`);
-      return products;
+      while (hasMorePages) {
+        const endpoint = this.buildAuthURL(`/products?category=${categoryId}&page=${page}&per_page=${perPage}`);
+        console.log(`Fetching products by category ${categoryId}, page ${page} from endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint);
+        
+        console.log(`Products by category API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Products by category API error response: ${errorText}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const products: Product[] = await response.json();
+        console.log(`Found ${products.length} products in category ${categoryId} on page ${page}`);
+        
+        allProducts = allProducts.concat(products);
+        
+        // Check if there are more pages to fetch
+        if (products.length < perPage) {
+          hasMorePages = false;
+        } else {
+          page++;
+        }
+      }
+      
+      console.log(`Successfully fetched ${allProducts.length} total products in category ${categoryId}`);
+      return allProducts;
     } catch (error) {
       console.error('Error fetching products by category:', error);
       throw error;
     }
   }
 
-  async fetchProductsByTag(tagId: number): Promise<Product[]> {
+  async fetchProductsByTag(tagId: number, perPage: number = 100): Promise<Product[]> {
     try {
-      const endpoint = this.buildAuthURL(`/products?tag=${tagId}`);
-      console.log(`Fetching products by tag ${tagId} from endpoint: ${endpoint}`);
-      
-      const response = await fetch(endpoint);
-      
-      console.log(`Products by tag API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Products by tag API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
+      // Fetch all products with tag with pagination handling
+      let allProducts: Product[] = [];
+      let page = 1;
+      let hasMorePages = true;
 
-      const products: Product[] = await response.json();
-      console.log(`Found ${products.length} products with tag ${tagId}`);
-      return products;
+      while (hasMorePages) {
+        const endpoint = this.buildAuthURL(`/products?tag=${tagId}&page=${page}&per_page=${perPage}`);
+        console.log(`Fetching products by tag ${tagId}, page ${page} from endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint);
+        
+        console.log(`Products by tag API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Products by tag API error response: ${errorText}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const products: Product[] = await response.json();
+        console.log(`Found ${products.length} products with tag ${tagId} on page ${page}`);
+        
+        allProducts = allProducts.concat(products);
+        
+        // Check if there are more pages to fetch
+        if (products.length < perPage) {
+          hasMorePages = false;
+        } else {
+          page++;
+        }
+      }
+      
+      console.log(`Successfully fetched ${allProducts.length} total products with tag ${tagId}`);
+      return allProducts;
     } catch (error) {
       console.error('Error fetching products by tag:', error);
       throw error;
@@ -656,89 +728,157 @@ class WooCommerceService {
     }
   }
 
-  async fetchProductsByTagSlug(tagSlug: string): Promise<Product[]> {
+  async getCategoryBySlug(categorySlug: string): Promise<{ id: number } | null> {
+    try {
+      const endpoint = this.buildAuthURL(`/products/categories?slug=${encodeURIComponent(categorySlug)}`);
+      console.log(`Fetching category by slug "${categorySlug}" from endpoint: ${endpoint}`);
+      
+      const response = await fetch(endpoint);
+      
+      console.log(`Category by slug API response status: ${response.status}`);
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`Category with slug "${categorySlug}" not found`);
+          return null;
+        }
+        const errorText = await response.text();
+        console.error(`Category by slug API error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const categories: Array<{ id: number, slug: string, name: string }> = await response.json();
+      console.log(`Fetched categories matching slug "${categorySlug}":`, categories);
+      
+      if (categories.length > 0) {
+        console.log(`Found category with slug "${categorySlug}", ID: ${categories[0].id}`);
+        return { id: categories[0].id };
+      } else {
+        console.log(`No category found with slug "${categorySlug}"`);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching category by slug:', error);
+      // Return null instead of throwing to handle gracefully
+      return null;
+    }
+  }
+
+  async fetchProductsByTagSlug(tagSlug: string, perPage: number = 100): Promise<Product[]> {
     try {
       // First, get the tag ID by slug
       const tag = await this.getTagBySlug(tagSlug);
       
       if (!tag) {
         console.log(`Tag with slug "${tagSlug}" not found, returning empty array`);
-        
-        // Special handling for common fallback scenarios
-        if (tagSlug === 'bestsellers') {
-          // For bestsellers, fallback to products sorted by sales
-          return await this.fetchBestSellingProducts();
-        }
-        
         return [];
       }
       
-      // Use the tag ID to fetch products
-      const endpoint = this.buildAuthURL(`/products?tag=${tag.id}`);
-      console.log(`Fetching products by tag slug "${tagSlug}" (ID: ${tag.id}) from endpoint: ${endpoint}`);
-      
-      const response = await fetch(endpoint);
-      
-      console.log(`Products by tag slug API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Products by tag slug API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-
-      const products: Product[] = await response.json();
-      console.log(`Found ${products.length} products with tag slug "${tagSlug}" (ID: ${tag.id})`);
-      return products;
+      // Use the tag ID to fetch products with pagination
+      return await this.fetchProductsByTag(tag.id, perPage);
     } catch (error) {
       console.error('Error fetching products by tag slug:', error);
       throw error;
     }
   }
   
-  // Add method to fetch best selling products (sorted by total_sales)
-  async fetchBestSellingProducts(): Promise<Product[]> {
+  async fetchProductsByCategorySlug(categorySlug: string, perPage: number = 100): Promise<Product[]> {
     try {
-      const endpoint = this.buildAuthURL('/products?orderby=popularity'); // orderby=popularity sorts by total_sales
-      console.log(`Fetching best selling products from endpoint: ${endpoint}`);
+      // First, get the category ID by slug
+      const category = await this.getCategoryBySlug(categorySlug);
       
-      const response = await fetch(endpoint);
-      
-      console.log(`Best selling products API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Best selling products API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      if (!category) {
+        console.log(`Category with slug "${categorySlug}" not found, returning empty array`);
+        return [];
       }
+      
+      // Use the category ID to fetch products with pagination
+      return await this.fetchProductsByCategory(category.id, perPage);
+    } catch (error) {
+      console.error('Error fetching products by category slug:', error);
+      throw error;
+    }
+  }
+  
+  // Add method to fetch best selling products (sorted by total_sales)
+  async fetchBestSellingProducts(perPage: number = 100): Promise<Product[]> {
+    try {
+      // Fetch all best selling products with pagination handling, ordered by popularity
+      let allProducts: Product[] = [];
+      let page = 1;
+      let hasMorePages = true;
 
-      const products: Product[] = await response.json();
-      console.log(`Found ${products.length} best selling products`);
-      return products;
+      while (hasMorePages) {
+        const endpoint = this.buildAuthURL(`/products?orderby=popularity&page=${page}&per_page=${perPage}`); // orderby=popularity sorts by total_sales
+        console.log(`Fetching best selling products page ${page} from endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint);
+        
+        console.log(`Best selling products API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Best selling products API error response: ${errorText}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const products: Product[] = await response.json();
+        console.log(`Found ${products.length} best selling products on page ${page}`);
+        
+        allProducts = allProducts.concat(products);
+        
+        // Check if there are more pages to fetch
+        if (products.length < perPage) {
+          hasMorePages = false;
+        } else {
+          page++;
+        }
+      }
+      
+      console.log(`Successfully fetched ${allProducts.length} total best selling products`);
+      return allProducts;
     } catch (error) {
       console.error('Error fetching best selling products:', error);
       throw error;
     }
   }
 
-  async fetchProductsByOrder(orderBy: string = 'date', order: string = 'desc'): Promise<Product[]> {
+  async fetchProductsByOrder(orderBy: string = 'date', order: string = 'desc', perPage: number = 100): Promise<Product[]> {
     try {
-      const endpoint = this.buildAuthURL(`/products?orderby=${orderBy}&order=${order}`);
-      console.log(`Fetching products ordered by ${orderBy} (${order}) from endpoint: ${endpoint}`);
-      
-      const response = await fetch(endpoint);
-      
-      console.log(`Products by order API response status: ${response.status}`);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Products by order API error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
+      // Fetch all products ordered by specified field with pagination handling
+      let allProducts: Product[] = [];
+      let page = 1;
+      let hasMorePages = true;
 
-      const products: Product[] = await response.json();
-      console.log(`Successfully fetched ${products.length} products ordered by ${orderBy} (${order})`);
-      return products;
+      while (hasMorePages) {
+        const endpoint = this.buildAuthURL(`/products?orderby=${orderBy}&order=${order}&page=${page}&per_page=${perPage}`);
+        console.log(`Fetching products page ${page} ordered by ${orderBy} (${order}) from endpoint: ${endpoint}`);
+        
+        const response = await fetch(endpoint);
+        
+        console.log(`Products by order API response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Products by order API error response: ${errorText}`);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        const products: Product[] = await response.json();
+        console.log(`Successfully fetched ${products.length} products ordered by ${orderBy} (${order}) on page ${page}`);
+        
+        allProducts = allProducts.concat(products);
+        
+        // Check if there are more pages to fetch
+        if (products.length < perPage) {
+          hasMorePages = false;
+        } else {
+          page++;
+        }
+      }
+      
+      console.log(`Successfully fetched ${allProducts.length} total products ordered by ${orderBy} (${order})`);
+      return allProducts;
     } catch (error) {
       console.error('Error fetching products by order:', error);
       throw error;

@@ -142,10 +142,7 @@ const Cart = () => {
                 <span>Free</span>
               </div>
               
-              <div className="flex justify-between mb-2">
-                <span>Tax</span>
-                <span>৳0.00</span>
-              </div>
+
               
               <div className="border-t pt-2 mt-2 flex justify-between font-bold">
                 <span>Total</span>

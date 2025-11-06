@@ -1,46 +1,58 @@
 const Aboutus = () => {
   return (
-    <div className="w-full min-h-screen">
-      {/* Fullwidth images */}
-      <img src="/about1.webp" className="w-full h-auto" alt="" />
-      <img src="/about6.webp" className="w-full h-auto" alt="" />
-      <img src="/about2.webp" className="w-full h-auto" alt="" />
-      <img src="/about3.webp" className="w-full h-auto" alt="" />
-      <img src="/about4.webp" className="w-full h-auto" alt="" />
-      <img src="/about5.webp" className="w-full h-auto" alt="" />
-
-      {/* Founder's note section */}
-      <div className="w-full bg-[#DBD3FF] flex flex-col md:flex-row items-center md:items-start py-8 px-6 md:px-16 gap-6">
-        {/* Images */}
-        <div className="relative flex justify-center items-center w-full md:w-1/2">
-          <img src="/abouthero1.webp" alt="" className="w-60 sm:w-72 md:w-80 h-auto" />
-          <img
-            src="/abouthero2.webp"
-            alt=""
-            className="absolute -right-4 sm:-right-6 md:-right-7 w-48 sm:w-56 md:w-64 h-auto"
-          />
-        </div>
-
-        {/* Text */}
-        <div className="w-full md:w-1/2 flex flex-col justify-start px-4 sm:px-8 md:px-10">
-          <h3 className="text-lg sm:text-xl md:text-2xl text-black uppercase font-semibold mb-4">
-            Founder's Note
-          </h3>
-          <p className="text-sm sm:text-base md:text-base text-gray-800 max-w-full sm:max-w-[300px]">
-            We run WishCare passionately along with a young, enthusiastic team who believes in
-            the ethos of science-forward selfcare solutions. The DNA of the brand is reflected
-            in our culture - innovative, multipurpose and accessible. We are excited about
-            building a one-of-a-kind holistic beauty brand for India that focuses on formulating
-            skinimalism routines for the busy individuals who are in search of effective
-            skincare and haircare products. I would be so thrilled to see you join in the
-            journey of effective & no nonsense selfcare!
-          </p>
-        </div>
+    <div className="w-full min-h-screen py-10 px-4 max-w-6xl mx-auto">
+      <div className="text-center mb-10">
+        <h1 className="text-3xl md:text-4xl font-bold text-black uppercase">About Us</h1>
       </div>
-
-      {/* Remaining fullwidth images */}
-      <img src="/about7.webp" className="w-full h-auto" alt="" />
-      <img src="/about8.webp" className="w-full h-auto" alt="" />
+      
+      <div className="mb-8">
+        <p className="text-base text-gray-700 mb-4">
+          Welcome to WishCare BD, your trusted destination for original WishCare skincare and haircare products in Bangladesh. We are passionate about making international-quality personal care accessible to our Bangladeshi customers.
+        </p>
+        
+        <p className="text-base text-gray-700 mb-4">
+          At WishCareBD, we sell 100% authentic WishCare products through our official website and verified social media pages:
+        </p>
+        
+        <ul className="list-disc pl-6 text-base text-gray-700 mb-4">
+          <li>Facebook: @wishcarebd</li>
+          <li>Instagram: @wishcarebd</li>
+          <li>TikTok: @wishcarebd</li>
+        </ul>
+        
+        <p className="text-base text-gray-700 mb-4">
+          We are an independent online retailer and do not have a direct partnership with the global WishCare brand. However, we ensure that every product listed on our store is genuine, carefully sourced, and delivered with care.
+        </p>
+      </div>
+      
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-black mb-4">Why Choose WishCare BD?</h2>
+        <ul className="list-disc pl-6 text-base text-gray-700">
+          <li>Authentic WishCare products, delivered in Bangladesh</li>
+          <li>Affordable prices with local support</li>
+          <li>Fast home delivery across the country</li>
+          <li>Dedicated customer service for your queries</li>
+        </ul>
+      </div>
+      
+      <div className="mb-8">
+        <p className="text-base text-gray-700">
+          Our mission is simple: to help you achieve healthy, glowing skin and hair with safe and effective products.
+        </p>
+      </div>
+      
+      <div>
+        <h2 className="text-2xl font-bold text-black mb-4">Contact Information</h2>
+        <p className="text-base text-gray-700 mb-4">
+          If you have any questions or concerns about these Terms and Conditions, please contact us:
+        </p>
+        <ul className="list-disc pl-6 text-base text-gray-700">
+          <li>📞 +8801921521717</li>
+          <li>📧 hello@wishcarebd.com</li>
+          <li>🌐 https://wishcarebd.com</li>
+          <li>📱 Facebook / Instagram / TikTok: @wishcarebd</li>
+        </ul>
+      </div>
     </div>
   );
 };

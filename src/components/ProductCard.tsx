@@ -32,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link to={`/products/${product.id}`}>
+      <Link to={`/products/${product.slug}`}>
         <div className="w-full aspect-[5/5.5] relative">
           <img 
             src={getDisplayImage()} 
@@ -44,7 +44,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         <div className="text-center flex-grow mt-2">
           <h3 className="text-[15px]">{product.name}</h3>
           <p 
-            className="text-[10px] text-black" 
+            className="text-[10px] text-black truncate" 
             dangerouslySetInnerHTML={{ __html: product.short_description }} 
           />
           
@@ -72,32 +72,48 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         </div>
       </Link>
       
-      <button
-        className="w-full py-2 bg-[#D4F871] uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2"
-        onClick={(e) => {
-          e.preventDefault();
-          onAddToCart(product, 1);
-        }}
-      >
-        Add to cart
-        <span className="mb-[3px]">
-          <svg 
-            aria-hidden="true" 
-            fill="none" 
-            focusable="false" 
-            width="15" 
-            viewBox="0 0 24 24"
+      {/* Check if product is out of stock */}
+      {(() => {
+        const isOutOfStock = product.stock_status === 'outofstock';
+        
+        return (
+          <button
+            className={`w-full py-2 uppercase rounded-md border-1 text-sm border-black flex justify-center items-center gap-2 ${
+              isOutOfStock
+                ? 'bg-gray-300 text-gray-500 border-gray-400 cursor-not-allowed'
+                : 'bg-[#D4F871] hover:bg-[#c0e05d] transition-colors'
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              if (!isOutOfStock) {
+                onAddToCart(product, 1);
+              }
+            }}
+            disabled={isOutOfStock}
           >
-            <path 
-              d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
-      </button>
+            {isOutOfStock ? 'Out of Stock' : 'Add to cart'}
+            {!isOutOfStock && (
+              <span className="mb-[3px]">
+                <svg 
+                  aria-hidden="true" 
+                  fill="none" 
+                  focusable="false" 
+                  width="15" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    d="M4.75 8.25A.75.75 0 0 0 4 9L3 19.125c0 1.418 1.207 2.625 2.625 2.625h12.75c1.418 0 2.625-1.149 2.625-2.566L20 9a.75.75 0 0 0-.75-.75H4.75Zm2.75 0v-1.5a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v1.5" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            )}
+          </button>
+        );
+      })()}
     </div>
   );
 };

@@ -2,130 +2,165 @@ const PrivacyPolicy = () => {
   return (
     <div className='flex justify-center items-center flex-col py-10 px-10'>
       <br /><br />
-      <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>PRIVACY POLICY</h3>
+      <h3 className='uppercase text-3xl text-black text-center font-semibold pb-10'>Privacy Policy</h3>
       <br /><br />
-      <p className='text-sm max-w-4xl'>
-        This Privacy Policy describes how your personal information is collected, used, and shared when you visit or make a purchase from www.mywishcare.com (the "Site").
-        <br /><br />
-
-        <div className='font-bold py-6'>Personal information we collect</div>
-        When you visit the Site, we automatically collect certain information about your device, including information about your web browser, IP address, time zone, and some of the cookies that are installed on your device. Additionally, as you browse the Site, we collect information about the individual web pages or products that you view, what websites or search terms referred you to the Site, and information about how you interact with the Site. We refer to this automatically-collected information as "Device Information".
-        <br /><br />
-
-        We collect Device Information using the following technologies:
-        <br /><br />
-        - "Cookies" are data files that are placed on your device or computer and often include an anonymous unique identifier. For more information about cookies, and how to disable cookies, visit http://www.allaboutcookies.org.
-        <br /><br />
-        - "Log files" track actions occurring on the Site, and collect data including your IP address, browser type, Internet service provider, referring/exit pages, and date/time stamps.
-        <br /><br />
-        - "Web beacons", "tags", and "pixels" are electronic files used to record information about how you browse the Site.
-        <br /><br />
-
-        Additionally when you make a purchase or attempt to make a purchase through the Site, we collect certain information from you, including your name, billing address, shipping address, payment information (including credit card numbers, email address, and phone number. We refer to this information as "Order Information".
-        <br /><br />
-
-        When we talk about "Personal Information" in this Privacy Policy, we are talking both about Device Information and Order Information.
-        <br /><br />
-
-        <span className='font-bold pt-6'>How do we use your personal information?</span><br /><br />
-        We use the Order Information that we collect generally to fulfill any orders placed through the Site (including processing your payment information, arranging for shipping, and providing you with invoices and/or order confirmations). Additionally, we use this Order Information to:
-        <br /><br />
-        - Communicate with you;
-        <br /><br />
-        - Screen our orders for potential risk or fraud; and
-        <br /><br />
-        - When in line with the preferences you have shared with us, provide you with information or advertising relating to our products or services.
-        <br /><br />
-
-        We use the Device Information that we collect to help us screen for potential risk and fraud (in particular, your IP address), and more generally to improve and optimize our Site (for example, by generating analytics about how our customers browse and interact with the Site, and to assess the success of our marketing and advertising campaigns).
-        <br /><br />
-
-        <span className='font-bold pt-6'>Sharing you personal Information</span><br /><br />
-        We share your Personal Information with third parties to help us use your Personal Information, as described above. For example, we use Shopify to power our online store--you can read more about how Shopify uses your Personal Information here: https://www.shopify.com/legal/privacy. We also use Google Analytics to help us understand how our customers use the Site -- you can read more about how Google uses your Personal Information here: https://www.google.com/intl/en/policies/privacy/. You can also opt-out of Google Analytics here: https://tools.google.com/dlpage/gaoptout.
-        <br /><br />
-
-        Finally, we may also share your Personal Information to comply with applicable laws and regulations, to respond to a subpoena, search warrant or other lawful request for information we receive, or to otherwise protect our rights.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Behavioural advertising</span><br /><br />
-        As described above, we use your Personal Information to provide you with targeted advertisements or marketing communications we believe may be of interest to you. For more information about how targeted advertising works, you can visit the Network Advertising Initiative's ("NAI") educational page at http://www.networkadvertising.org/understanding-online-advertising/how-does-it-work.
-        <br /><br />
-
-        You can opt out of targeted advertising by using the links below:
-        <br /><br />
-        - Facebook: https://www.facebook.com/settings/?tab=ads
-        <br /><br />
-        - Google: https://www.google.com/settings/ads/anonymous
-        <br /><br />
-        - Bing: https://advertise.bingads.microsoft.com/en-us/resources/policies/personalized-ads
-        <br /><br />
-
-        Additionally, you can opt out of some of these services by visiting the Digital Advertising Alliance's opt-out portal at: http://optout.aboutads.info/.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Do not track</span><br /><br />
-        Please note that we do not alter our Site's data collection and use practices when we see a Do Not Track signal from your browser.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Your rights</span><br /><br />
-        If you are a European resident, you have the right to access personal information we hold about you and to ask that your personal information be corrected, updated, or deleted. If you would like to exercise this right, please contact us through the contact information below.
-        <br /><br />
-
-        Additionally, if you are a European resident we note that we are processing your information in order to fulfill contracts we might have with you (for example if you make an order through the Site), or otherwise to pursue our legitimate business interests listed above. Additionally, please note that your information will be transferred outside of Europe, including to Canada and the United States.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Data retention</span><br /><br />
-        When you place an order through the Site, we will maintain your Order Information for our records unless and until you ask us to delete this information.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Changes</span><br /><br />
-        We may update this privacy policy from time to time in order to reflect, for example, changes to our practices or for other operational, legal or regulatory reasons.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Minors</span><br /><br />
-        The Site is not intended for individuals under the age of 18 .
-        <br /><br />
-
-        IS/ISO/IEC 27001.
-        <br /><br />
-
-        <span className='font-bold pt-6'>Contact us</span><br /><br />
-        For more information about our privacy practices, if you have questions, or if you would like to make a complaint, please contact us by e‑mail at hello@mywishcare.com or by mail using the details provided below:
-        <br /><br />
-
-        MyWishCare
+      <div className='text-sm max-w-4xl'>
+        <p>At WishCare BD, your privacy and trust are extremely important to us. This Privacy Policy explains how we collect, use, disclose, and protect your personal information when you visit or make a purchase from our website www.wishcarebd.com or interact with us through our social media pages (@wishcarebd on Facebook, Instagram, and TikTok).</p>
         <br />
-        [Re: Privacy Compliance Officer]
+        <p>This policy is designed to comply with local privacy standards in Bangladesh while aligning with international best practices for transparency and data protection.</p>
         <br />
-        28, B. T. Road, Lohia Jute Press, 700002 KOLKATA WB, India
-        <br /><br />
 
-        In case of any grievance, you may contact the Privacy Grievance Officer – Rabiko Lifestyle Private Limited
-        <br /><br />
+        <div className='font-bold py-2'>1. Overview</div>
+        <p>This Privacy Policy applies to all visitors, users, and customers ("you") who access or use the services of WishCare BD ("we", "our", or "us"). By using our website or purchasing from us, you consent to the collection and use of information as outlined in this policy.</p>
+        <br />
 
-        at : hello@mywishcare.com with the Subject Lineas  [Re: Privacy Grievance Officer]
-        <br /><br />
+        <div className='font-bold py-2'>2. Information We Collect</div>
+        <p>We collect two types of information: Personal Information and Device/Technical Information.</p>
+        
+        <div className='font-bold py-2'>A. Personal Information</div>
+        <p>When you make a purchase, register for an account, or contact us, we may collect the following details:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Full name</li>
+          <li>Phone number</li>
+          <li>Email address</li>
+          <li>Billing and shipping address</li>
+          <li>Payment method (handled securely via third-party providers)</li>
+          <li>Order details and transaction records</li>
+          <li>Any messages, reviews, or feedback you voluntarily provide</li>
+        </ul>
 
-        Anjali Shaw, Respected Grievance Officer/ Nodal Officer
-        <br /><br />
+        <div className='font-bold py-2'>B. Device and Technical Information</div>
+        <p>When you visit our website, we automatically collect limited technical data, including:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>IP address and geolocation (city/region level only)</li>
+          <li>Browser type and version</li>
+          <li>Device type (mobile, tablet, desktop)</li>
+          <li>Operating system and screen resolution</li>
+          <li>Referring website or search query</li>
+          <li>Pages visited, time spent, and browsing behavior</li>
+        </ul>
+        <p>We refer to this as "Device Information."</p>
+        <br />
 
-        28, B. T. Road, Lohia Jute Press, 
-        <br /><br />
+        <div className='font-bold py-2'>3. How We Collect Information</div>
+        <p>We collect information in the following ways:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Directly from you when you place an order, sign up for an account, subscribe to updates, or contact us.</li>
+          <li>Automatically through cookies, log files, analytics tools, and social media integrations.</li>
+          <li>From trusted third parties such as payment gateways, delivery partners, and analytics providers.</li>
+        </ul>
+        <br />
 
-        KOLKATA -700002 WB
-        <br /><br />
+        <div className='font-bold py-2'>4. How We Use Your Information</div>
+        <p>We use your information to operate, improve, and personalize your experience at WishCare BD. This includes:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Processing and delivering your orders accurately</li>
+          <li>Sending order confirmations, invoices, and shipping updates</li>
+          <li>Responding to customer service requests or feedback</li>
+          <li>Verifying payment details and preventing fraudulent activity</li>
+          <li>Customizing website content and recommendations</li>
+          <li>Sending promotional offers, discounts, or updates (only with your consent)</li>
+          <li>Improving site performance and marketing effectiveness</li>
+          <li>Complying with applicable laws and regulations</li>
+        </ul>
+        <br />
 
-        India
-        <br /><br />
+        <div className='font-bold py-2'>5. Sharing Your Information</div>
+        <p>We do not sell, rent, or trade your personal information. However, we may share it in the following limited situations:</p>
 
-        Email id – hello@mywishcare.com
-        <br /><br />
+        <div className='font-bold py-2'>A. Service Providers</div>
+        <p>We share data with trusted third parties who help us operate our business:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Payment gateways (for secure payment processing)</li>
+          <li>Delivery/courier partners (for order fulfillment)</li>
+          <li>Analytics tools (for understanding site performance, e.g., Google Analytics)</li>
+        </ul>
+        <p>These third parties are obligated to handle your data securely and only for the purpose it was shared.</p>
 
-        Above policy are pursuant to the provisions of applicable laws including but not limited to the Information Technology Act, 2000 and the Consumer Protection Act, 2019, and the rules enacted under those laws.
-        <br /><br />
+        <div className='font-bold py-2'>B. Legal Requirements</div>
+        <p>We may disclose personal data when required by law or to comply with lawful requests (e.g., court orders, government investigations).</p>
+        <br />
 
-        We follow standard security practices and procedures adopted under IS/ISO/IEC 27001.
-      </p>
+        <div className='font-bold py-2'>6. Cookies and Tracking Technologies</div>
+        <p>Our website uses cookies and similar technologies to enhance user experience and analyze traffic.</p>
+        <p>Cookies help us:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Remember your login and cart preferences</li>
+          <li>Measure site performance and engagement</li>
+          <li>Deliver personalized product recommendations and ads</li>
+        </ul>
+        <p>You can manage or disable cookies in your browser settings. However, some features may not function properly if cookies are turned off.</p>
+        <p>For more details about cookies, visit www.allaboutcookies.org.</p>
+        <br />
+
+        <div className='font-bold py-2'>7. Analytics and Advertising</div>
+        <p>We use Google Analytics, Meta Pixel (Facebook Pixel), and other tools to understand how visitors use our site.</p>
+        <p>These tools collect anonymized data to help us improve performance, user experience, and advertising accuracy.</p>
+        <p>You can opt out of Google Analytics tracking here: https://tools.google.com/dlpage/gaoptout.</p>
+        <p>We may also use remarketing ads to show relevant offers on Google, Facebook, or Instagram. You can manage ad preferences at:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Google Ads Settings</li>
+          <li>Facebook Ads Settings</li>
+        </ul>
+        <br />
+
+        <div className='font-bold py-2'>8. Data Storage and Security</div>
+        <p>We implement strict technical and organizational measures to protect your data against unauthorized access, misuse, or loss. This includes:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Secure SSL encryption on our website</li>
+          <li>Encrypted payment processing via third-party gateways</li>
+          <li>Limited data access to authorized personnel only</li>
+        </ul>
+        <p>Although we take all reasonable precautions, no system is 100% secure. By using our Service, you acknowledge that data transmission over the internet carries inherent risks.</p>
+        <br />
+
+        <div className='font-bold py-2'>9. Your Rights and Choices</div>
+        <p>Depending on applicable law, you have the right to:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Request access to your personal data</li>
+          <li>Request correction or deletion of inaccurate data</li>
+          <li>Withdraw consent for marketing communications at any time</li>
+          <li>Request information about how your data is being processed</li>
+        </ul>
+        <p>To exercise these rights, please contact us at hello@wishcarebd.com or call +8801921521717. We may require identity verification before processing such requests.</p>
+        <br />
+
+        <div className='font-bold py-2'>10. Data Retention</div>
+        <p>We retain personal data only for as long as necessary to:</p>
+        <ul className='list-disc pl-5 py-1'>
+          <li>Complete the purpose for which it was collected (e.g., order fulfillment)</li>
+          <li>Meet legal, accounting, or regulatory obligations</li>
+        </ul>
+        <p>You can request deletion of your account or order history anytime by contacting our support team.</p>
+        <br />
+
+        <div className='font-bold py-2'>11. Third-Party Links</div>
+        <p>Our website may contain links to third-party sites or content (e.g., brand references, partner pages). WishCare BD is not responsible for the privacy practices or content of external websites. We encourage you to review their respective privacy policies.</p>
+        <br />
+
+        <div className='font-bold py-2'>12. Children's Privacy</div>
+        <p>Our Service is not intended for users under the age of 13. We do not knowingly collect personal data from children. If we discover that such data has been collected, we will delete it immediately.</p>
+        <br />
+
+        <div className='font-bold py-2'>13. International Data Transfer</div>
+        <p>WishCare BD operates within Bangladesh, but your data may be processed or stored on secure servers located outside Bangladesh.</p>
+        <p>By using our website, you consent to the transfer of your information internationally, as necessary for providing the Service.</p>
+        <br />
+
+        <div className='font-bold py-2'>14. Updates to This Policy</div>
+        <p>We may update this Privacy Policy periodically to reflect changes in our practices or legal requirements. Updates will be posted on this page with a revised "Last Updated" date.</p>
+        <p>Continued use of our website after such updates means you accept the revised version.</p>
+        <br />
+
+        <div className='font-bold py-2'>15. SEO & AI Optimization Summary</div>
+        <p>Target Keywords: WishCare BD privacy policy, online shopping Bangladesh, data protection, secure shopping, personal information safety, authentic WishCare products Bangladesh, privacy rights BD.</p>
+        <p>Structured format with clear headers (H1–H3) for Google Search Console crawling.</p>
+        <p>AI-friendly content structure for ChatGPT, Gemini, Grok, and Perplexity data parsing.</p>
+        <p>Includes legal compliance, transparency, and user trust-building signals (improving ranking & credibility).</p>
+        <br />
+
+        <p>If you have any questions about this Privacy Policy, please contact us at +8801921521717</p>
+      </div>
     </div>
   )
 }
