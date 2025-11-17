@@ -1,17 +1,17 @@
-
 import { useState, useEffect } from 'react';
+import { woocommerceService, Order } from '../services/woocommerceService';
 
 const IncompletePurchasesPage = () => {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [purchases, setPurchases] = useState<any[]>([]);
+  const [purchases, setPurchases] = useState<Order[]>([]);
+  const [selectedPurchase, setSelectedPurchase] = useState<Order | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
-      const storedPurchases = localStorage.getItem('incompletePurchases');
-      if (storedPurchases) {
-        setPurchases(JSON.parse(storedPurchases));
-      }
+      woocommerceService.getIncompleteOrders().then(orders => {
+        setPurchases(orders);
+      });
     }
   }, [isAuthenticated]);
 
@@ -22,6 +22,14 @@ const IncompletePurchasesPage = () => {
     } else {
       alert('Incorrect password');
     }
+  };
+
+  const handleViewClick = (purchase: Order) => {
+    setSelectedPurchase(purchase);
+  };
+
+  const closeModal = () => {
+    setSelectedPurchase(null);
   };
 
   if (!isAuthenticated) {
@@ -63,16 +71,39 @@ const IncompletePurchasesPage = () => {
             {purchases.map((purchase, index) => (
               <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
                 <td className="py-3 px-4">{index + 1}</td>
-                <td className="py-3 px-4">{new Date(purchase.date).toLocaleString()}</td>
-                <td className="py-3 px-4">{purchase.formData.firstName} {purchase.formData.lastName}</td>
+                <td className="py-3 px-4">{new Date(purchase.date_created).toLocaleString()}</td>
+                <td className="py-3 px-4">{purchase.billing.first_name}</td>
                 <td className="py-3 px-4">
-                  <button className="bg-blue-500 text-white px-4 py-1 rounded-lg">View</button>
+                  <button onClick={() => handleViewClick(purchase)} className="bg-blue-500 text-white px-4 py-1 rounded-lg">View</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {selectedPurchase && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-1/2">
+            <h2 className="text-2xl font-bold mb-4">Purchase Details</h2>
+            <p><strong>Date:</strong> {new Date(selectedPurchase.date_created).toLocaleString()}</p>
+            <p><strong>Name:</strong> {selectedPurchase.billing.first_name}</p>
+            <p><strong>Address:</strong> {selectedPurchase.billing.address_1}</p>
+            <p><strong>District:</strong> {selectedPurchase.billing.state}</p>
+            <p><strong>Phone:</strong> {selectedPurchase.billing.phone}</p>
+            <p><strong>Email:</strong> {selectedPurchase.billing.email}</p>
+            <h3 className="text-xl font-bold mt-4">Items</h3>
+            <ul>
+              {selectedPurchase.line_items.map(item => (
+                <li key={item.id}>{item.name} x {item.quantity}</li>
+              ))}
+            </ul>
+            <button onClick={closeModal} className="w-full bg-red-500 text-white mt-4 px-4 py-2 rounded-lg">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

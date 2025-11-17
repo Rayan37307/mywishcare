@@ -931,6 +931,21 @@ class WooCommerceService {
     }
   }
 
+  async getIncompleteOrders(): Promise<Order[]> {
+    try {
+      const endpoint = this.buildAuthURL(`/orders?status=pending`);
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const orders: Order[] = await response.json();
+      return orders;
+    } catch (error) {
+      console.error('Error fetching incomplete orders:', error);
+      return [];
+    }
+  }
+
   async getOrderById(orderId: number, customerId: number): Promise<Order> {
     try {
       const endpoint = this.buildAuthURL(`/orders/${orderId}?customer=${customerId}`);
@@ -980,6 +995,27 @@ class WooCommerceService {
       return result;
     } catch (error) {
       console.error('Error creating order:', error);
+      throw error;
+    }
+  }
+
+  async createIncompleteOrder(orderData: Partial<Order>): Promise<Order> {
+    try {
+      const endpoint = this.buildAuthURL('/orders');
+      orderData.status = 'pending';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating incomplete order:', error);
       throw error;
     }
   }
