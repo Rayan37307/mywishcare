@@ -5,6 +5,7 @@ import type { CartState, CartItem } from '../types/cart';
 import type { Product } from '../types/product';
 import { APP_CONSTANTS } from '../constants/app';
 import toast from 'react-hot-toast';
+import { pixelYourSiteService } from '../services/pixelYourSiteService';
 
 
 
@@ -108,6 +109,16 @@ export const useCartStore = create<CartState>()(
           toast.success(`${product.name} added to cart!`);
         }
         
+        // Track add to cart event with PixelYourSite
+        pixelYourSiteService.trackAddToCart({
+          product_id: product.id,
+          product_name: product.name,
+          product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
+          currency: 'BDT',
+          quantity: quantity,
+          value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * quantity,
+        });
+        
         // Update state and remove from loading state in a single batch
         set({ 
           items: updatedItems,
@@ -125,6 +136,17 @@ export const useCartStore = create<CartState>()(
         try {
           const { items } = get();
           const itemToRemove = items.find(item => item.product.id === productId);
+          if (itemToRemove) {
+            // Track remove from cart event with PixelYourSite
+            pixelYourSiteService.trackCustomEvent('remove_from_cart', {
+              product_id: itemToRemove.product.id,
+              product_name: itemToRemove.product.name,
+              value: parseFloat(itemToRemove.product.price.replace(/[^\d.-]/g, '')) * itemToRemove.quantity,
+              quantity: itemToRemove.quantity,
+              currency: 'BDT',
+            });
+          }
+          
           const updatedItems = items.filter(item => item.product.id !== productId);
           set({ items: updatedItems });
           get().calculateTotals();
@@ -166,6 +188,16 @@ export const useCartStore = create<CartState>()(
             };
             set({ items: updatedItems });
             get().calculateTotals();
+            
+            // Track quantity update with PixelYourSite
+            pixelYourSiteService.trackAddToCart({
+              product_id: item.product.id,
+              product_name: item.product.name,
+              product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
+              currency: 'BDT',
+              quantity: quantity,
+              value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * quantity,
+            });
             
             toast.success(`${productName} quantity updated to ${quantity}`);
           }

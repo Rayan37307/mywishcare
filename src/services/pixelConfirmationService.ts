@@ -1,7 +1,7 @@
 // services/pixelConfirmationService.ts
 // Service for sharing pixel confirmation data for order verification
 
-import { analyticsService, type CheckoutTrackingData } from './analyticsService';
+import { pixelYourSiteService, type PixelYourSiteCheckoutData } from './pixelYourSiteService';
 
 export interface OrderConfirmationData {
   orderId: string;
@@ -61,11 +61,11 @@ class PixelConfirmationService {
   // Send purchase event to specified pixel providers
   private sendPurchaseEvent(data: OrderConfirmationData, providers: string[]): void {
     // Prepare checkout data for pixel tracking
-    const checkoutData: CheckoutTrackingData = {
+    const checkoutData: PixelYourSiteCheckoutData = {
       value: data.value,
       currency: data.currency,
       contents: data.contents,
-      content_type: 'product',
+      order_id: data.orderId,
     };
     
     // Send to each specified provider
@@ -88,27 +88,16 @@ class PixelConfirmationService {
   }
   
   // Send purchase event to Meta Pixel
-  private sendToMetaPixel(checkoutData: CheckoutTrackingData, orderId: string): void {
-    // Track purchase via analytics service
-    analyticsService.trackPurchase(checkoutData, orderId);
-    
-    // Additional Meta Pixel specific tracking
-    if (typeof (window as any).fbq !== 'undefined') {
-      (window as any).fbq('track', 'Purchase', {
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-        content_ids: checkoutData.contents.map(c => c.id),
-        contents: checkoutData.contents,
-        transaction_id: orderId,
-      });
-    }
+  private sendToMetaPixel(checkoutData: PixelYourSiteCheckoutData, _orderId: string): void {
+    // Track purchase via PixelYourSite service (handles tracking across all platforms including Meta Pixel)
+    pixelYourSiteService.trackPurchase(checkoutData);
   }
   
   // Send purchase event to Google Analytics
-  private sendToGoogleAnalytics(checkoutData: CheckoutTrackingData, orderId: string): void {
-    // Track purchase via analytics service
-    analyticsService.trackPurchase(checkoutData, orderId);
-    
+  private sendToGoogleAnalytics(checkoutData: PixelYourSiteCheckoutData, orderId: string): void {
+    // Track purchase via PixelYourSite service
+    pixelYourSiteService.trackPurchase(checkoutData);
+
     // Additional Google Analytics specific tracking
     if (typeof (window as any).gtag !== 'undefined') {
       (window as any).gtag('event', 'purchase', {
@@ -125,9 +114,9 @@ class PixelConfirmationService {
   }
   
   // Send purchase event to TikTok Pixel
-  private sendToTikTokPixel(checkoutData: CheckoutTrackingData, orderId: string): void {
-    // Track purchase via analytics service
-    analyticsService.trackPurchase(checkoutData, orderId);
+  private sendToTikTokPixel(checkoutData: PixelYourSiteCheckoutData, _orderId: string): void {
+    // Track purchase via PixelYourSite service
+    pixelYourSiteService.trackPurchase(checkoutData);
     
     // Additional TikTok Pixel specific tracking
     if (typeof (window as any).ttq !== 'undefined') {
@@ -135,7 +124,6 @@ class PixelConfirmationService {
         contents: checkoutData.contents,
         value: checkoutData.value,
         currency: checkoutData.currency,
-        event_id: orderId,
       });
     }
   }

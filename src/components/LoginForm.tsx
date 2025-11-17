@@ -1,6 +1,7 @@
 // src/components/LoginForm.tsx
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 interface LoginFormProps {
   onLoginSuccess?: () => void;
@@ -36,7 +37,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         const result = await register(username, email, password, displayName);
         if (result.success) {
           // Auto-switch to login after successful registration
-          alert('Registration successful! Please login with your credentials.');
+          toast.success('Registration successful! Please login with your credentials.');
           setIsLogin(true);
         }
         // Error is already displayed through the error state in the form
@@ -44,11 +45,11 @@ const LoginForm: React.FC<LoginFormProps> = ({
         // Request registration (for cases where full registration isn't enabled)
         const result = await requestRegistration(username, email, displayName);
         if (result.success) {
-          alert('Registration request submitted! An administrator will review your request and contact you by email.');
+          toast.success('Registration request submitted! An administrator will review your request and contact you by email.');
           setIsLogin(true); // Switch back to login after request
         } else {
           // Show error message if request fails
-          alert(result.message || 'Registration request failed. Please contact the administrator directly.');
+          toast.error(result.message || 'Registration request failed. Please contact the administrator directly.');
         }
       }
     }

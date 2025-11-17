@@ -3,12 +3,13 @@ import { useCartStore } from '../store/cartStore';
 import { woocommerceService } from '../services/woocommerceService';
 import { useAuth } from '../hooks/useAuth';
 import { useOrder } from '../contexts/OrderContext';
-import { analyticsService } from '../services/analyticsService';
 import { checkoutTrackingService } from '../services/checkoutTrackingService';
-import { fakeOrderBlockingService } from '../services/fakeOrderBlockingService';
+// import { fakeOrderBlockingService } from '../services/fakeOrderBlockingService'; // Permanently removed
 import { pixelConfirmationService } from '../services/pixelConfirmationService';
+import { pixelYourSiteService } from '../services/pixelYourSiteService';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
+import toast from 'react-hot-toast';
 
 const Checkout = () => {
   const { items, totalPrice, clearCart } = useCartStore();
@@ -69,7 +70,7 @@ const Checkout = () => {
       setSessionId(newSessionId);
       hasTrackedStart.current = true;
 
-      analyticsService.trackCheckoutStart({
+      pixelYourSiteService.trackCheckoutStart({
         value: totalPrice + deliveryCharge,
         currency: 'BDT',
         contents: items.map(item => ({
@@ -77,7 +78,6 @@ const Checkout = () => {
           quantity: item.quantity,
           item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
         })),
-        content_type: 'product',
       });
     }
   }, [items, formData, totalPrice]);
@@ -91,7 +91,7 @@ const Checkout = () => {
     });
   };
 
-  const getIP = (): string => localStorage.getItem('userIP') || 'unknown';
+  // const getIP = (): string => localStorage.getItem('userIP') || 'unknown'; // Not needed without fake order blocking
 
   const validateCoupon = async () => {
     if (!couponCode.trim()) {
@@ -109,6 +109,13 @@ const Checkout = () => {
       
       if (!couponData) {
         setCouponError('Invalid coupon code');
+        setIsCouponLoading(false);
+        return false;
+      }
+
+      // Special handling for wcbd5 coupon - check minimum amount of 2999
+      if (couponCode.trim().toLowerCase() === 'wcbd5' && totalPrice < 2999) {
+        setCouponError('Minimum purchase of BDT 2999 required for this coupon code');
         setIsCouponLoading(false);
         return false;
       }
@@ -144,24 +151,50 @@ const Checkout = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const orderForFraudCheck = {
-      name: formData.name,
-      address1: formData.address1,
-      state: formData.district,
-      phone: formData.phone,
-      email: formData.email,
-      items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
-      total: totalPrice + deliveryCharge,
-      ip: getIP(),
-      timestamp: Date.now(),
-    };
-
-    const fraudResult = fakeOrderBlockingService.processOrder(orderForFraudCheck);
-    if (fraudResult.shouldBlock) {
-      alert(`Order blocked: ${fraudResult.reasons.join(', ')}`);
+    // Perform validation before submitting
+    if (!formData.name.trim()) {
+      toast.error('Please enter your full name');
       setIsLoading(false);
       return;
     }
+
+    if (!formData.address1.trim()) {
+      toast.error('Please enter your address');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.district.trim()) {
+      toast.error('Please select your district');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.phone.trim() || formData.phone.length < 10) {
+      toast.error('Please enter a valid phone number (at least 10 digits)');
+      setIsLoading(false);
+      return;
+    }
+
+    // Fake order blocking system has been removed
+    // const orderForFraudCheck = {
+    //   name: formData.name,
+    //   address1: formData.address1,
+    //   state: formData.district,
+    //   phone: formData.phone,
+    //   email: formData.email,
+    //   items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
+    //   total: totalPrice + deliveryCharge,
+    //   ip: getIP(),
+    //   timestamp: Date.now(),
+    // };
+    //
+    // const fraudResult = fakeOrderBlockingService.processOrder(orderForFraudCheck);
+    // if (fraudResult.shouldBlock) {
+    //   alert(`Order blocked: ${fraudResult.reasons.join(', ')}`);
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     const orderData: any = {
       payment_method: formData.paymentMethod,
@@ -173,7 +206,6 @@ const Checkout = () => {
         state: formData.billingAddressSame ? formData.district : formData.billingDistrict,
         country: formData.countryCode,
         phone: formData.phone,
-        email: formData.email,
       },
       shipping: {
         first_name: formData.name,
@@ -192,6 +224,10 @@ const Checkout = () => {
       customer_note: formData.notes,
     };
 
+    if (formData.email) {
+      orderData.billing.email = formData.email;
+    }
+
     // Add coupon code if one is applied
     if (appliedCoupon) {
       orderData.coupon_lines = [
@@ -204,45 +240,77 @@ const Checkout = () => {
     if (isAuthenticated && user) orderData.customer_id = user.id;
 
     try {
+      // Attempt to create order with additional error handling for mobile
       const newOrder = await woocommerceService.createOrder(orderData);
 
       if (newOrder?.id) {
-        analyticsService.trackPurchase({
-          value: totalPrice + deliveryCharge,
-          currency: 'BDT',
-          contents: items.map(item => ({
-            id: item.product.id,
-            quantity: item.quantity,
-            item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
-          })),
-          content_type: 'product',
-        }, newOrder.id.toString());
+        // Track purchase after successful order creation
+        // Wrap tracking in try-catch to prevent tracking errors from affecting order placement
+        try {
+          pixelYourSiteService.trackPurchase({
+            value: totalPrice + deliveryCharge,
+            currency: 'BDT',
+            contents: items.map(item => ({
+              id: item.product.id,
+              quantity: item.quantity,
+              item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
+            })),
+            order_id: newOrder.id.toString(),
+          });
+        } catch (trackingError) {
+          console.error('Pixel tracking error (purchase):', trackingError);
+          // Continue with order placement despite tracking error
+        }
 
-        pixelConfirmationService.trackOrder({
-          orderId: newOrder.id.toString(),
-          value: totalPrice + deliveryCharge,
-          currency: 'BDT',
-          contents: items.map(item => ({
-            id: item.product.id,
-            quantity: item.quantity,
-            item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
-          })),
-          phone: formData.phone,
-          customerName: formData.name,
-          email: formData.email,
-          timestamp: Date.now(),
-        });
+        try {
+          pixelConfirmationService.trackOrder({
+            orderId: newOrder.id.toString(),
+            value: totalPrice + deliveryCharge,
+            currency: 'BDT',
+            contents: items.map(item => ({
+              id: item.product.id,
+              quantity: item.quantity,
+              item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
+            })),
+            phone: formData.phone,
+            customerName: formData.name,
+            email: formData.email,
+            timestamp: Date.now(),
+          });
+        } catch (trackingError) {
+          console.error('Pixel confirmation tracking error:', trackingError);
+          // Continue with order placement despite tracking error
+        }
       }
 
       if (sessionId) checkoutTrackingService.trackCheckoutComplete(sessionId);
 
-      alert('Order placed successfully!');
+      toast.success('Order placed successfully!');
       clearCart();
       refreshOrders && await refreshOrders();
       navigate(ROUTES.ORDER_SUCCESS, { state: { order: newOrder, total: totalPrice } });
-    } catch (error) {
-      console.error(error);
-      alert('Failed to place order. Please try again.');
+    } catch (error: any) {
+      console.error('Order placement error details:', {
+        error: error,
+        message: error?.message,
+        name: error?.name,
+        status: error?.status,
+        response: error?.response
+      });
+      
+      // Check if the error is related to API configuration or network issues
+      if (error.message && (error.message.includes('HTTP error') || error.message.includes('401') || error.message.includes('authentication'))) {
+        toast.error('Failed to place order: API authentication issue. Please check WooCommerce API configuration.');
+      } else if (error.message && error.message.includes('404')) {
+        toast.error('Failed to place order: API endpoint not found. Please check WooCommerce API configuration.');
+      } else if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+        toast.error('Failed to place order: Network connection issue. Please check your internet connection and try again.');
+      } else {
+        // Give more detailed feedback for debugging without exposing sensitive information
+        toast.error(`Failed to place order. Please try again. Error: ${error.message}`);
+        // Log more details for debugging
+        console.log(`API request failed. URL might be: ${import.meta.env.VITE_WC_API_URL || import.meta.env.VITE_WP_API_URL}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -250,7 +318,7 @@ const Checkout = () => {
 
   if (items.length === 0) {
     return (
-      <div className="bg-white py-10">
+      <div className="bg-white py-10 pb-24 lg:pb-10">
         <div className="container mx-auto max-w-7xl p-4">
           <h1 className="text-3xl font-bold mb-6">Checkout</h1>
           <p className="text-lg">Your cart is empty. Please add items to checkout.</p>
@@ -260,7 +328,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="bg-white py-10">
+    <div className="bg-white py-10 pb-24 lg:pb-10">
       <div className="container mx-auto max-w-7xl p-4">
         <h1 className="text-3xl font-bold mb-6">Checkout</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -288,12 +356,12 @@ const Checkout = () => {
                       value="BD"
                       onChange={handleChange}
                       autoComplete="shipping country" 
-                      className="w-full px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                      className="w-full px-4 py-3 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white min-h-[52px]"
                     >
                       <option value="BD">Bangladesh</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+                      <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                         <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                       </svg>
                     </div>
@@ -314,7 +382,7 @@ const Checkout = () => {
                     value={formData.name}
                     onChange={handleChange}
                     autoComplete="shipping name" 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[52px]"
                   />
                 </div>
                 
@@ -337,7 +405,7 @@ const Checkout = () => {
                     value={formData.address1}
                     onChange={handleChange}
                     autoComplete="shipping address-line1" 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[52px]"
                   />
                 </div>
                 
@@ -355,7 +423,7 @@ const Checkout = () => {
                       value={formData.district}
                       onChange={handleChange}
                       autoComplete="shipping address-level1" 
-                      className="w-full px-4 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                      className="w-full px-4 py-3 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white min-h-[52px]"
                     >
                       <option value="" hidden disabled>&nbsp;</option>
                       <option value="dhaka">Dhaka</option>
@@ -423,8 +491,8 @@ const Checkout = () => {
                       <option value="sherpur">Sherpur</option>
                       <option value="netrokona">Netrokona</option>
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+                      <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                         <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                       </svg>
                     </div>
@@ -460,6 +528,8 @@ const Checkout = () => {
       placeholder="1XXXXXXXXX"
       required
       type="tel"
+      inputMode="numeric"
+      pattern="[0-9]{10,11}"
       aria-required="true"
       value={formData.phone}
       onChange={(e) => {
@@ -469,12 +539,12 @@ const Checkout = () => {
           if (sessionId) checkoutTrackingService.trackFormChange(sessionId, { ...formData, phone: value });
         }
       }}
-      pattern="[0-9]{10,11}"
       title="Enter a valid Bangladeshi phone number (without +880) - 10 or 11 digits"
       autoComplete="tel-national"
-      className="w-full px-4 py-2 focus:outline-none text-gray-800"
+      className="w-full px-4 py-3 focus:outline-none text-gray-800 min-h-[52px]"
     />
   </div>
+  <p className="mt-1 text-xs text-gray-500">Enter your phone number without the +880 prefix</p>
 </div>
 
                 
@@ -487,11 +557,12 @@ const Checkout = () => {
                     name="email" 
                     placeholder="Email (optional)" 
                     type="email" 
+                    inputMode="email"
                     aria-required="false" 
                     value={formData.email}
                     onChange={handleChange}
                     autoComplete="shipping email" 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[52px]"
                   />
                 </div>
                 
@@ -620,7 +691,7 @@ const Checkout = () => {
                           type="text" 
                           value={formData.billingName || ''} // Use billing name if available
                           onChange={(e) => setFormData(prev => ({...prev, billingName: e.target.value}))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[52px]"
                         />
                       </div>
                       
@@ -635,7 +706,7 @@ const Checkout = () => {
                           type="text" 
                           value={formData.billingAddress1 || ''} // Use billing address if available
                           onChange={(e) => setFormData(prev => ({...prev, billingAddress1: e.target.value}))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[52px]"
                         />
                       </div>
                       
@@ -648,7 +719,7 @@ const Checkout = () => {
                           id="billing-district"
                           value={formData.billingDistrict || ''} // Use billing district if available
                           onChange={(e) => setFormData(prev => ({...prev, billingDistrict: e.target.value}))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[52px]"
                         >
                           <option value="" hidden disabled>&nbsp;</option>
                           <option value="dhaka">Dhaka</option>
@@ -726,9 +797,25 @@ const Checkout = () => {
               <div className="hidden lg:block">
                 <button
                   type="submit"
-                  form="checkoutForm"
                   disabled={isLoading}
-                  className="w-full py-4 bg-black text-white font-bold uppercase"
+                  className="w-full py-4 bg-black text-white font-bold uppercase text-base"
+                >
+                  {isLoading ? 'Processing...' : `Pay BDT 
+                    ${appliedCoupon 
+                      ? (appliedCoupon.discount_type === 'percent' 
+                          ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100) + deliveryCharge).toFixed(2)
+                          : (totalPrice - parseFloat(appliedCoupon.amount) + deliveryCharge).toFixed(2))
+                      : (totalPrice + deliveryCharge).toFixed(2)
+                    }`}
+                </button>
+              </div>
+
+              {/* Mobile pay button */}
+              <div className="lg:hidden mt-4 fixed bottom-0 left-0 right-0 z-10 bg-white p-4 border-t">
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-4 bg-black text-white font-bold uppercase text-base"
                 >
                   {isLoading ? 'Processing...' : `Pay BDT 
                     ${appliedCoupon 
@@ -792,24 +879,6 @@ const Checkout = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Mobile pay button */}
-        <div className="lg:hidden mt-4">
-          <button
-            type="submit"
-            form="checkoutForm"
-            disabled={isLoading}
-            className="w-full py-4 bg-black text-white font-bold uppercase"
-          >
-            {isLoading ? 'Processing...' : `Pay BDT 
-              ${appliedCoupon 
-                ? (appliedCoupon.discount_type === 'percent' 
-                    ? (totalPrice - (totalPrice * parseFloat(appliedCoupon.amount) / 100) + deliveryCharge).toFixed(2)
-                    : (totalPrice - parseFloat(appliedCoupon.amount) + deliveryCharge).toFixed(2))
-                : (totalPrice + deliveryCharge).toFixed(2)
-              }`}
-          </button>
         </div>
       </div>
     </div>

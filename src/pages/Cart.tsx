@@ -150,7 +150,7 @@ const Cart = () => {
               </div>
               
               <button 
-                className="w-full mt-6 py-3 bg-black text-white uppercase"
+                className="w-full mt-6 py-3 bg-black text-white uppercase text-base"
                 onClick={handleCheckout}
               >
                 Proceed to Checkout

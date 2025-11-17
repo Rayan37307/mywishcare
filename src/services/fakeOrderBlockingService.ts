@@ -70,11 +70,20 @@ class FakeOrderBlockingService {
         order.timestamp > Date.now() - (60 * 60 * 1000) // Last hour
       );
       
-      if (recentOrders.length >= this.ORDER_RATE_THRESHOLD) {
+      // Be more lenient with mobile networks which share IPs
+      // Increase threshold for IP-based blocking to account for shared mobile IPs
+      const mobileAdjustedThreshold = this.ORDER_RATE_THRESHOLD * 10; // 50 orders instead of 5
+      
+      if (recentOrders.length >= mobileAdjustedThreshold) {
         results.isSuspicious = true;
         results.confidence = Math.min(results.confidence + 0.8, 1);
         results.reasons.push(`High order rate from IP: ${recentOrders.length} orders in last hour`);
         results.shouldBlock = true;
+      } else if (recentOrders.length >= this.ORDER_RATE_THRESHOLD) {
+        // For orders between original threshold and mobile-adjusted threshold, add to suspicion but don't block
+        results.isSuspicious = true;
+        results.confidence = Math.min(results.confidence + 0.3, 1);
+        results.reasons.push(`Moderate order rate from IP: ${recentOrders.length} orders in last hour (above normal threshold but within mobile threshold)`);
       }
     }
     

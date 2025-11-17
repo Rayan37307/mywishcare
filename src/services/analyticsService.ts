@@ -210,7 +210,7 @@ class AnalyticsService {
   // Track successful purchase
   trackPurchase(checkoutData: CheckoutTrackingData, orderId?: string): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'purchase', {
@@ -302,6 +302,12 @@ class AnalyticsService {
         var s = b.getElementsByTagName(e)[0];
         if (s && s.parentNode) {
           s.parentNode.insertBefore(t, s);
+        } else {
+          // Fallback: append to head if we can't find a parent
+          var head = b.head || b.getElementsByTagName('head')[0];
+          if (head) {
+            head.appendChild(t);
+          }
         }
       })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
       
@@ -356,8 +362,14 @@ class AnalyticsService {
             });
           };
           var a = d.getElementsByTagName(t)[0];
-          if (a.parentNode) {
+          if (a && a.parentNode) {
             a.parentNode.insertBefore(o, a);
+          } else {
+            // Fallback: append to head if we can't find a parent
+            var head = d.head || d.getElementsByTagName('head')[0];
+            if (head) {
+              head.appendChild(o);
+            }
           }
         };
       })(window, document, 'ttq');

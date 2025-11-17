@@ -38,7 +38,9 @@ const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'))
 const SearchPage = lazy(() => import('./pages/SearchPage'))
 const APIDebugPage = lazy(() => import('./pages/APIDebugPage'))
 const TestPage = lazy(() => import('./pages/TestPage'))
+const PixelTestPage = lazy(() => import('./pages/PixelTestPage'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
+const IncompletePurchases = lazy(() => import('./pages/IncompletePurchases'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 // Component imports
@@ -180,7 +182,9 @@ const App = () => {
                           />
                           <Route path={ROUTES.API_DEBUG} element={<APIDebugPage />} />
                           <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
+                          <Route path="/pixel-test" element={<PixelTestPage />} />
                           <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
+                          <Route path="/incomplete-purchases" element={<IncompletePurchases />} />
                           
                           {/* Password Reset Route */}
                           <Route path="/reset-password" element={<PasswordReset />} />
@@ -265,6 +269,11 @@ const App = () => {
                 background: '#363636',
                 color: '#fff',
               },
+              duration: 4000, // Auto-dismiss after 4 seconds
+            }}
+            containerStyle={{
+              top: 20,
+              right: 20,
             }}
           />
         </OrderProvider>

@@ -5,6 +5,7 @@ import { useProductStore } from "../store/productStore";
 import { Link } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
 import NoProductsFound from "./NoProductsFound";
+import { pixelYourSiteService } from "../services/pixelYourSiteService";
 
 interface CartSlideProps {
   isOpen: boolean;
@@ -194,12 +195,21 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                       <div className="mt-2 flex gap-2 items-center">
                         <button
                           className="px-2 py-1 border border-gray-300 rounded-md"
-                          onClick={() =>
+                          onClick={() => {
                             updateQuantity(
                               item.product.id,
                               item.quantity - 1
-                            )
-                          }
+                            );
+                            // Track when quantity changes
+                            pixelYourSiteService.trackAddToCart({
+                              product_id: item.product.id,
+                              product_name: item.product.name,
+                              product_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+                              currency: 'BDT',
+                              quantity: item.quantity - 1,
+                              value: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')) * (item.quantity - 1),
+                            });
+                          }}
                         >
                           -
                         </button>
@@ -212,12 +222,21 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                               ? 'opacity-50 cursor-not-allowed'
                               : ''
                           }`}
-                          onClick={() =>
+                          onClick={() => {
                             updateQuantity(
                               item.product.id,
                               item.quantity + 1
-                            )
-                          }
+                            );
+                            // Track when quantity changes
+                            pixelYourSiteService.trackAddToCart({
+                              product_id: item.product.id,
+                              product_name: item.product.name,
+                              product_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+                              currency: 'BDT',
+                              quantity: item.quantity + 1,
+                              value: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')) * (item.quantity + 1),
+                            });
+                          }}
                           disabled={
                             item.product.manage_stock && 
                             item.product.stock_quantity !== null && 
@@ -228,7 +247,19 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                         </button>
                         <button
                           className="ml-auto text-red-500 text-sm sm:text-base"
-                          onClick={() => removeItem(item.product.id)}
+                          onClick={() => {
+                            const removedProduct = items.find(i => i.product.id === item.product.id);
+                            if (removedProduct) {
+                              pixelYourSiteService.trackCustomEvent('remove_from_cart', {
+                                product_id: removedProduct.product.id,
+                                product_name: removedProduct.product.name,
+                                value: parseFloat(removedProduct.product.price.replace(/[^\\d.-]/g, '')) * removedProduct.quantity,
+                                quantity: removedProduct.quantity,
+                                currency: 'BDT',
+                              });
+                            }
+                            removeItem(item.product.id);
+                          }}
                         >
                           Remove
                         </button>
@@ -299,6 +330,14 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                             className="w-full py-1.5 bg-[#D4F871] uppercase rounded-md border border-black text-[10px] sm:text-[11px] flex justify-center items-center gap-1 mt-auto"
                             onClick={(e) => {
                               e.preventDefault();
+                              pixelYourSiteService.trackAddToCart({
+                                product_id: product.id,
+                                product_name: product.name,
+                                product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                                currency: 'BDT',
+                                quantity: 1,
+                                value: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                              });
                               addItem(product, 1);
                             }}
                           >
@@ -318,6 +357,18 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                 <Link
                   to="/checkout"
                   onClick={() => {
+                    // Track checkout start with cart contents
+                    if (items.length > 0) {
+                      pixelYourSiteService.trackCheckoutStart({
+                        value: totalPrice,
+                        currency: 'BDT',
+                        contents: items.map(item => ({
+                          id: item.product.id,
+                          quantity: item.quantity,
+                          item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+                        })),
+                      });
+                    }
                     closeAllSidebars();
                     onClose();
                   }}

@@ -1,7 +1,7 @@
 // services/productTrackingService.ts
 // Service for tracking products in real-time
 
-import { analyticsService } from './analyticsService';
+import { pixelYourSiteService } from './pixelYourSiteService';
 
 export interface ProductTrackingOptions {
   trackViews: boolean;
@@ -42,12 +42,12 @@ class ProductTrackingService {
       product_id: productId,
       product_name: productName,
       product_category: category,
-      price,
+      product_price: price,
       currency: 'INR', // Default to Indian currency
       value: price,
     };
     
-    analyticsService.trackProductView(productData);
+    pixelYourSiteService.trackProductView(productData);
     
     // Store in our local tracking
     this.trackedProducts.set(productId, {
@@ -67,17 +67,14 @@ class ProductTrackingService {
   trackProductClick(productId: string | number, productName: string, price: number, category?: string): void {
     if (!this.options.trackClicks) return;
     
-    // Track as a custom event
-    analyticsService.trackEvent({
-      eventName: 'product_click',
-      parameters: {
-        product_id: productId,
-        product_name: productName,
-        product_category: category,
-        price,
-        currency: 'INR',
-        timestamp: new Date().toISOString(),
-      },
+    // Track as a custom event through PixelYourSite
+    pixelYourSiteService.trackCustomEvent('product_click', {
+      product_id: productId,
+      product_name: productName,
+      product_category: category,
+      price,
+      currency: 'INR',
+      timestamp: new Date().toISOString(),
     });
   }
   
@@ -89,13 +86,13 @@ class ProductTrackingService {
       product_id: productId,
       product_name: productName,
       product_category: category,
-      price,
+      product_price: price,
       currency: 'INR',
       quantity,
       value: price * quantity,
     };
     
-    analyticsService.trackAddToCart(productData);
+    pixelYourSiteService.trackAddToCart(productData);
   }
   
   // Track that a product was purchased
@@ -110,10 +107,10 @@ class ProductTrackingService {
         quantity,
         item_price: price,
       }],
-      content_type: 'product',
+      order_id: orderId,
     };
     
-    analyticsService.trackPurchase(checkoutData, orderId);
+    pixelYourSiteService.trackPurchase(checkoutData);
     
     // Optionally store in local tracking
     this.trackedProducts.set(productId, {

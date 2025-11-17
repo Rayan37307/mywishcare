@@ -1,7 +1,7 @@
 // services/checkoutTrackingService.ts
 // Service for tracking checkout abandonment (users who fill form but don't submit)
 
-import { analyticsService, type CheckoutTrackingData } from './analyticsService';
+import { pixelYourSiteService, type PixelYourSiteCheckoutData } from './pixelYourSiteService';
 
 export interface CheckoutFormState {
   email: string;
@@ -54,7 +54,7 @@ class CheckoutTrackingService {
     this.activeCheckouts.set(sessionId, formData);
     
     // Prepare checkout tracking data
-    const checkoutData: CheckoutTrackingData = {
+    const checkoutData: PixelYourSiteCheckoutData = {
       value,
       currency: 'INR',
       contents: cartItems.map(item => ({
@@ -62,11 +62,10 @@ class CheckoutTrackingService {
         quantity: item.quantity,
         item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
       })),
-      content_type: 'product',
     };
     
     // Track the checkout start event
-    analyticsService.trackCheckoutStart(checkoutData);
+    pixelYourSiteService.trackCheckoutStart(checkoutData);
     
     // Set a timer to track potential abandonment
     setTimeout(() => {
@@ -145,7 +144,7 @@ class CheckoutTrackingService {
     this.abandonedCheckouts.push(abandonedCheckout);
     
     // Track abandonment event
-    const checkoutData: CheckoutTrackingData = {
+    const checkoutData: PixelYourSiteCheckoutData = {
       value,
       currency: 'INR',
       contents: cartItems.map(item => ({
@@ -155,7 +154,11 @@ class CheckoutTrackingService {
       })),
     };
     
-    analyticsService.trackCheckoutAbandonment(checkoutData);
+    // Track as a custom checkout abandonment event through PixelYourSite
+    pixelYourSiteService.trackCustomEvent('checkout_abandoned', {
+      ...checkoutData,
+      timestamp: new Date().toISOString(),
+    });
     
     // Store in localStorage temporarily for retrieval later
     this.saveAbandonedCheckouts();

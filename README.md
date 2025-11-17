@@ -1,73 +1,212 @@
-# React + TypeScript + Vite
+# MyWishCare - React Frontend with WordPress Backend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the React frontend for the MyWishCare application, designed to integrate with a WordPress backend using JWT authentication and comprehensive tracking analytics.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 with TypeScript
+- WordPress integration via REST API
+- JWT authentication system
+- OTP (One-Time Password) authentication
+- Client-side and Server-side Meta Pixel tracking
+- Google Analytics 4 integration
+- TikTok Pixel integration
+- WooCommerce integration
+- Responsive design with Tailwind CSS
+- Modern UI with animations using GSAP
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js (v18 or higher)
+- pnpm package manager
+- WordPress site with JWT Authentication plugin
+- Meta Pixel ID and Access Token
+- Google Analytics 4 Measurement ID
+- TikTok Pixel ID
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Clone the Repository
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone <your-repo-url>
+cd mywishcare
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install Dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
 ```
+
+### 3. Environment Configuration
+
+Copy the `.env.example` file to `.env` and update the values:
+
+```env
+# WordPress API Configuration
+VITE_WP_API_URL=https://yourdomain.com/wp-json
+VITE_WC_API_URL=https://yourdomain.com/wp-json/wc/v3
+
+# WooCommerce API (if using e-commerce features)
+VITE_WC_CONSUMER_KEY=your_consumer_key
+VITE_WC_CONSUMER_SECRET=your_consumer_secret
+
+# Analytics and Tracking
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+VITE_FACEBOOK_PIXEL_ID=XXXXXXXXXXXXXXX
+VITE_TIKTOK_PIXEL_ID=AAAAAAAAAAAA
+
+# Google Gemini API (if using AI features)
+VITE_GEMINI_API_KEY=your_gemini_api_key
+```
+
+## WordPress Backend Setup
+
+### 1. Install Required Plugins
+
+- JWT Authentication for WP REST API
+- WooCommerce (if using e-commerce features)
+
+### 2. Configure JWT Authentication
+
+1. Install and activate the JWT Authentication plugin
+2. Generate a secret key: `openssl rand -base64 32`
+3. Add to your `wp-config.php`:
+```php
+define('JWT_AUTH_SECRET_KEY', 'your-generated-secret-key');
+```
+
+### 3. Server-Side Meta Pixel Setup
+
+Add the server-side tracking functionality to your WordPress theme's `functions.php` file or create a custom plugin using the code from `server-side-meta-pixel-implementation.php`.
+
+Access the admin settings page at `Settings > Meta Pixel` to configure your Meta Pixel ID and Access Token.
+
+## Development
+
+### Start Development Server
+
+```bash
+pnpm dev
+```
+
+### Build for Production
+
+```bash
+pnpm build
+```
+
+### Linting
+
+```bash
+pnpm lint
+```
+
+## Tracking Implementation
+
+The application includes comprehensive tracking capabilities:
+
+### Client-Side Tracking
+- Google Analytics 4
+- Meta Pixel (Facebook)
+- TikTok Pixel
+
+### Server-Side Tracking
+- Meta Pixel server-side events
+- Enhanced e-commerce tracking
+- Better privacy compliance
+- Improved conversion attribution
+
+All tracking is handled through the `pixelYourSiteService` which provides a unified interface for all tracking events.
+
+## Authentication System
+
+### JWT Authentication
+- Standard username/password authentication
+- Token-based sessions
+- Automatic token refresh
+
+### OTP Authentication
+- Email-based one-time passwords
+- Automatic user creation if not exists
+- Secure temporary token storage
+
+## Available Scripts
+
+- `pnpm dev` - Start development server
+- `pnpm build` - Create production build
+- `pnpm lint` - Run ESLint
+- `pnpm preview` - Preview production build
+
+## Project Structure
+
+```
+src/
+├── components/      # React components
+├── config/          # Configuration files
+├── constants/       # Application constants
+├── contexts/        # React contexts
+├── hooks/           # Custom React hooks
+├── pages/           # Page components
+├── services/        # Service implementations
+├── store/           # State management (Zustand)
+├── tests/           # Test files
+├── types/           # TypeScript type definitions
+├── utils/           # Utility functions
+```
+
+## API Integration
+
+The application communicates with WordPress through:
+
+- WordPress REST API
+- WooCommerce REST API (if e-commerce is enabled)
+- Custom endpoints for OTP authentication
+- Server-side Meta Pixel tracking endpoints
+
+## Testing Tracking
+
+A test component is available at `src/components/PixelYourSiteTest.tsx` that allows you to test all tracking events. You can add this component temporarily during development to verify tracking is working correctly.
+
+## Troubleshooting
+
+### WordPress API Issues
+- Ensure REST API endpoints are accessible
+- Check JWT authentication configuration
+- Verify CORS settings if needed
+
+### Tracking Issues
+- Check browser network tab for tracking requests
+- Use Facebook Pixel Helper browser extension
+- Verify server-side tracking in WordPress error logs
+
+## Security Considerations
+
+- Keep JWT secret keys secure
+- Use HTTPS for all API requests
+- Regularly update WordPress and plugins
+- Implement proper input validation
+
+## Deployment
+
+The React application is designed to be built and deployed separately from WordPress, but can be integrated in several ways:
+
+1. Subdirectory integration
+2. Separate domain with API communication
+3. Embedded via iframe (not recommended)
+4. Single-page application approach
+
+For detailed deployment instructions, see `UPLOAD_TO_WORDPRESS.md`.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

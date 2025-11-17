@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import type { CartItem as CartItemType } from '../types/cart';
+import { pixelYourSiteService } from '../services/pixelYourSiteService';
 
 interface CartItemProps {
   item: CartItemType;
@@ -40,6 +41,15 @@ const CartItem = memo(({ item, updateQuantity, removeItem }: CartItemProps) => {
             onClick={() => {
               try {
                 updateQuantity(product.id, quantity - 1);
+                // Track when quantity changes
+                pixelYourSiteService.trackAddToCart({
+                  product_id: product.id,
+                  product_name: product.name,
+                  product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                  currency: 'BDT',
+                  quantity: quantity - 1,
+                  value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * (quantity - 1),
+                });
               } catch (error) {
                 console.error('Error updating quantity:', error);
               }
@@ -53,6 +63,15 @@ const CartItem = memo(({ item, updateQuantity, removeItem }: CartItemProps) => {
             onClick={() => {
               try {
                 updateQuantity(product.id, quantity + 1);
+                // Track when quantity changes
+                pixelYourSiteService.trackAddToCart({
+                  product_id: product.id,
+                  product_name: product.name,
+                  product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                  currency: 'BDT',
+                  quantity: quantity + 1,
+                  value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * (quantity + 1),
+                });
               } catch (error) {
                 console.error('Error updating quantity:', error);
               }
@@ -64,6 +83,13 @@ const CartItem = memo(({ item, updateQuantity, removeItem }: CartItemProps) => {
             className="text-gray-600 underline text-xs sm:text-sm ml-2"
             onClick={() => {
               try {
+                pixelYourSiteService.trackCustomEvent('remove_from_cart', {
+                  product_id: product.id,
+                  product_name: product.name,
+                  value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+                  quantity: quantity,
+                  currency: 'BDT',
+                });
                 removeItem(product.id);
               } catch (error) {
                 console.error('Error removing item:', error);

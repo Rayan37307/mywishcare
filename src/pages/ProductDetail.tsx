@@ -15,6 +15,7 @@ import { getImageUrlFromId } from '../utils/imageUtils';
 import type { Product } from '../types/product';
 import { CheckCircleIcon } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
+import { pixelYourSiteService } from '../services/pixelYourSiteService';
 
 const ProductDetail = () => {
   const { id, slug } = useParams<{ id?: string; slug?: string }>();
@@ -32,6 +33,16 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (product) {
+      // Track add to cart with PixelYourSite
+      pixelYourSiteService.trackAddToCart({
+        product_id: product.id,
+        product_name: product.name,
+        product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+        currency: 'BDT',
+        quantity: quantity,
+        value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+      });
+      
       // The stock check is now handled in the cart store
       addItem(product, quantity);
     }
@@ -39,6 +50,16 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (product) {
+      // Track add to cart for immediate purchase
+      pixelYourSiteService.trackAddToCart({
+        product_id: product.id,
+        product_name: product.name,
+        product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+        currency: 'BDT',
+        quantity: quantity,
+        value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+      });
+      
       // Add product to cart and set navigation flag
       // The stock check is now handled in the cart store
       addItem(product, quantity);
@@ -88,10 +109,9 @@ const ProductDetail = () => {
     const getProduct = async () => {
       if (!id && !slug) return;
       
+      let fetchedProduct: Product | null = null;
       setLoading(true);
       try {
-        let fetchedProduct: Product | null = null;
-        
         if (slug) {
           // Try to fetch by slug first
           fetchedProduct = await fetchProductBySlug(slug);
@@ -115,6 +135,17 @@ const ProductDetail = () => {
       } finally {
         setLoading(false);
         setLoadingState(false);
+        
+        // Track product view after loading
+        if (fetchedProduct) {
+          pixelYourSiteService.trackProductView({
+            product_id: fetchedProduct.id,
+            product_name: fetchedProduct.name,
+            product_price: parseFloat(fetchedProduct.price.replace(/[^\\d.-]/g, '')),
+            currency: 'BDT',
+            value: parseFloat(fetchedProduct.price.replace(/[^\\d.-]/g, '')),
+          });
+        }
       }
     };
     getProduct();
