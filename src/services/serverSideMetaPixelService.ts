@@ -249,6 +249,12 @@ export const serverSideMetaPixelService = new ServerSideMetaPixelService();
 // Initialize the service when imported
 serverSideMetaPixelService.initialize();
 
+// Also make the service available globally for backward compatibility
+if (typeof window !== 'undefined') {
+  (window as any).serverSideMetaPixelService = serverSideMetaPixelService;
+}
+(globalThis as any).serverSideMetaPixelService = serverSideMetaPixelService;
+
 // Export for use in other parts of the application
 export type { 
   MetaPixelUserData, 
