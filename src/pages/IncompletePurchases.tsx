@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { woocommerceService, Order } from '../services/woocommerceService';
+import { woocommerceService,  } from '../services/woocommerceService';
+import type { Order } from '../services/woocommerceService';
 
 const IncompletePurchasesPage = () => {
   const [password, setPassword] = useState('');
