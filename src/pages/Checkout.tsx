@@ -41,6 +41,32 @@ const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const hasTrackedStart = useRef(false);
+  const formSubmitted = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (!formSubmitted.current && items.length > 0) {
+        const orderData: any = {
+          billing: {
+            first_name: formData.name,
+            address_1: formData.address1,
+            state: formData.district,
+            country: formData.countryCode,
+            phone: formData.phone,
+            email: formData.email,
+          },
+          shipping: {
+            first_name: formData.name,
+            address_1: formData.address1,
+            state: formData.district,
+            country: formData.countryCode,
+          },
+          line_items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
+        };
+        woocommerceService.createIncompleteOrder(orderData);
+      }
+    };
+  }, [formData, items]);
 
   // Removed automatic order creation on form changes to prevent unwanted orders
   // useEffect(() => {
@@ -314,6 +340,7 @@ const Checkout = () => {
       toast.success('Order placed successfully!');
       clearCart();
       refreshOrders && await refreshOrders();
+      formSubmitted.current = true;
       navigate(ROUTES.ORDER_SUCCESS, { state: { order: newOrder, total: totalPrice } });
     } catch (error: any) {
       console.error('Order placement error details:', {
