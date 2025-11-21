@@ -42,6 +42,32 @@ const Checkout = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const hasTrackedStart = useRef(false);
 
+  // Removed automatic order creation on form changes to prevent unwanted orders
+  // useEffect(() => {
+  //   return () => {
+  //     if (!formSubmitted.current && items.length > 0) {
+  //       const orderData: any = {
+  //         billing: {
+  //           first_name: formData.name,
+  //           address_1: formData.address1,
+  //           state: formData.district,
+  //           country: formData.countryCode,
+  //           phone: formData.phone,
+  //           email: formData.email,
+  //         },
+  //         shipping: {
+  //           first_name: formData.name,
+  //           address_1: formData.address1,
+  //           state: formData.district,
+  //           country: formData.countryCode,
+  //         },
+  //         line_items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
+  //       };
+  //       woocommerceService.createIncompleteOrder(orderData);
+  //     }
+  //   };
+  // }, [formData, items]);
+
   // Calculate delivery charge based on selected district
   const deliveryCharge = 
     formData.district.toLowerCase() === 'dhaka' ? 61 : 

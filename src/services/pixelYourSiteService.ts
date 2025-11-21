@@ -4,6 +4,7 @@
 // Now includes both client-side and server-side Meta Pixel tracking
 
 import { analyticsService } from './analyticsService';
+import { serverSideMetaPixelService } from './serverSideMetaPixelService';
 
 // Types for PixelYourSite events
 interface PixelYourSiteProductData {
@@ -79,10 +80,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackPageView(pageTitle, pageUrl, userData);
-      }
+      serverSideMetaPixelService.trackPageView(pageTitle, pageUrl, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -105,10 +103,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackProductView(productData, userData);
-      }
+      serverSideMetaPixelService.trackProductView(productData, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -131,10 +126,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackAddToCart(productData, userData);
-      }
+      serverSideMetaPixelService.trackAddToCart(productData, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -154,14 +146,11 @@ class PixelYourSiteService {
       
       // Also track with server-side Meta Pixel (if available)
       try {
-        const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-        if (serverPixelService) {
-          serverPixelService.trackCheckoutStart({
-            value: cartData.value,
-            currency: cartData.currency,
-            contents: cartData.contents,
-          }, userData);
-        }
+        serverSideMetaPixelService.trackCheckoutStart({
+          value: cartData.value,
+          currency: cartData.currency,
+          contents: cartData.contents,
+        }, userData);
       } catch (e) {
         // Server-side tracking not available
       }
@@ -181,10 +170,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackCheckoutStart(checkoutData, userData);
-      }
+      serverSideMetaPixelService.trackCheckoutStart(checkoutData, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -204,16 +190,13 @@ class PixelYourSiteService {
     // Also track with server-side Meta Pixel (if available)
     if (checkoutData.order_id) {
       try {
-        const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-        if (serverPixelService) {
-          serverPixelService.trackPurchase(
-            checkoutData.order_id,
-            checkoutData.value,
-            checkoutData.currency,
-            checkoutData.contents,
-            userData
-          );
-        }
+        serverSideMetaPixelService.trackPurchase(
+          checkoutData.order_id,
+          checkoutData.value,
+          checkoutData.currency,
+          checkoutData.contents,
+          userData
+        );
       } catch (e) {
         // Server-side tracking not available
       }
@@ -235,10 +218,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackSearch(searchTerm, resultsCount, userData);
-      }
+      serverSideMetaPixelService.trackSearch(searchTerm, resultsCount, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -256,10 +236,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackLead(formData, userData);
-      }
+      serverSideMetaPixelService.trackLead(formData, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -277,14 +254,11 @@ class PixelYourSiteService {
 
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackEvent({
-          event_name: eventName,
-          custom_data: parameters,
-          user_data: userData,
-        });
-      }
+      serverSideMetaPixelService.trackEvent({
+        event_name: eventName,
+        custom_data: parameters,
+        user_data: userData,
+      });
     } catch (e) {
       // Server-side tracking not available
     }
@@ -313,10 +287,7 @@ class PixelYourSiteService {
     // For server-side, we'll track as a custom event or ViewContent if single product
     if (products && products.length === 1) {
       try {
-        const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-        if (serverPixelService) {
-          serverPixelService.trackProductView(products[0], userData);
-        }
+        serverSideMetaPixelService.trackProductView(products[0], userData);
       } catch (e) {
         // Server-side tracking not available
       }
@@ -343,10 +314,7 @@ class PixelYourSiteService {
     
     // For server-side, log as ViewContent since there's no direct equivalent
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackProductView(productData, userData);
-      }
+      serverSideMetaPixelService.trackProductView(productData, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -367,13 +335,10 @@ class PixelYourSiteService {
     
     // For server-side, we'll track as InitiateCheckout at step 1, AddPaymentInfo at payment step, etc.
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        if (step === 1) {
-          serverPixelService.trackCheckoutStart(checkoutData, userData);
-        } else if (step === 3) { // Assuming step 3 is payment info
-          serverPixelService.trackAddPaymentInfo(checkoutData, userData);
-        }
+      if (step === 1) {
+        serverSideMetaPixelService.trackCheckoutStart(checkoutData, userData);
+      } else if (step === 3) { // Assuming step 3 is payment info
+        serverSideMetaPixelService.trackAddPaymentInfo(checkoutData, userData);
       }
     } catch (e) {
       // Server-side tracking not available
@@ -394,10 +359,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel (if available)
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackAddPaymentInfo(checkoutData, userData);
-      }
+      serverSideMetaPixelService.trackAddPaymentInfo(checkoutData, userData);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -417,10 +379,11 @@ class PixelYourSiteService {
     
     // For server-side, we can track as a custom event
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackCustomEvent('AddShippingInfo', checkoutData, userData);
-      }
+      serverSideMetaPixelService.trackEvent({
+        event_name: 'AddShippingInfo',
+        custom_data: checkoutData,
+        user_data: userData
+      });
     } catch (e) {
       // Server-side tracking not available
     }
@@ -440,10 +403,7 @@ class PixelYourSiteService {
     
     // Also track with server-side Meta Pixel
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackRegistration(userData, method);
-      }
+      serverSideMetaPixelService.trackRegistration(userData, method);
     } catch (e) {
       // Server-side tracking not available
     }
@@ -463,10 +423,11 @@ class PixelYourSiteService {
     
     // For server-side, we'll track as a custom event since there's no direct login event
     try {
-      const serverPixelService = (globalThis as any).serverSideMetaPixelService;
-      if (serverPixelService) {
-        serverPixelService.trackCustomEvent('Login', { method }, userData);
-      }
+      serverSideMetaPixelService.trackEvent({
+        event_name: 'CompleteRegistration',  // Using CompleteRegistration as closest equivalent to login
+        custom_data: { method },
+        user_data: userData
+      });
     } catch (e) {
       // Server-side tracking not available
     }
