@@ -75,10 +75,10 @@ class PixelYourSiteService {
   trackPageView(pageTitle?: string, pageUrl?: string, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackPageView(pageTitle, pageUrl);
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackPageView(pageTitle, pageUrl, userData);
     } catch (e) {
@@ -90,7 +90,7 @@ class PixelYourSiteService {
   trackProductView(productData: PixelYourSiteProductData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackProductView({
       product_id: productData.product_id,
       product_name: productData.product_name,
@@ -100,8 +100,8 @@ class PixelYourSiteService {
       quantity: productData.quantity,
       value: productData.value,
     });
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackProductView(productData, userData);
     } catch (e) {
@@ -113,7 +113,7 @@ class PixelYourSiteService {
   trackAddToCart(productData: PixelYourSiteProductData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackAddToCart({
       product_id: productData.product_id,
       product_name: productData.product_name,
@@ -123,8 +123,8 @@ class PixelYourSiteService {
       quantity: productData.quantity,
       value: productData.value,
     });
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackAddToCart(productData, userData);
     } catch (e) {
@@ -161,14 +161,14 @@ class PixelYourSiteService {
   trackCheckoutStart(checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackCheckoutStart({
       value: checkoutData.value,
       currency: checkoutData.currency,
       contents: checkoutData.contents,
     });
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackCheckoutStart(checkoutData, userData);
     } catch (e) {
@@ -180,14 +180,14 @@ class PixelYourSiteService {
   trackPurchase(checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackPurchase({
       value: checkoutData.value,
       currency: checkoutData.currency,
       contents: checkoutData.contents,
     }, checkoutData.order_id);
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     if (checkoutData.order_id) {
       try {
         serverSideMetaPixelService.trackPurchase(
@@ -207,7 +207,7 @@ class PixelYourSiteService {
   trackSearch(searchTerm: string, resultsCount?: number, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackEvent({
       eventName: 'search',
       parameters: {
@@ -215,8 +215,8 @@ class PixelYourSiteService {
         ...(resultsCount !== undefined && { search_results: resultsCount }),
       },
     });
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackSearch(searchTerm, resultsCount, userData);
     } catch (e) {
@@ -228,13 +228,13 @@ class PixelYourSiteService {
   trackLead(formData: any, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackEvent({
       eventName: 'lead',
       parameters: { ...formData },
     });
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackLead(formData, userData);
     } catch (e) {
@@ -246,13 +246,13 @@ class PixelYourSiteService {
   trackCustomEvent(eventName: string, parameters?: Record<string, any>, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackEvent({
       eventName,
       parameters,
     });
 
-    // Also track with server-side Meta Pixel
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackEvent({
         event_name: eventName,
@@ -379,7 +379,11 @@ class PixelYourSiteService {
     
     // For server-side, we can track as a custom event
     try {
-      serverSideMetaPixelService.trackCustomEvent('AddShippingInfo', checkoutData, userData);
+      serverSideMetaPixelService.trackEvent({
+        event_name: 'AddShippingInfo',
+        custom_data: checkoutData,
+        user_data: userData,
+      });
     } catch (e) {
       console.error('Server-side Meta Pixel tracking failed for shipping info:', e);
     }
@@ -389,15 +393,15 @@ class PixelYourSiteService {
   trackRegistration(method: string, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
     
-    // Track with client-side analytics service
+    // Track with client-side analytics service (this handles Meta Pixel, Google Analytics, and TikTok)
     analyticsService.trackEvent({
       eventName: 'sign_up',
       parameters: {
         method: method,
       },
     });
-    
-    // Also track with server-side Meta Pixel
+
+    // Also track with server-side Meta Pixel for enhanced reliability
     try {
       serverSideMetaPixelService.trackRegistration(userData, method);
     } catch (e) {
@@ -419,7 +423,11 @@ class PixelYourSiteService {
     
     // For server-side, we'll track as a custom event since there's no direct login event
     try {
-      serverSideMetaPixelService.trackCustomEvent('Login', { method }, userData);
+      serverSideMetaPixelService.trackEvent({
+        event_name: 'Login',
+        custom_data: { method },
+        user_data: userData,
+      });
     } catch (e) {
       console.error('Server-side Meta Pixel tracking failed for login:', e);
     }

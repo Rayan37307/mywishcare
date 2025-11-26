@@ -24,7 +24,7 @@ const MetaPixelTestComponent: React.FC = () => {
       };
       
       await pixelYourSiteService.trackPageView('Test Page', window.location.href, userData);
-      addToResults('✓ PageView event sent (both client and server-side)');
+      addToResults('✓ PageView event sent (client-side and server-side)');
     } catch (error) {
       addToResults(`✗ PageView failed: ${error}`);
     } finally {
@@ -46,7 +46,7 @@ const MetaPixelTestComponent: React.FC = () => {
         currency: 'USD',
         value: 29.99
       }, userData);
-      addToResults('✓ ProductView event sent (both client and server-side)');
+      addToResults('✓ ProductView event sent (client-side and server-side)');
     } catch (error) {
       addToResults(`✗ ProductView failed: ${error}`);
     } finally {
@@ -69,7 +69,7 @@ const MetaPixelTestComponent: React.FC = () => {
         value: 29.99,
         quantity: 1
       }, userData);
-      addToResults('✓ AddToCart event sent (both client and server-side)');
+      addToResults('✓ AddToCart event sent (client-side and server-side)');
     } catch (error) {
       addToResults(`✗ AddToCart failed: ${error}`);
     } finally {
@@ -94,7 +94,7 @@ const MetaPixelTestComponent: React.FC = () => {
         }],
         order_id: 'test_order_123'
       }, userData);
-      addToResults('✓ Purchase event sent (both client and server-side)');
+      addToResults('✓ Purchase event sent (client-side and server-side)');
     } catch (error) {
       addToResults(`✗ Purchase failed: ${error}`);
     } finally {
@@ -113,7 +113,7 @@ const MetaPixelTestComponent: React.FC = () => {
         custom_param: 'test_value',
         value: 10.99
       }, userData);
-      addToResults('✓ CustomEvent sent (both client and server-side)');
+      addToResults('✓ CustomEvent sent (client-side and server-side)');
     } catch (error) {
       addToResults(`✗ CustomEvent failed: ${error}`);
     } finally {
@@ -201,7 +201,7 @@ const MetaPixelTestComponent: React.FC = () => {
           <li>Check browser Network tab for client-side events (look for Facebook Pixel requests)</li>
           <li>Check WordPress error logs for server-side events</li>
           <li>Monitor Meta Events Manager for events (server-side events will be marked as such)</li>
-          <li>Use Facebook Pixel Helper browser extension for verification</li>
+          <li>Use Facebook Pixel Helper browser extension to verify both client and server events</li>
         </ul>
       </div>
     </div>

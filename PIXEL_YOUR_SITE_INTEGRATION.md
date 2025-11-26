@@ -39,9 +39,14 @@ Add these variables to your `.env` file:
 ```
 VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 VITE_FACEBOOK_PIXEL_ID=XXXXXXXXXXXXXXX
+VITE_FACEBOOK_TEST_EVENT_CODE=TEST_EVENT_CODE  # Optional: Use for testing Meta Pixel events
 VITE_TIKTOK_PIXEL_ID=AAAAAAAAAAAA
 VITE_WP_API_URL=https://yourdomain.com/wp-json
 ```
+
+### Test Event Support
+
+The service supports Meta Pixel test events by setting the `VITE_FACEBOOK_TEST_EVENT_CODE` environment variable. When this variable is set, all Meta Pixel events (both client and server-side) will include the test event code, ensuring events only appear in your test environment and not in your production analytics.
 
 ### WordPress Setup
 

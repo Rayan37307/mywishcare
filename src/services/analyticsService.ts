@@ -62,7 +62,7 @@ class AnalyticsService {
   // Track page views
   trackPageView(pageTitle?: string, pageUrl?: string): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'page_view', {
@@ -70,12 +70,17 @@ class AnalyticsService {
         page_location: pageUrl,
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'PageView');
+      const params: any = {};
+      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
+      if (testEventCode) {
+        params.test_event_code = testEventCode;
+      }
+      fbq('track', 'PageView', params);
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('PageView');
@@ -85,7 +90,7 @@ class AnalyticsService {
   // Track product views
   trackProductView(productData: ProductTrackingData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'view_item', {
@@ -100,18 +105,23 @@ class AnalyticsService {
         currency: productData.currency,
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'ViewContent', {
+      const params: any = {
         content_ids: [productData.product_id],
         content_name: productData.product_name,
         content_type: 'product',
         value: productData.value,
         currency: productData.currency,
-      });
+      };
+      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
+      if (testEventCode) {
+        params.test_event_code = testEventCode;
+      }
+      fbq('track', 'ViewContent', params);
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('ViewContent', {
@@ -129,7 +139,7 @@ class AnalyticsService {
   // Track add to cart
   trackAddToCart(productData: ProductTrackingData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'add_to_cart', {
@@ -144,18 +154,23 @@ class AnalyticsService {
         currency: productData.currency,
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'AddToCart', {
+      const params: any = {
         content_ids: [productData.product_id],
         content_name: productData.product_name,
         content_type: 'product',
         value: productData.value,
         currency: productData.currency,
-      });
+      };
+      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
+      if (testEventCode) {
+        params.test_event_code = testEventCode;
+      }
+      fbq('track', 'AddToCart', params);
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('AddToCart', {
@@ -173,7 +188,7 @@ class AnalyticsService {
   // Track checkout start (for abandonment tracking)
   trackCheckoutStart(checkoutData: CheckoutTrackingData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'begin_checkout', {
@@ -186,17 +201,22 @@ class AnalyticsService {
         })),
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'InitiateCheckout', {
+      const params: any = {
         contents: checkoutData.contents,
         value: checkoutData.value,
         currency: checkoutData.currency,
         content_type: checkoutData.content_type || 'product',
-      });
+      };
+      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
+      if (testEventCode) {
+        params.test_event_code = testEventCode;
+      }
+      fbq('track', 'InitiateCheckout', params);
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('InitiateCheckout', {
@@ -224,17 +244,22 @@ class AnalyticsService {
         })),
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'Purchase', {
+      const params: any = {
         content_ids: checkoutData.contents.map(c => c.id),
         contents: checkoutData.contents,
         value: checkoutData.value,
         currency: checkoutData.currency,
-      });
+      };
+      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
+      if (testEventCode) {
+        params.test_event_code = testEventCode;
+      }
+      fbq('track', 'Purchase', params);
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('Purchase', {
@@ -283,6 +308,7 @@ class AnalyticsService {
   private loadMetaPixel(): void {
     // Load Meta Pixel script if not already loaded
     const fbPixelId = import.meta.env.VITE_FACEBOOK_PIXEL_ID;
+    const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
     if (!window.fbq && fbPixelId) {
       // Load Facebook Pixel script
       (function(f: any, b: any, e: any, v: any) {
@@ -310,8 +336,15 @@ class AnalyticsService {
           }
         }
       })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-      
+
+      // Initialize with pixel ID
       fbq('init', fbPixelId);
+
+      // If test event code is provided, enable test mode
+      if (testEventCode) {
+        fbq('set', 'test_event_code', testEventCode);
+      }
+
       fbq('track', 'PageView');
     }
   }
@@ -393,7 +426,16 @@ class AnalyticsService {
   // Send event to Meta Pixel
   private trackOnMeta(event: AnalyticsEvent): void {
     if (typeof fbq !== 'undefined') {
-      fbq('trackCustom', event.eventName, event.parameters);
+      // Check if test event ID is provided in parameters
+      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
+      const params = { ...event.parameters };
+
+      // Add test event code to parameters if available
+      if (testEventCode) {
+        params.test_event_code = testEventCode;
+      }
+
+      fbq('trackCustom', event.eventName, params);
     }
   }
   

@@ -55,6 +55,7 @@ VITE_WC_CONSUMER_SECRET=your_consumer_secret
 # Analytics and Tracking
 VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 VITE_FACEBOOK_PIXEL_ID=XXXXXXXXXXXXXXX
+VITE_FACEBOOK_TEST_EVENT_CODE=TEST_EVENT_CODE  # Optional: Use for testing Meta Pixel events
 VITE_TIKTOK_PIXEL_ID=AAAAAAAAAAAA
 
 # Google Gemini API (if using AI features)

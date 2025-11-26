@@ -39,10 +39,14 @@ class ServerSideMetaPixelService {
   private isInitialized = false;
   private trackingEnabled = true;
   private apiBaseUrl: string;
-  
+  private testEventCode: string | null = null;
+
   constructor() {
     // Get API base URL from environment variables
     this.apiBaseUrl = import.meta.env.VITE_WP_API_URL || 'https://wishcarebd.com/wp-json';
+
+    // Get test event code from environment variables
+    this.testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE || null;
   }
   
   // Initialize the service with Meta Pixel ID
@@ -72,19 +76,27 @@ class ServerSideMetaPixelService {
       // Create a unique event ID if not provided
       const eventId = event.event_id || `ss_${event.event_name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+      // Prepare the event payload with test event code if available
+      const eventPayload: any = {
+        ...event,
+        event_id: eventId,
+        user_data: {
+          ...event.user_data,
+          // Additional data can be collected here
+        }
+      };
+
+      // Add test event code to the payload if available
+      if (this.testEventCode) {
+        eventPayload.test_event_code = this.testEventCode;
+      }
+
       const response = await fetch(`${this.apiBaseUrl}/meta-pixel/v1/track`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...event,
-          event_id: eventId,
-          user_data: {
-            ...event.user_data,
-            // Additional data can be collected here
-          }
-        }),
+        body: JSON.stringify(eventPayload),
       });
 
       if (!response.ok) {
