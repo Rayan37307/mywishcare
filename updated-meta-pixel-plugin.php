@@ -1,12 +1,8 @@
 <?php
 /**
- * Server-Side Meta Pixel Tracking Implementation for WordPress
- *
- * This code fixes the "device_info" parameter error and implements proper
- * server-side tracking
- *
- * @package Meta-Pixel-Server-Side
- * @version 1.0
+ * Plugin Name: Meta Pixel Custom
+ * Description: Provide server-side Meta Pixel support
+ * Version: 1.0
  */
 
 // Prevent direct access
@@ -40,6 +36,7 @@ function track_meta_pixel_event($request) {
     $event_id = sanitize_text_field($request->get_param('event_id'));
     $user_data = $request->get_param('user_data');
     $custom_data = $request->get_param('custom_data');
+    $test_event_code = sanitize_text_field($request->get_param('test_event_code'));
 
     if (empty($event_name)) {
         return new WP_Error('missing_event_name', 'Event name is required', array('status' => 400));
@@ -66,11 +63,12 @@ function track_meta_pixel_event($request) {
         $event_name,
         $event_id ?: generate_event_id(),
         $user_data,
-        $custom_data
+        $custom_data,
+        $test_event_code
     );
 
     // Send the event to Meta Pixel server
-    $response = send_meta_pixel_event($event_data, $pixel_id, $access_token);
+    $response = send_meta_pixel_event($event_data, $pixel_id, $access_token, $test_event_code);
 
     if (is_wp_error($response)) {
         return $response;
@@ -94,6 +92,7 @@ function track_meta_pixel_purchase($request) {
     $value = floatval($request->get_param('value'));
     $contents = $request->get_param('contents');
     $user_data = $request->get_param('user_data');
+    $test_event_code = sanitize_text_field($request->get_param('test_event_code'));
 
     // Validate required parameters
     if (empty($order_id) || empty($value) || empty($contents)) {
@@ -118,11 +117,12 @@ function track_meta_pixel_purchase($request) {
         $currency,
         $value,
         $contents,
-        $user_data
+        $user_data,
+        $test_event_code
     );
 
     // Send the purchase event to Meta Pixel server
-    $response = send_meta_pixel_event($event_data, $pixel_id, $access_token);
+    $response = send_meta_pixel_event($event_data, $pixel_id, $access_token, $test_event_code);
 
     if (is_wp_error($response)) {
         return $response;
@@ -140,13 +140,13 @@ function track_meta_pixel_purchase($request) {
 /**
  * Prepare event data for Meta Pixel server-side tracking
  */
-function prepare_meta_pixel_event($event_name, $event_id, $user_data, $custom_data) {
+function prepare_meta_pixel_event($event_name, $event_id, $user_data, $custom_data, $test_event_code = null) {
     // Get client IP address
     $client_ip = get_real_client_ip();
-
+    
     // Get user agent
     $user_agent = sanitize_text_field($_SERVER['HTTP_USER_AGENT'] ?? '');
-
+    
     // Prepare the event data structure for Meta Pixel
     $event_data = array(
         array(
@@ -164,7 +164,7 @@ function prepare_meta_pixel_event($event_name, $event_id, $user_data, $custom_da
     if (!empty($client_ip)) {
         $event_data[0]['user_data']['client_ip_address'] = $client_ip;
     }
-
+    
     if (!empty($user_agent)) {
         $event_data[0]['user_data']['client_user_agent'] = $user_agent;
     }
@@ -175,13 +175,13 @@ function prepare_meta_pixel_event($event_name, $event_id, $user_data, $custom_da
 /**
  * Prepare purchase event data for Meta Pixel server-side tracking
  */
-function prepare_meta_pixel_purchase_event($order_id, $currency, $value, $contents, $user_data) {
+function prepare_meta_pixel_purchase_event($order_id, $currency, $value, $contents, $user_data, $test_event_code = null) {
     // Get client IP address
     $client_ip = get_real_client_ip();
-
+    
     // Get user agent
     $user_agent = sanitize_text_field($_SERVER['HTTP_USER_AGENT'] ?? '');
-
+    
     // Prepare the event data structure for Meta Pixel
     $event_data = array(
         array(
@@ -204,7 +204,7 @@ function prepare_meta_pixel_purchase_event($order_id, $currency, $value, $conten
     if (!empty($client_ip)) {
         $event_data[0]['user_data']['client_ip_address'] = $client_ip;
     }
-
+    
     if (!empty($user_agent)) {
         $event_data[0]['user_data']['client_user_agent'] = $user_agent;
     }
@@ -217,37 +217,37 @@ function prepare_meta_pixel_purchase_event($order_id, $currency, $value, $conten
  */
 function prepare_meta_user_data($user_data) {
     $meta_user_data = array();
-
+    
     if (is_array($user_data)) {
         // Hash PII data as per Meta requirements
         if (isset($user_data['email'])) {
             $meta_user_data['em'] = hash('sha256', strtolower(trim($user_data['email'])));
         }
-
+        
         if (isset($user_data['phone'])) {
             $meta_user_data['ph'] = hash('sha256', preg_replace('/[^0-9]/', '', $user_data['phone']));
         }
-
+        
         if (isset($user_data['first_name'])) {
             $meta_user_data['fn'] = hash('sha256', strtolower(trim($user_data['first_name'])));
         }
-
+        
         if (isset($user_data['last_name'])) {
             $meta_user_data['ln'] = hash('sha256', strtolower(trim($user_data['last_name'])));
         }
-
+        
         if (isset($user_data['city'])) {
             $meta_user_data['ct'] = hash('sha256', strtolower(trim($user_data['city'])));
         }
-
+        
         if (isset($user_data['state'])) {
             $meta_user_data['st'] = hash('sha256', strtoupper(trim($user_data['state'])));
         }
-
+        
         if (isset($user_data['country'])) {
             $meta_user_data['country'] = hash('sha256', strtolower(trim($user_data['country'])));
         }
-
+        
         if (isset($user_data['zip'])) {
             $meta_user_data['zp'] = hash('sha256', trim($user_data['zip']));
         }
@@ -263,14 +263,18 @@ function prepare_meta_user_data($user_data) {
 /**
  * Send event to Meta Pixel server
  */
-function send_meta_pixel_event($event_data, $pixel_id, $access_token) {
+function send_meta_pixel_event($event_data, $pixel_id, $access_token, $test_event_code = null) {
     // Meta Pixel server-side API endpoint
     $api_url = "https://graph.facebook.com/v18.0/{$pixel_id}/events?access_token={$access_token}";
+    
+    // If test event code is provided, add it to the URL
+    if ($test_event_code) {
+        $api_url .= '&test_event_code=' . $test_event_code;
+    }
 
     // Prepare the request body
     $body = array(
         'data' => $event_data,
-        'test_event_code' => sanitize_text_field($_GET['test_event_code'] ?? ''), // Allow test event code via query param
     );
 
     // Make the HTTP request
@@ -313,7 +317,7 @@ function send_meta_pixel_event($event_data, $pixel_id, $access_token) {
  */
 function get_real_client_ip() {
     $ip_keys = array('HTTP_CF_CONNECTING_IP', 'HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR');
-
+    
     foreach ($ip_keys as $key) {
         if (array_key_exists($key, $_SERVER) === true) {
             foreach (explode(',', $_SERVER[$key]) as $ip) {
@@ -375,7 +379,7 @@ function meta_pixel_settings_page_html() {
         <form method="post" action="options.php">
             <?php settings_fields('meta_pixel_settings'); ?>
             <?php do_settings_sections('meta_pixel_settings'); ?>
-
+            
             <table class="form-table">
                 <tr>
                     <th scope="row"><label for="meta_pixel_id">Meta Pixel ID</label></th>
@@ -436,7 +440,7 @@ add_action('rest_api_init', function () {
  * Handle preflight OPTIONS requests for CORS
  */
 add_action('init', function() {
-    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS' &&
+    if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS' && 
         isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'wp-json/meta-pixel/') !== false) {
         header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
