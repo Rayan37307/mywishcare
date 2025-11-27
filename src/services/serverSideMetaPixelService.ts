@@ -22,7 +22,7 @@ class ServerSideMetaPixelService {
 
   constructor() {
     this.apiUrl = import.meta.env.VITE_WP_API_URL || 'https://wishcarebd.com/wp-json';
-    this.testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE || "TEST65375";
+    this.testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE || "TEST11525";
   }
 
   // Track general events server-side
