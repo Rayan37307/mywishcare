@@ -4,6 +4,7 @@
 // Now includes BOTH client-side and server-side Meta Pixel tracking
 
 import { serverSideMetaPixelService } from './serverSideMetaPixelService';
+import { generateConsistentEventId, generateEventId } from '../utils/analyticsUtils';
 
 // Types for PixelYourSite events
 export interface PixelYourSiteProductData {
@@ -15,6 +16,7 @@ export interface PixelYourSiteProductData {
   quantity?: number;
   value?: number;
   content_type?: string;
+  user_id?: string | number;  // Optional user ID for consistent tracking
 }
 
 export interface PixelYourSiteCartData {
@@ -124,11 +126,15 @@ class PixelYourSiteService {
   trackPageView(pageTitle?: string, pageUrl?: string, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
+    // Generate a consistent event ID for both client and server tracking
+    const eventId = generateEventId('PageView');
+
     // Track with client-side Meta Pixel (browser)
     if (typeof window !== 'undefined' && window.fbq) {
       const params: any = {
         page_title: pageTitle,
         page_url: pageUrl,
+        event_id: eventId,  // Add consistent event ID
       };
       const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
       if (testEventCode) {
@@ -139,13 +145,18 @@ class PixelYourSiteService {
 
     // Track with server-side Meta Pixel for enhanced reliability
     if (typeof window !== 'undefined' && window.location) {
-      serverSideMetaPixelService.trackPageView(pageTitle, pageUrl, userData);
+      serverSideMetaPixelService.trackPageView(pageTitle, pageUrl, userData, eventId);
     }
   }
 
   // Track product views (equivalent to PixelYourSite's ViewContent)
   trackProductView(productData: PixelYourSiteProductData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
+
+    // Generate a consistent event ID for both client and server tracking
+    const eventId = productData.user_id
+      ? generateConsistentEventId('ViewContent', productData.product_id, productData.user_id)
+      : generateConsistentEventId('ViewContent', productData.product_id);
 
     // Track with client-side Meta Pixel (browser)
     if (typeof window !== 'undefined' && window.fbq) {
@@ -155,6 +166,7 @@ class PixelYourSiteService {
         content_type: 'product',
         value: productData.value,
         currency: productData.currency,
+        event_id: eventId,  // Add consistent event ID
       };
       const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
       if (testEventCode) {
@@ -164,12 +176,17 @@ class PixelYourSiteService {
     }
 
     // Track with server-side Meta Pixel for enhanced reliability
-    serverSideMetaPixelService.trackProductView(productData, userData);
+    serverSideMetaPixelService.trackProductView(productData, userData, eventId);
   }
 
   // Track add to cart (equivalent to PixelYourSite's AddToCart)
   trackAddToCart(productData: PixelYourSiteProductData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
+
+    // Generate a consistent event ID for both client and server tracking
+    const eventId = productData.user_id
+      ? generateConsistentEventId('AddToCart', productData.product_id, productData.user_id)
+      : generateConsistentEventId('AddToCart', productData.product_id);
 
     // Track with client-side Meta Pixel (browser)
     if (typeof window !== 'undefined' && window.fbq) {
@@ -179,6 +196,7 @@ class PixelYourSiteService {
         content_type: 'product',
         value: productData.value,
         currency: productData.currency,
+        event_id: eventId,  // Add consistent event ID
       };
       const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
       if (testEventCode) {
@@ -188,65 +206,31 @@ class PixelYourSiteService {
     }
 
     // Track with server-side Meta Pixel for enhanced reliability
-    serverSideMetaPixelService.trackAddToCart(productData, userData);
+    serverSideMetaPixelService.trackAddToCart(productData, userData, eventId);
   }
 
-  // Track cart contents (PixelYourSite's custom cart event)
-  trackCart(cartData: PixelYourSiteCartData, userData?: MetaPixelUserData): void {
+  // Track cart contents (PixelYourSite's custom cart event) - removed InitiateCheckout tracking
+  trackCart(_cartData: PixelYourSiteCartData, _userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
-    // Track InitiateCheckout if cart has items
-    if (cartData.contents.length > 0) {
-      // Track with client-side Meta Pixel (browser)
-      if (typeof window !== 'undefined' && window.fbq) {
-        const params: any = {
-          contents: cartData.contents,
-          value: cartData.value,
-          currency: cartData.currency,
-          content_type: 'product',
-        };
-        const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
-        if (testEventCode) {
-          params.test_event_code = testEventCode;
-        }
-        fbq('track', 'InitiateCheckout', params);
-      }
-
-      // Also track with server-side Meta Pixel
-      serverSideMetaPixelService.trackCheckoutStart({
-        value: cartData.value,
-        currency: cartData.currency,
-        contents: cartData.contents,
-      }, userData);
-    }
+    // Removed InitiateCheckout tracking to avoid unwanted events
   }
 
-  // Track checkout start (equivalent to PixelYourSite's InitiateCheckout)
-  trackCheckoutStart(checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): void {
+  // Track checkout start (equivalent to PixelYourSite's InitiateCheckout) - removed completely
+  trackCheckoutStart(_checkoutData: PixelYourSiteCheckoutData, _userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
-    // Track with client-side Meta Pixel (browser)
-    if (typeof window !== 'undefined' && window.fbq) {
-      const params: any = {
-        contents: checkoutData.contents,
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-        content_type: 'product',
-      };
-      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
-      if (testEventCode) {
-        params.test_event_code = testEventCode;
-      }
-      fbq('track', 'InitiateCheckout', params);
-    }
-
-    // Track with server-side Meta Pixel for enhanced reliability
-    serverSideMetaPixelService.trackCheckoutStart(checkoutData, userData);
+    // Removed InitiateCheckout tracking to avoid unwanted events
   }
 
   // Track purchase (equivalent to PixelYourSite's Purchase)
   trackPurchase(checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
+
+    // Generate a consistent event ID for both client and server tracking
+    const eventId = checkoutData.order_id
+      ? generateConsistentEventId('Purchase', checkoutData.order_id)
+      : generateEventId('Purchase');
 
     // Track with client-side Meta Pixel (browser)
     if (typeof window !== 'undefined' && window.fbq) {
@@ -255,6 +239,7 @@ class PixelYourSiteService {
         contents: checkoutData.contents,
         value: checkoutData.value,
         currency: checkoutData.currency,
+        event_id: eventId,  // Add consistent event ID
       };
       const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
       if (testEventCode) {
@@ -270,7 +255,8 @@ class PixelYourSiteService {
         checkoutData.value,
         checkoutData.currency,
         checkoutData.contents,
-        userData
+        userData,
+        eventId // Pass the event ID
       );
     }
   }
@@ -279,11 +265,15 @@ class PixelYourSiteService {
   trackSearch(searchTerm: string, resultsCount?: number, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
+    // Generate a consistent event ID for both client and server tracking
+    const eventId = generateConsistentEventId('Search', searchTerm.substring(0, 10)); // Use first 10 chars of search term
+
     // Track with client-side Meta Pixel (browser)
     if (typeof window !== 'undefined' && window.fbq) {
       const params: any = {
         search_string: searchTerm,
         ...(resultsCount !== undefined && { search_results: resultsCount }),
+        event_id: eventId,  // Add consistent event ID
       };
       const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
       if (testEventCode) {
@@ -293,17 +283,23 @@ class PixelYourSiteService {
     }
 
     // Track with server-side Meta Pixel for enhanced reliability
-    serverSideMetaPixelService.trackSearch(searchTerm, resultsCount, userData);
+    serverSideMetaPixelService.trackSearch(searchTerm, resultsCount, userData, eventId);
   }
 
   // Track lead generation (for contact forms, etc.)
   trackLead(formData: any, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
+    // Generate a consistent event ID for both client and server tracking
+    const eventId = generateEventId('Lead');
+
     // Track with client-side Meta Pixel (browser)
     if (typeof window !== 'undefined' && window.fbq) {
       const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
-      const params: any = { ...formData };
+      const params: any = {
+        ...formData,
+        event_id: eventId,  // Add consistent event ID
+      };
       if (testEventCode) {
         params.test_event_code = testEventCode;
       }
@@ -311,7 +307,7 @@ class PixelYourSiteService {
     }
 
     // Track with server-side Meta Pixel for enhanced reliability
-    serverSideMetaPixelService.trackLead(formData, userData);
+    serverSideMetaPixelService.trackLead(formData, userData, eventId);
   }
 
   // Track custom events (PixelYourSite allows custom events)
@@ -389,36 +385,6 @@ class PixelYourSiteService {
     serverSideMetaPixelService.trackProductView(productData, userData);
   }
 
-  // Track checkout progress (PixelYourSite tracks at different checkout steps)
-  trackCheckoutProgress(step: number, checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): void {
-    if (!this.trackingEnabled || !this.isInitialized) return;
-
-    // Track with client-side Meta Pixel (browser)
-    if (typeof window !== 'undefined' && window.fbq) {
-      const params: any = {
-        checkout_step: step,
-        contents: checkoutData.contents,
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-      };
-      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
-      if (testEventCode) {
-        params.test_event_code = testEventCode;
-      }
-      if (step === 1) {
-        fbq('track', 'InitiateCheckout', params);
-      } else if (step === 3) { // Assuming step 3 is payment info
-        fbq('track', 'AddPaymentInfo', params);
-      }
-    }
-
-    // For server-side, we'll track as InitiateCheckout at step 1, AddPaymentInfo at payment step, etc.
-    if (step === 1) {
-      serverSideMetaPixelService.trackCheckoutStart(checkoutData, userData);
-    } else if (step === 3) { // Assuming step 3 is payment info
-      serverSideMetaPixelService.trackAddPaymentInfo(checkoutData, userData);
-    }
-  }
 
   // Track payment info (when payment details are entered)
   trackPaymentInfo(checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): void {
@@ -473,10 +439,14 @@ class PixelYourSiteService {
   trackRegistration(method: string, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
+    // Generate a consistent event ID for both client and server tracking
+    const eventId = generateConsistentEventId('CompleteRegistration', method);
+
     // Track with client-side Meta Pixel (browser)
     if (typeof window !== 'undefined' && window.fbq) {
       const params: any = {
-        method: method
+        method: method,
+        event_id: eventId, // Add consistent event ID
       };
       const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
       if (testEventCode) {
@@ -486,7 +456,7 @@ class PixelYourSiteService {
     }
 
     // Also track with server-side Meta Pixel for enhanced reliability
-    serverSideMetaPixelService.trackRegistration(userData, method);
+    serverSideMetaPixelService.trackRegistration(userData, method, eventId);
   }
 
   // Track login

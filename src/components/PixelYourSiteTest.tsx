@@ -34,15 +34,7 @@ const PixelYourSiteTest: React.FC = () => {
   };
 
   const handleTestCheckout = () => {
-    pixelYourSiteService.trackCheckoutStart({
-      value: 29.99,
-      currency: 'USD',
-      contents: [{
-        id: 'test_product_123',
-        quantity: 1,
-        item_price: 29.99,
-      }],
-    });
+    // Removed InitiateCheckout tracking to avoid unwanted events
     console.log('Checkout start tracked');
   };
 

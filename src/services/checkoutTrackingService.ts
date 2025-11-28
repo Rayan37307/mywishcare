@@ -53,20 +53,6 @@ class CheckoutTrackingService {
     // Store the active checkout session
     this.activeCheckouts.set(sessionId, formData);
     
-    // Prepare checkout tracking data
-    const checkoutData: PixelYourSiteCheckoutData = {
-      value,
-      currency: 'INR',
-      contents: cartItems.map(item => ({
-        id: item.product.id,
-        quantity: item.quantity,
-        item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
-      })),
-    };
-    
-    // Track the checkout start event
-    pixelYourSiteService.trackCheckoutStart(checkoutData);
-    
     // Set a timer to track potential abandonment
     setTimeout(() => {
       if (this.activeCheckouts.has(sessionId)) {
@@ -129,7 +115,7 @@ class CheckoutTrackingService {
       cartItems: cartItems.map(item => ({
         product_id: item.product.id,
         quantity: item.quantity,
-        price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+        price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
         name: item.product.name,
       })),
       value,
@@ -150,7 +136,7 @@ class CheckoutTrackingService {
       contents: cartItems.map(item => ({
         id: item.product.id,
         quantity: item.quantity,
-        item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+        item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
       })),
     };
     

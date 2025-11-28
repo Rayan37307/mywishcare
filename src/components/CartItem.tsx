@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import type { CartItem as CartItemType } from '../types/cart';
 import { pixelYourSiteService } from '../services/pixelYourSiteService';
+import { wpAuthService } from '../services/authService';
 
 interface CartItemProps {
   item: CartItemType;
@@ -42,13 +43,15 @@ const CartItem = memo(({ item, updateQuantity, removeItem }: CartItemProps) => {
               try {
                 updateQuantity(product.id, quantity - 1);
                 // Track when quantity changes
+                const currentUser = wpAuthService.getCurrentUser();
                 pixelYourSiteService.trackAddToCart({
                   product_id: product.id,
                   product_name: product.name,
-                  product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                  product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
                   currency: 'BDT',
                   quantity: quantity - 1,
-                  value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * (quantity - 1),
+                  value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * (quantity - 1),
+                  user_id: currentUser?.id,
                 });
               } catch (error) {
                 console.error('Error updating quantity:', error);
@@ -64,13 +67,15 @@ const CartItem = memo(({ item, updateQuantity, removeItem }: CartItemProps) => {
               try {
                 updateQuantity(product.id, quantity + 1);
                 // Track when quantity changes
+                const currentUser = wpAuthService.getCurrentUser();
                 pixelYourSiteService.trackAddToCart({
                   product_id: product.id,
                   product_name: product.name,
-                  product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                  product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
                   currency: 'BDT',
                   quantity: quantity + 1,
-                  value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * (quantity + 1),
+                  value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * (quantity + 1),
+                  user_id: currentUser?.id,
                 });
               } catch (error) {
                 console.error('Error updating quantity:', error);
@@ -83,12 +88,14 @@ const CartItem = memo(({ item, updateQuantity, removeItem }: CartItemProps) => {
             className="text-gray-600 underline text-xs sm:text-sm ml-2"
             onClick={() => {
               try {
+                const currentUser = wpAuthService.getCurrentUser();
                 pixelYourSiteService.trackCustomEvent('remove_from_cart', {
                   product_id: product.id,
                   product_name: product.name,
-                  value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+                  value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * quantity,
                   quantity: quantity,
                   currency: 'BDT',
+                  user_id: currentUser?.id,
                 });
                 removeItem(product.id);
               } catch (error) {

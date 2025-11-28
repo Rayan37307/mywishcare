@@ -40,7 +40,6 @@ const APIDebugPage = lazy(() => import('./pages/APIDebugPage'))
 const TestPage = lazy(() => import('./pages/TestPage'))
 const PixelTestPage = lazy(() => import('./pages/PixelTestPage'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
-const IncompletePurchases = lazy(() => import('./pages/IncompletePurchases'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 // Component imports
@@ -184,8 +183,6 @@ const App = () => {
                           <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
                           <Route path="/pixel-test" element={<PixelTestPage />} />
                           <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
-                          <Route path="/incomplete-purchases" element={<IncompletePurchases />} />
-                          
                           {/* Password Reset Route */}
                           <Route path="/reset-password" element={<PasswordReset />} />
                           

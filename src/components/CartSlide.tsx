@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
 import NoProductsFound from "./NoProductsFound";
 import { pixelYourSiteService } from "../services/pixelYourSiteService";
+import { wpAuthService } from "../services/authService";
 
 interface CartSlideProps {
   isOpen: boolean;
@@ -201,13 +202,15 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                               item.quantity - 1
                             );
                             // Track when quantity changes
+                            const currentUser = wpAuthService.getCurrentUser();
                             pixelYourSiteService.trackAddToCart({
                               product_id: item.product.id,
                               product_name: item.product.name,
-                              product_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+                              product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
                               currency: 'BDT',
                               quantity: item.quantity - 1,
-                              value: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')) * (item.quantity - 1),
+                              value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * (item.quantity - 1),
+                              user_id: currentUser?.id,
                             });
                           }}
                         >
@@ -228,13 +231,15 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                               item.quantity + 1
                             );
                             // Track when quantity changes
+                            const currentUser = wpAuthService.getCurrentUser();
                             pixelYourSiteService.trackAddToCart({
                               product_id: item.product.id,
                               product_name: item.product.name,
-                              product_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+                              product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
                               currency: 'BDT',
                               quantity: item.quantity + 1,
-                              value: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')) * (item.quantity + 1),
+                              value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * (item.quantity + 1),
+                              user_id: currentUser?.id,
                             });
                           }}
                           disabled={
@@ -250,12 +255,14 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                           onClick={() => {
                             const removedProduct = items.find(i => i.product.id === item.product.id);
                             if (removedProduct) {
+                              const currentUser = wpAuthService.getCurrentUser();
                               pixelYourSiteService.trackCustomEvent('remove_from_cart', {
                                 product_id: removedProduct.product.id,
                                 product_name: removedProduct.product.name,
-                                value: parseFloat(removedProduct.product.price.replace(/[^\\d.-]/g, '')) * removedProduct.quantity,
+                                value: parseFloat(removedProduct.product.price.replace(/[^\d.-]/g, '')) * removedProduct.quantity,
                                 quantity: removedProduct.quantity,
                                 currency: 'BDT',
+                                user_id: currentUser?.id,
                               });
                             }
                             removeItem(item.product.id);
@@ -330,13 +337,15 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                             className="w-full py-1.5 bg-[#D4F871] uppercase rounded-md border border-black text-[10px] sm:text-[11px] flex justify-center items-center gap-1 mt-auto"
                             onClick={(e) => {
                               e.preventDefault();
+                              const currentUser = wpAuthService.getCurrentUser();
                               pixelYourSiteService.trackAddToCart({
                                 product_id: product.id,
                                 product_name: product.name,
-                                product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                                product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
                                 currency: 'BDT',
                                 quantity: 1,
-                                value: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                                value: parseFloat(product.price.replace(/[^\d.-]/g, '')),
+                                user_id: currentUser?.id,
                               });
                               addItem(product, 1);
                             }}
@@ -359,15 +368,6 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                   onClick={() => {
                     // Track checkout start with cart contents
                     if (items.length > 0) {
-                      pixelYourSiteService.trackCheckoutStart({
-                        value: totalPrice,
-                        currency: 'BDT',
-                        contents: items.map(item => ({
-                          id: item.product.id,
-                          quantity: item.quantity,
-                          item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
-                        })),
-                      });
                     }
                     closeAllSidebars();
                     onClose();

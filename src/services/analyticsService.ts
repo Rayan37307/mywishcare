@@ -202,29 +202,6 @@ class AnalyticsService {
       });
     }
 
-    // Meta Pixel
-    if (typeof fbq !== 'undefined') {
-      const params: any = {
-        contents: checkoutData.contents,
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-        content_type: checkoutData.content_type || 'product',
-      };
-      const testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE;
-      if (testEventCode) {
-        params.test_event_code = testEventCode;
-      }
-      fbq('track', 'InitiateCheckout', params);
-    }
-
-    // TikTok Pixel
-    if (typeof ttq !== 'undefined') {
-      ttq.track('InitiateCheckout', {
-        contents: checkoutData.contents,
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-      });
-    }
   }
   
   // Track successful purchase

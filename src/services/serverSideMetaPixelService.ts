@@ -22,7 +22,7 @@ class ServerSideMetaPixelService {
 
   constructor() {
     this.apiUrl = import.meta.env.VITE_WP_API_URL || 'https://wishcarebd.com/wp-json';
-    this.testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE || "TEST11525";
+    this.testEventCode = import.meta.env.VITE_FACEBOOK_TEST_EVENT_CODE || "TEST89775";
   }
 
   // Track general events server-side
@@ -75,7 +75,7 @@ class ServerSideMetaPixelService {
   }
 
   // Track page view server-side
-  async trackPageView(pageTitle?: string, pageUrl?: string, userData?: MetaPixelUserData): Promise<void> {
+  async trackPageView(pageTitle?: string, pageUrl?: string, userData?: MetaPixelUserData, eventId?: string): Promise<void> {
     await this.trackEvent({
       event_name: 'PageView',
       user_data: userData || {},
@@ -83,12 +83,12 @@ class ServerSideMetaPixelService {
         page_title: pageTitle || '',
         page_url: pageUrl || window.location.href,
       },
-      event_id: this.generateEventId(),
+      event_id: eventId || this.generateEventId(),
     });
   }
 
   // Track product view server-side
-  async trackProductView(productData: PixelYourSiteProductData, userData?: MetaPixelUserData): Promise<void> {
+  async trackProductView(productData: PixelYourSiteProductData, userData?: MetaPixelUserData, eventId?: string): Promise<void> {
     await this.trackEvent({
       event_name: 'ViewContent',
       user_data: userData || {},
@@ -99,12 +99,12 @@ class ServerSideMetaPixelService {
         value: productData.value,
         currency: productData.currency,
       },
-      event_id: this.generateEventId(),
+      event_id: eventId || this.generateEventId(),
     });
   }
 
   // Track add to cart server-side
-  async trackAddToCart(productData: PixelYourSiteProductData, userData?: MetaPixelUserData): Promise<void> {
+  async trackAddToCart(productData: PixelYourSiteProductData, userData?: MetaPixelUserData, eventId?: string): Promise<void> {
     await this.trackEvent({
       event_name: 'AddToCart',
       user_data: userData || {},
@@ -115,23 +115,10 @@ class ServerSideMetaPixelService {
         value: productData.value,
         currency: productData.currency,
       },
-      event_id: this.generateEventId(),
+      event_id: eventId || this.generateEventId(),
     });
   }
 
-  // Track checkout start server-side
-  async trackCheckoutStart(checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): Promise<void> {
-    await this.trackEvent({
-      event_name: 'InitiateCheckout',
-      user_data: userData || {},
-      custom_data: {
-        contents: checkoutData.contents,
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-      },
-      event_id: this.generateEventId(),
-    });
-  }
 
   // Track purchase server-side
   async trackPurchase(
@@ -143,7 +130,8 @@ class ServerSideMetaPixelService {
       quantity: number;
       item_price?: number;
     }>,
-    userData?: MetaPixelUserData
+    userData?: MetaPixelUserData,
+    eventId?: string
   ): Promise<void> {
     try {
       if (!this.apiUrl) {
@@ -158,6 +146,7 @@ class ServerSideMetaPixelService {
         currency,
         contents,
         user_data: userData || {},
+        event_id: eventId, // Add event ID for consistency
       };
 
       // Add test event code to purchase data if available
@@ -188,7 +177,7 @@ class ServerSideMetaPixelService {
   }
 
   // Track search server-side
-  async trackSearch(searchTerm: string, resultsCount?: number, userData?: MetaPixelUserData): Promise<void> {
+  async trackSearch(searchTerm: string, resultsCount?: number, userData?: MetaPixelUserData, eventId?: string): Promise<void> {
     await this.trackEvent({
       event_name: 'Search',
       user_data: userData || {},
@@ -196,29 +185,29 @@ class ServerSideMetaPixelService {
         search_string: searchTerm,
         ...(resultsCount !== undefined && { search_results: resultsCount }),
       },
-      event_id: this.generateEventId(),
+      event_id: eventId || this.generateEventId(),
     });
   }
 
   // Track lead generation server-side
-  async trackLead(formData: any, userData?: MetaPixelUserData): Promise<void> {
+  async trackLead(formData: any, userData?: MetaPixelUserData, eventId?: string): Promise<void> {
     await this.trackEvent({
       event_name: 'Lead',
       user_data: userData || {},
       custom_data: formData || {},
-      event_id: this.generateEventId(),
+      event_id: eventId || this.generateEventId(),
     });
   }
 
   // Track registration server-side
-  async trackRegistration(userData?: MetaPixelUserData, method?: string): Promise<void> {
+  async trackRegistration(userData?: MetaPixelUserData, method?: string, eventId?: string): Promise<void> {
     await this.trackEvent({
       event_name: 'CompleteRegistration',
       user_data: userData || {},
       custom_data: {
         registration_method: method || 'default',
       },
-      event_id: this.generateEventId(),
+      event_id: eventId || this.generateEventId(),
     });
   }
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProductStore } from '../store/productStore';
 import { useCartStore } from '../store/cartStore';
+import { wpAuthService } from '../services/authService';
 import ActiveOffersSection from '../components/wishcare/ActiveOffersSection';
 import BenefitsSection from '../components/wishcare/BenefitsSection';
 import HowToUseSection from '../components/wishcare/HowToUseSection';
@@ -33,16 +34,24 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (product) {
+      // Extract numeric value from price string by removing currency symbols, commas, etc.
+      const priceValue = parseFloat(product.price.replace(/[^\d.-]/g, ''));
+
+      // Get current user ID if available for consistent tracking
+      const currentUser = wpAuthService.getCurrentUser();
+      const userId = currentUser?.id;
+
       // Track add to cart with PixelYourSite
       pixelYourSiteService.trackAddToCart({
         product_id: product.id,
         product_name: product.name,
-        product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+        product_price: priceValue,
         currency: 'BDT',
         quantity: quantity,
-        value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+        value: priceValue * quantity,
+        user_id: userId,
       });
-      
+
       // The stock check is now handled in the cart store
       addItem(product, quantity);
     }
@@ -50,16 +59,24 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (product) {
+      // Extract numeric value from price string by removing currency symbols, commas, etc.
+      const priceValue = parseFloat(product.price.replace(/[^\d.-]/g, ''));
+
+      // Get current user ID if available for consistent tracking
+      const currentUser = wpAuthService.getCurrentUser();
+      const userId = currentUser?.id;
+
       // Track add to cart for immediate purchase
       pixelYourSiteService.trackAddToCart({
         product_id: product.id,
         product_name: product.name,
-        product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+        product_price: priceValue,
         currency: 'BDT',
         quantity: quantity,
-        value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+        value: priceValue * quantity,
+        user_id: userId,
       });
-      
+
       // Add product to cart and set navigation flag
       // The stock check is now handled in the cart store
       addItem(product, quantity);
@@ -138,12 +155,20 @@ const ProductDetail = () => {
         
         // Track product view after loading
         if (fetchedProduct) {
+          // Extract numeric value from price string by removing currency symbols, commas, etc.
+          const priceValue = parseFloat(fetchedProduct.price.replace(/[^\d.-]/g, ''));
+
+          // Get current user ID if available for consistent tracking
+          const currentUser = wpAuthService.getCurrentUser();
+          const userId = currentUser?.id;
+
           pixelYourSiteService.trackProductView({
             product_id: fetchedProduct.id,
             product_name: fetchedProduct.name,
-            product_price: parseFloat(fetchedProduct.price.replace(/[^\\d.-]/g, '')),
+            product_price: priceValue,
             currency: 'BDT',
-            value: parseFloat(fetchedProduct.price.replace(/[^\\d.-]/g, '')),
+            value: priceValue,
+            user_id: userId,
           });
         }
       }
