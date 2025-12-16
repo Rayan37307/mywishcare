@@ -10,6 +10,7 @@ const IncompletePurchasesPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
+      // Fetch only existing incomplete orders - no new orders should be created here
       woocommerceService.getIncompleteOrders().then(orders => {
         setPurchases(orders);
       });

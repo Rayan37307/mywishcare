@@ -4,7 +4,6 @@ import { persist } from 'zustand/middleware';
 import type { CartState, CartItem } from '../types/cart';
 import type { Product } from '../types/product';
 import { APP_CONSTANTS } from '../constants/app';
-import toast from 'react-hot-toast';
 import { pixelYourSiteService } from '../services/pixelYourSiteService';
 
 
@@ -51,6 +50,13 @@ const conditionalStorage = {
   },
 };
 
+// Global function to open the cart - will be set by App component
+let globalOpenCartFunction: (() => void) | null = null;
+
+export const setGlobalOpenCartFunction = (openCartFunc: () => void) => {
+  globalOpenCartFunction = openCartFunc;
+};
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -58,35 +64,33 @@ export const useCartStore = create<CartState>()(
       totalItems: 0,
       totalPrice: 0,
       loadingItems: [], // Track which products are currently being added
-      
+
       addItem: (product: Product, quantity: number = 1) => {
         // Check stock status before adding to cart
         if (product.stock_status === 'outofstock') {
-          toast.error(`${product.name} is out of stock!`);
           return;
         }
-        
+
         // For managed stock, check if there's enough quantity available
         if (product.manage_stock && product.stock_quantity !== null) {
           const currentCartQuantity = get().getProductQuantity(product.id);
           const totalRequested = currentCartQuantity + quantity;
-          
+
           if (totalRequested > product.stock_quantity) {
-            toast.error(`Only ${product.stock_quantity} ${product.name} items available in stock!`);
             return;
           }
         }
-        
+
         set(state => ({
           loadingItems: [...state.loadingItems, product.id]
         }));
-        
+
         // Directly update the cart state without complex timing
         const { items, loadingItems } = get();
         const existingItemIndex = items.findIndex(item => item.product.id === product.id);
-        
+
         let updatedItems: CartItem[];
-        
+
         if (existingItemIndex >= 0) {
           // Update quantity if item already exists
           updatedItems = [...items];
@@ -94,9 +98,6 @@ export const useCartStore = create<CartState>()(
             ...updatedItems[existingItemIndex],
             quantity: updatedItems[existingItemIndex].quantity + quantity
           };
-          
-          // Show toast for quantity update
-          toast.success(`${product.name} quantity updated to ${updatedItems[existingItemIndex].quantity} in cart`);
         } else {
           // Add new item
           const newItem: CartItem = {
@@ -104,11 +105,8 @@ export const useCartStore = create<CartState>()(
             quantity
           };
           updatedItems = [...items, newItem];
-          
-          // Show toast for new item added
-          toast.success(`${product.name} added to cart!`);
         }
-        
+
         // Track add to cart event with PixelYourSite
         pixelYourSiteService.trackAddToCart({
           product_id: product.id,
@@ -118,20 +116,28 @@ export const useCartStore = create<CartState>()(
           quantity: quantity,
           value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * quantity,
         });
-        
+
         // Update state and remove from loading state in a single batch
-        set({ 
+        set({
           items: updatedItems,
           loadingItems: loadingItems.filter(id => id !== product.id)
         });
         get().calculateTotals();
+
+        // Use global function to open the cart if available
+        if (globalOpenCartFunction) {
+          globalOpenCartFunction();
+        }
+
+        // Dispatch a custom event as backup to notify that an item was added to cart
+        window.dispatchEvent(new CustomEvent('cartItemAdded', { detail: { productId: product.id } }));
       },
-      
+
       // Function to check if a product is currently being added
       isAddingItem: (productId: number) => {
         return get().loadingItems.includes(productId);
       },
-      
+
       removeItem: (productId: number) => {
         try {
           const { items } = get();
@@ -146,49 +152,42 @@ export const useCartStore = create<CartState>()(
               currency: 'BDT',
             });
           }
-          
+
           const updatedItems = items.filter(item => item.product.id !== productId);
           set({ items: updatedItems });
           get().calculateTotals();
-          
-          if (itemToRemove) {
-            toast.success(`${itemToRemove.product.name} removed from cart`);
-          }
         } catch (error) {
           console.error('Error removing item from cart:', error);
-          toast.error('Error removing item from cart');
         }
       },
-      
+
       updateQuantity: (productId: number, quantity: number) => {
         try {
           const { items } = get();
           const existingItemIndex = items.findIndex(item => item.product.id === productId);
-          
+
           if (existingItemIndex >= 0) {
             const item = items[existingItemIndex];
-            const productName = item.product.name;
-            
             if (quantity <= 0) {
               get().removeItem(productId);
-              toast.success(`${productName} removed from cart`);
               return;
             }
-            
+
             // Check if the requested quantity exceeds available stock
             if (item.product.manage_stock && item.product.stock_quantity !== null && quantity > item.product.stock_quantity) {
-              toast.error(`Only ${item.product.stock_quantity} ${productName} items available in stock!`);
               return;
             }
-            
+
             const updatedItems = [...items];
             updatedItems[existingItemIndex] = {
               ...updatedItems[existingItemIndex],
               quantity
             };
-            set({ items: updatedItems });
+            set({
+              items: updatedItems
+            });
             get().calculateTotals();
-            
+
             // Track quantity update with PixelYourSite
             pixelYourSiteService.trackAddToCart({
               product_id: item.product.id,
@@ -198,31 +197,21 @@ export const useCartStore = create<CartState>()(
               quantity: quantity,
               value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * quantity,
             });
-            
-            toast.success(`${productName} quantity updated to ${quantity}`);
           }
         } catch (error) {
           console.error('Error updating cart item quantity:', error);
-          toast.error('Error updating cart item quantity');
         }
       },
-      
+
       clearCart: () => {
         try {
-          const { items } = get();
-          const itemCount = items.length;
           set({ items: [] });
           get().calculateTotals();
-          
-          if (itemCount > 0) {
-            toast.success('Cart cleared successfully');
-          }
         } catch (error) {
           console.error('Error clearing cart:', error);
-          toast.error('Error clearing cart');
         }
       },
-      
+
       getCartItems: () => {
         try {
           return get().items;
@@ -231,7 +220,7 @@ export const useCartStore = create<CartState>()(
           return [];
         }
       },
-      
+
       // Get specific cart item by product ID
       getCartItem: (productId: number) => {
         try {
@@ -241,7 +230,7 @@ export const useCartStore = create<CartState>()(
           return null;
         }
       },
-      
+
       // Check if a product is in cart
       isInCart: (productId: number) => {
         try {
@@ -251,7 +240,7 @@ export const useCartStore = create<CartState>()(
           return false;
         }
       },
-      
+
       // Get total quantity of a specific product in cart
       getProductQuantity: (productId: number) => {
         try {
@@ -262,19 +251,19 @@ export const useCartStore = create<CartState>()(
           return 0;
         }
       },
-      
+
       // Calculate totals helper function
       calculateTotals: () => {
         try {
           const { items } = get();
           let totalItems = 0;
           let totalPrice = 0;
-          
+
           // Use for loop instead of reduce for better performance with large arrays
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
             totalItems += item.quantity || 0;
-            
+
             // Convert price string to number and multiply by quantity
             // Handle both string and number formats for price
             let price: number;
@@ -285,16 +274,16 @@ export const useCartStore = create<CartState>()(
             }
             totalPrice += (price * (item.quantity || 0));
           }
-          
-          set({ 
+
+          set({
             totalItems,
             totalPrice: parseFloat(totalPrice.toFixed(2)) // Round to 2 decimal places
           });
         } catch (error) {
           console.error('Error calculating cart totals:', error);
-          set({ 
+          set({
             totalItems: 0,
-            totalPrice: 0 
+            totalPrice: 0
           });
         }
       }

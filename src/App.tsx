@@ -1,6 +1,7 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, useEffect, useCallback } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { setGlobalOpenCartFunction } from './store/cartStore';
 
 // Contexts
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -102,6 +103,42 @@ const App = () => {
     closeCart();
   };
 
+  // Add keyboard shortcut to close cart with escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isCartOpen) {
+        closeCart();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCartOpen]);
+
+  // Function to open cart when an item is added
+  const openCartOnAdd = useCallback(() => {
+    setIsCartOpen(true);
+  }, []);
+
+  // Set the global open cart function and listen for cart item added event to open the cart slide
+  useEffect(() => {
+    // Set the global function to open the cart
+    setGlobalOpenCartFunction(openCartOnAdd);
+
+    // Listen for cart item added event as backup
+    const handleCartItemAdded = () => {
+      setIsCartOpen(true);
+    };
+
+    window.addEventListener('cartItemAdded', handleCartItemAdded);
+
+    return () => {
+      window.removeEventListener('cartItemAdded', handleCartItemAdded);
+      // Reset the global function on unmount
+      setGlobalOpenCartFunction(() => {});
+    };
+  }, [openCartOnAdd]);
+
   const menuItems: MenuItemType[] = [
     { name: 'Home', path: ROUTES.HOME },
     { name: 'All Products', path: '/product-category/all-products' },
@@ -146,9 +183,9 @@ const App = () => {
               <div className={`${isMenuOpen ? 'overflow-hidden' : ''}`}>
                 {/* <Navigation /> */}
                 {/* <Topbar /> */}
-                <Header 
-                  toggleMenu={toggleMenu} 
-                  toggleCart={toggleCart} 
+                <Header
+                  toggleMenu={toggleMenu}
+                  toggleCart={toggleCart}
                   isMenuOpen={isMenuOpen}
                 />
                   <div className="">
@@ -171,24 +208,24 @@ const App = () => {
                           <Route path={ROUTES.CHECKOUT} element={<Checkout />} />
                           <Route path={ROUTES.ORDER_SUCCESS} element={<OrderSuccessPage />} />
                           <Route path={ROUTES.SEARCH} element={<SearchPage />} />
-                          
-                          <Route 
-                            path={ROUTES.PROFILE} 
+
+                          <Route
+                            path={ROUTES.PROFILE}
                             element={
                               <ProtectedRoute>
                                 <ProfilePage />
                               </ProtectedRoute>
-                            } 
+                            }
                           />
                           <Route path={ROUTES.API_DEBUG} element={<APIDebugPage />} />
                           <Route path={ROUTES.TEST_PAGE} element={<TestPage />} />
                           <Route path="/pixel-test" element={<PixelTestPage />} />
                           <Route path={ROUTES.ANALYTICS} element={<AnalyticsDashboard />} />
                           <Route path="/incomplete-purchases" element={<IncompletePurchases />} />
-                          
+
                           {/* Password Reset Route */}
                           <Route path="/reset-password" element={<PasswordReset />} />
-                          
+
                           {/* Redirect old collection routes to new product-category routes */}
                           <Route path={ROUTES.COLLECTIONS_BESTSELLERS} element={<Navigate to="/product-category/bestsellers" replace />} />
                           <Route path={ROUTES.COLLECTIONS_SUN_CARE} element={<Navigate to="/product-category/sun-care" replace />} />
@@ -202,7 +239,7 @@ const App = () => {
                           <Route path={ROUTES.COLLECTIONS_DANDRUFF} element={<Navigate to="/product-category/dandruff" replace />} />
                           <Route path={ROUTES.COLLECTIONS_HAIR_CARE_1} element={<Navigate to="/product-category/hair-care-1" replace />} />
                           <Route path={ROUTES.COLLECTIONS_ALL} element={<Navigate to="/product-category/all-products" replace />} />
-                          
+
                           {/* New product-category routes - these should come after the redirects */}
                           <Route path="/product-category/bestsellers" element={
                             <div className='pb-10'><BestSellers /></div>
@@ -240,12 +277,12 @@ const App = () => {
                           <Route path="/product-category/all-products" element={
                             <div className='pb-10'><AllProducts /></div>
                           } />
-                          
+
                           {/* Dynamic collection route - this should be placed before the wildcard route */}
                           <Route path="/product-category/:slug" element={
                             <div className='pb-10'><CollectionBySlug /></div>
                           } />
-                          
+
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </Suspense>
@@ -254,14 +291,14 @@ const App = () => {
                   <Footer />
                   <DiscountSticker />
               </div>
-              
+
               {/* Cart Slide - Positioned at app level to avoid navbar constraints */}
               <CartSlide isOpen={isCartOpen} onClose={closeCart} />
             </SidebarProvider>
           </div>
-          
+
           {/* Toast notifications */}
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               style: {

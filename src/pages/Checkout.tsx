@@ -43,9 +43,17 @@ const Checkout = () => {
   const hasTrackedStart = useRef(false);
   const formSubmitted = useRef(false);
 
+  // Create a ref to track if we've already created an incomplete order during this session
+  const incompleteOrderCreated = useRef(false);
+
+  // Add a ref to track if an order is currently being submitted to prevent duplicate submissions
+  const isSubmitting = useRef(false);
+
   useEffect(() => {
     return () => {
-      if (!formSubmitted.current && items.length > 0) {
+      // Only create incomplete order if we haven't already done so in this session
+      // and the form hasn't been submitted successfully
+      if (!formSubmitted.current && items.length > 0 && !incompleteOrderCreated.current) {
         const orderData: any = {
           billing: {
             first_name: formData.name,
@@ -64,9 +72,12 @@ const Checkout = () => {
           line_items: items.map(item => ({ product_id: item.product.id, quantity: item.quantity })),
         };
         woocommerceService.createIncompleteOrder(orderData);
+        incompleteOrderCreated.current = true; // Mark that we've created an incomplete order
       }
     };
-  }, [formData, items]);
+    // Removed [formData, items] dependencies to avoid creating multiple incomplete orders
+    // when form data changes - this effect should only run on component unmount
+  }, []); // Empty dependency array means this only runs on mount and unmount
 
   // Removed automatic order creation on form changes to prevent unwanted orders
   // useEffect(() => {
@@ -201,30 +212,42 @@ const Checkout = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent duplicate submissions
+    if (isLoading || isSubmitting.current) {
+      return;
+    }
+
+    // Set both loading states to prevent duplicate submissions
     setIsLoading(true);
+    isSubmitting.current = true;
 
     // Perform validation before submitting
     if (!formData.name.trim()) {
       toast.error('Please enter your full name');
       setIsLoading(false);
+      isSubmitting.current = false;
       return;
     }
 
     if (!formData.address1.trim()) {
       toast.error('Please enter your address');
       setIsLoading(false);
+      isSubmitting.current = false;
       return;
     }
 
     if (!formData.district.trim()) {
       toast.error('Please select your district');
       setIsLoading(false);
+      isSubmitting.current = false;
       return;
     }
 
     if (!formData.phone.trim() || formData.phone.length < 10) {
       toast.error('Please enter a valid phone number (at least 10 digits)');
       setIsLoading(false);
+      isSubmitting.current = false;
       return;
     }
 
@@ -245,6 +268,7 @@ const Checkout = () => {
     // if (fraudResult.shouldBlock) {
     //   alert(`Order blocked: ${fraudResult.reasons.join(', ')}`);
     //   setIsLoading(false);
+    //   isSubmitting.current = false;
     //   return;
     // }
 
@@ -341,6 +365,8 @@ const Checkout = () => {
       clearCart();
       refreshOrders && await refreshOrders();
       formSubmitted.current = true;
+      // Mark that we've created an incomplete order on this page to prevent another one on unmount
+      incompleteOrderCreated.current = true;
       navigate(ROUTES.ORDER_SUCCESS, { state: { order: newOrder, total: totalPrice } });
     } catch (error: any) {
       console.error('Order placement error details:', {
@@ -350,7 +376,7 @@ const Checkout = () => {
         status: error?.status,
         response: error?.response
       });
-      
+
       // Check if the error is related to API configuration or network issues
       if (error.message && (error.message.includes('HTTP error') || error.message.includes('401') || error.message.includes('authentication'))) {
         toast.error('Failed to place order: API authentication issue. Please check WooCommerce API configuration.');
@@ -366,6 +392,7 @@ const Checkout = () => {
       }
     } finally {
       setIsLoading(false);
+      isSubmitting.current = false;
     }
   };
 

@@ -49,9 +49,9 @@ const Header = memo(({ toggleMenu, toggleCart, isMenuOpen }: HeaderProps) => {
   return (
     <>
       <header className={headerClass}>
-        <Navbar 
-          toggleMenu={toggleMenu} 
-          toggleCart={toggleCart} 
+        <Navbar
+          toggleMenu={toggleMenu}
+          toggleCart={toggleCart}
           isMenuOpen={isMenuOpen}
           onUserIconClick={handleUserIconClick}
         />

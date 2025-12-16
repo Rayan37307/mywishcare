@@ -59,7 +59,7 @@ const ProductDetail = () => {
         quantity: quantity,
         value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
       });
-      
+
       // Add product to cart and set navigation flag
       // The stock check is now handled in the cart store
       addItem(product, quantity);
