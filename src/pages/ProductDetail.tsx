@@ -21,7 +21,7 @@ const ProductDetail = () => {
   const { id, slug } = useParams<{ id?: string; slug?: string }>();
   const navigate = useNavigate();
   const { fetchProductById, fetchProductBySlug, setLoading, setError } = useProductStore();
-  const { addItem, items } = useCartStore();
+  const { addItem, addDirectPurchaseItem, items } = useCartStore();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoadingState] = useState(true);
   const [shouldNavigate, setShouldNavigate] = useState(false);
@@ -42,7 +42,7 @@ const ProductDetail = () => {
         quantity: quantity,
         value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
       });
-      
+
       // The stock check is now handled in the cart store
       addItem(product, quantity);
     }
@@ -60,9 +60,9 @@ const ProductDetail = () => {
         value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
       });
 
-      // Add product to cart and set navigation flag
+      // Add product to cart without opening the cart slide (for direct purchase)
       // The stock check is now handled in the cart store
-      addItem(product, quantity);
+      addDirectPurchaseItem(product, quantity);
       setShouldNavigate(true);
     }
   };

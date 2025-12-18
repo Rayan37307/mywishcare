@@ -12,6 +12,7 @@ export interface CartState {
   totalPrice: number;
   loadingItems: number[]; // Track which products are currently being added
   addItem: (product: Product, quantity?: number, callback?: () => void) => void;
+  addDirectPurchaseItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;

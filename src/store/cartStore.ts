@@ -133,6 +133,70 @@ export const useCartStore = create<CartState>()(
         window.dispatchEvent(new CustomEvent('cartItemAdded', { detail: { productId: product.id } }));
       },
 
+      // Add item to cart without triggering cart slide (for Buy Now functionality)
+      addDirectPurchaseItem: (product: Product, quantity: number = 1) => {
+        // Check stock status before adding to cart
+        if (product.stock_status === 'outofstock') {
+          return;
+        }
+
+        // For managed stock, check if there's enough quantity available
+        if (product.manage_stock && product.stock_quantity !== null) {
+          const currentCartQuantity = get().getProductQuantity(product.id);
+          const totalRequested = currentCartQuantity + quantity;
+
+          if (totalRequested > product.stock_quantity) {
+            return;
+          }
+        }
+
+        set(state => ({
+          loadingItems: [...state.loadingItems, product.id]
+        }));
+
+        // Directly update the cart state without complex timing
+        const { items, loadingItems } = get();
+        const existingItemIndex = items.findIndex(item => item.product.id === product.id);
+
+        let updatedItems: CartItem[];
+
+        if (existingItemIndex >= 0) {
+          // Update quantity if item already exists
+          updatedItems = [...items];
+          updatedItems[existingItemIndex] = {
+            ...updatedItems[existingItemIndex],
+            quantity: updatedItems[existingItemIndex].quantity + quantity
+          };
+        } else {
+          // Add new item
+          const newItem: CartItem = {
+            product,
+            quantity
+          };
+          updatedItems = [...items, newItem];
+        }
+
+        // Track add to cart event with PixelYourSite
+        pixelYourSiteService.trackAddToCart({
+          product_id: product.id,
+          product_name: product.name,
+          product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
+          currency: 'BDT',
+          quantity: quantity,
+          value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * quantity,
+        });
+
+        // Update state and remove from loading state in a single batch
+        set({
+          items: updatedItems,
+          loadingItems: loadingItems.filter(id => id !== product.id)
+        });
+        get().calculateTotals();
+
+        // For direct purchase, DON'T open the cart slide and DON'T dispatch the cartItemAdded event
+        // This ensures the cart slide doesn't open for direct purchases
+      },
+
       // Function to check if a product is currently being added
       isAddingItem: (productId: number) => {
         return get().loadingItems.includes(productId);

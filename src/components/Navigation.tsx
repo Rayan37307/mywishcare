@@ -17,7 +17,7 @@ const Navigation: React.FC<NavigationProps> = ({ onOpenAuthModal }) => {
         <div className="flex items-center space-x-8">
           <Link to="/" className="text-xl font-bold flex items-center">
             <FaHome className="mr-2" />
-            MyWishCare
+            WishCare BD
           </Link>
           
           <div className="flex space-x-4">
