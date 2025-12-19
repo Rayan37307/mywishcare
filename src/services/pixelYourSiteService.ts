@@ -254,10 +254,12 @@ class PixelYourSiteService {
   trackPurchase(checkoutData: PixelYourSiteCheckoutData, userData?: MetaPixelUserData): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
-    // Generate consistent event ID for both client and server
-    const eventId = generateEventId('Purchase', {order_id: checkoutData.order_id, value: checkoutData.value, timestamp: Date.now()});
+    // Generate a unique event ID based on the purchase content to identify actual purchase
+    // This allows real duplicates to be tracked while preventing accidental multiple sends of the same data
+    const uniquePurchaseKey = `purchase_${checkoutData.order_id || 'no_order_id'}_${checkoutData.value}_${JSON.stringify(checkoutData.contents.map(c => c.id).sort())}`;
+    const eventId = generateEventId('Purchase', {order_id: checkoutData.order_id, value: checkoutData.value, uniquePurchaseKey});
 
-    // Prevent duplicate tracking
+    // Prevent duplicate tracking of the exact same purchase
     if (this.isEventTracked(eventId)) {
       console.log('Duplicate purchase tracking prevented:', eventId);
       return;

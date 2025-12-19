@@ -36,10 +36,10 @@ class PixelConfirmationService {
   }
   
   // Track an order with pixel confirmation
-  trackOrder(orderData: OrderConfirmationData, pixelProviders: string[] = ['Meta', 'Google', 'TikTok']): void {
+  trackOrder(orderData: OrderConfirmationData, pixelProviders: string[] = ['Meta', 'Google', 'TikTok'], sendPurchaseEvent: boolean = true): void {
     // Mark this order as pending confirmation
     this.pendingConfirmations.add(orderData.orderId);
-    
+
     // Initialize verification result
     const result: PixelVerificationResult = {
       orderId: orderData.orderId,
@@ -48,12 +48,15 @@ class PixelConfirmationService {
       timestamp: Date.now(),
       status: 'pending',
     };
-    
+
     this.orderConfirmations.set(orderData.orderId, result);
-    
-    // Send purchase event to all specified pixel providers
-    this.sendPurchaseEvent(orderData, pixelProviders);
-    
+
+    // Send purchase event to all specified pixel providers if requested
+    if (sendPurchaseEvent) {
+      // Send purchase event to all specified pixel providers
+      this.sendPurchaseEvent(orderData, pixelProviders);
+    }
+
     // Store in localStorage
     this.saveConfirmations();
   }
@@ -67,7 +70,7 @@ class PixelConfirmationService {
       contents: data.contents,
       order_id: data.orderId,
     };
-    
+
     // Send to each specified provider
     providers.forEach(provider => {
       switch(provider.toLowerCase()) {
@@ -75,30 +78,29 @@ class PixelConfirmationService {
         case 'facebook':
           this.sendToMetaPixel(checkoutData, data.orderId);
           break;
-        case 'google':
-          this.sendToGoogleAnalytics(checkoutData, data.orderId);
-          break;
-        case 'tiktok':
-          this.sendToTikTokPixel(checkoutData, data.orderId);
-          break;
         default:
-          console.warn(`Unknown pixel provider: ${provider}`);
+          console.warn(`Pixel provider not implemented: ${provider}. Only Meta Pixel is handled in this implementation.`);
       }
     });
   }
   
   // Send purchase event to Meta Pixel
-  private sendToMetaPixel(checkoutData: PixelYourSiteCheckoutData, _orderId: string): void {
-    // Track purchase via PixelYourSite service (handles tracking across all platforms including Meta Pixel)
-    pixelYourSiteService.trackPurchase(checkoutData);
+  private sendToMetaPixel(checkoutData: PixelYourSiteCheckoutData, orderId: string): void {
+    // Use direct Meta Pixel tracking instead of PixelYourSite service to avoid duplication
+    // when the same purchase is already tracked elsewhere
+    if (typeof (window as any).fbq !== 'undefined') {
+      (window as any).fbq('track', 'Purchase', {
+        value: checkoutData.value,
+        currency: checkoutData.currency,
+        contents: checkoutData.contents,
+        order_id: orderId,
+      });
+    }
   }
-  
+
   // Send purchase event to Google Analytics
   private sendToGoogleAnalytics(checkoutData: PixelYourSiteCheckoutData, orderId: string): void {
-    // Track purchase via PixelYourSite service
-    pixelYourSiteService.trackPurchase(checkoutData);
-
-    // Additional Google Analytics specific tracking
+    // Use direct Google Analytics tracking instead of PixelYourSite service to avoid duplication
     if (typeof (window as any).gtag !== 'undefined') {
       (window as any).gtag('event', 'purchase', {
         transaction_id: orderId,
@@ -112,13 +114,10 @@ class PixelConfirmationService {
       });
     }
   }
-  
+
   // Send purchase event to TikTok Pixel
   private sendToTikTokPixel(checkoutData: PixelYourSiteCheckoutData, _orderId: string): void {
-    // Track purchase via PixelYourSite service
-    pixelYourSiteService.trackPurchase(checkoutData);
-    
-    // Additional TikTok Pixel specific tracking
+    // Use direct TikTok Pixel tracking instead of PixelYourSite service to avoid duplication
     if (typeof (window as any).ttq !== 'undefined') {
       (window as any).ttq.track('Purchase', {
         contents: checkoutData.contents,

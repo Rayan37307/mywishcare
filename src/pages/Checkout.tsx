@@ -5,7 +5,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useOrder } from '../contexts/OrderContext';
 import { checkoutTrackingService } from '../services/checkoutTrackingService';
 // import { fakeOrderBlockingService } from '../services/fakeOrderBlockingService'; // Permanently removed
-import { pixelConfirmationService } from '../services/pixelConfirmationService';
 import { pixelYourSiteService } from '../services/pixelYourSiteService';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../constants/routes';
@@ -354,25 +353,9 @@ const Checkout = () => {
           }
         }
 
-        try {
-          pixelConfirmationService.trackOrder({
-            orderId: newOrder.id.toString(),
-            value: totalPrice + deliveryCharge,
-            currency: 'BDT',
-            contents: items.map(item => ({
-              id: item.product.id,
-              quantity: item.quantity,
-              item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
-            })),
-            phone: formData.phone,
-            customerName: formData.name,
-            email: formData.email,
-            timestamp: Date.now(),
-          });
-        } catch (trackingError) {
-          console.error('Pixel confirmation tracking error:', trackingError);
-          // Continue with order placement despite tracking error
-        }
+        // No need to track purchase again in pixelConfirmationService since pixelYourSiteService
+        // already handles both client-side and server-side Meta Pixel tracking
+        // The pixelConfirmationService tracking was causing duplicate events
       }
 
       if (sessionId) checkoutTrackingService.trackCheckoutComplete(sessionId);
