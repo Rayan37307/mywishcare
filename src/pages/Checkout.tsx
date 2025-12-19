@@ -133,16 +133,6 @@ const Checkout = () => {
       );
       setSessionId(newSessionId);
       hasTrackedStart.current = true;
-
-      pixelYourSiteService.trackCheckoutStart({
-        value: totalPrice + deliveryCharge,
-        currency: 'BDT',
-        contents: items.map(item => ({
-          id: item.product.id,
-          quantity: item.quantity,
-          item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
-        })),
-      });
     }
   }, [items, formData, totalPrice]);
 

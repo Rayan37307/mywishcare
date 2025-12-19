@@ -1,7 +1,7 @@
 // services/pixelConfirmationService.ts
 // Service for sharing pixel confirmation data for order verification
 
-import { pixelYourSiteService, type PixelYourSiteCheckoutData } from './pixelYourSiteService';
+import { type PixelYourSiteCheckoutData } from './pixelYourSiteService';
 
 export interface OrderConfirmationData {
   orderId: string;
@@ -98,34 +98,7 @@ class PixelConfirmationService {
     }
   }
 
-  // Send purchase event to Google Analytics
-  private sendToGoogleAnalytics(checkoutData: PixelYourSiteCheckoutData, orderId: string): void {
-    // Use direct Google Analytics tracking instead of PixelYourSite service to avoid duplication
-    if (typeof (window as any).gtag !== 'undefined') {
-      (window as any).gtag('event', 'purchase', {
-        transaction_id: orderId,
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-        items: checkoutData.contents.map(content => ({
-          item_id: content.id,
-          quantity: content.quantity,
-          item_price: content.item_price,
-        })),
-      });
-    }
-  }
 
-  // Send purchase event to TikTok Pixel
-  private sendToTikTokPixel(checkoutData: PixelYourSiteCheckoutData, _orderId: string): void {
-    // Use direct TikTok Pixel tracking instead of PixelYourSite service to avoid duplication
-    if (typeof (window as any).ttq !== 'undefined') {
-      (window as any).ttq.track('Purchase', {
-        contents: checkoutData.contents,
-        value: checkoutData.value,
-        currency: checkoutData.currency,
-      });
-    }
-  }
   
   // Verify if an order has been confirmed by pixels
   verifyOrderConfirmation(orderId: string): PixelVerificationResult {

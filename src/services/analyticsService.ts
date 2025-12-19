@@ -1,7 +1,6 @@
 // services/analyticsService.ts
 // Analytics service for tracking platform integrations (Meta, TikTok, and Google)
 
-import { generateEventId } from './eventIdGenerator';
 
 // Types for analytics events
 export interface AnalyticsEvent {
@@ -114,8 +113,7 @@ class AnalyticsService {
         content_ids: [productData.product_id],
         content_name: productData.product_name,
         content_type: 'product',
-        // Only add value if it's a valid number to prevent NaN
-        ...(typeof productData.value === 'number' && !isNaN(productData.value) && {value: productData.value}),
+        ...(productData.value !== undefined && {value: productData.value}),
         currency: productData.currency,
       };
       if (eventId) {
@@ -164,8 +162,7 @@ class AnalyticsService {
         content_ids: [productData.product_id],
         content_name: productData.product_name,
         content_type: 'product',
-        // Only add value if it's a valid number to prevent NaN
-        ...(typeof productData.value === 'number' && !isNaN(productData.value) && {value: productData.value}),
+        ...(productData.value !== undefined && {value: productData.value}),
         currency: productData.currency,
       };
       if (eventId) {
@@ -210,8 +207,7 @@ class AnalyticsService {
     if (typeof fbq !== 'undefined') {
       const params: any = {
         contents: checkoutData.contents,
-        // Only add value if it's a valid number to prevent NaN
-        ...(typeof checkoutData.value === 'number' && !isNaN(checkoutData.value) && {value: checkoutData.value}),
+        ...(checkoutData.value !== undefined && {value: checkoutData.value}),
         currency: checkoutData.currency,
         content_type: checkoutData.content_type || 'product',
       };
@@ -255,8 +251,7 @@ class AnalyticsService {
       const params: any = {
         content_ids: checkoutData.contents.map(c => c.id),
         contents: checkoutData.contents,
-        // Only add value if it's a valid number to prevent NaN
-        ...(typeof checkoutData.value === 'number' && !isNaN(checkoutData.value) && {value: checkoutData.value}),
+        ...(checkoutData.value !== undefined && {value: checkoutData.value}),
         currency: checkoutData.currency,
       };
       if (eventId) {
@@ -437,20 +432,6 @@ class AnalyticsService {
         fbq('trackCustom', event.eventName, paramsWithoutEventId);
       }
 
-      // Send TEST5736 test event for verification
-      const testParams = {
-        original_event: event.eventName,
-        test_code: 'TEST5736',
-        event_type: 'meta_pixel_test',
-        timestamp: new Date().toISOString(),
-        ...paramsWithoutEventId
-      };
-
-      if (eventId) {
-        fbq('trackCustom', 'TEST5736', testParams, { eventID: generateEventId('TEST5736') });
-      } else {
-        fbq('trackCustom', 'TEST5736', testParams);
-      }
     }
   }
   

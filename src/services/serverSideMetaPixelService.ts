@@ -95,32 +95,6 @@ class ServerSideMetaPixelService {
         return false;
       }
 
-      // Also send TEST5736 test event for verification
-      const testResponse = await fetch(`${this.apiBaseUrl}/meta-pixel/v1/track?test_event_code=TEST5736`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          event_name: 'TEST5736',
-          event_id: generateEventId('TEST5736', {original_event: event.event_name}),
-          user_data: event.user_data,
-          custom_data: {
-            original_event: event.event_name,
-            test_code: 'TEST5736',
-            event_type: 'meta_pixel_test',
-            timestamp: new Date().toISOString(),
-            ...event.custom_data
-          }
-        }),
-      });
-
-      if (!testResponse.ok) {
-        const errorData = await testResponse.json().catch(() => ({}));
-        console.error('Server-side TEST5736 Meta Pixel tracking failed:', errorData);
-      } else {
-        console.log('Server-side TEST5736 event tracked');
-      }
 
       const result = await response.json();
       console.log('Server-side Meta Pixel event tracked:', result);
@@ -165,34 +139,6 @@ class ServerSideMetaPixelService {
         return false;
       }
 
-      // Also send TEST5736 test event for verification
-      const testResponse = await fetch(`${this.apiBaseUrl}/meta-pixel/v1/track?test_event_code=TEST5736`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          event_name: 'TEST5736',
-          event_id: generateEventId('TEST5736', {original_event: 'Purchase', order_id: orderId}),
-          user_data: userData,
-          custom_data: {
-            original_event: 'Purchase',
-            test_code: 'TEST5736',
-            event_type: 'meta_pixel_test',
-            timestamp: new Date().toISOString(),
-            order_id: orderId,
-            value: value,
-            currency: currency
-          }
-        }),
-      });
-
-      if (!testResponse.ok) {
-        const errorData = await testResponse.json().catch(() => ({}));
-        console.error('Server-side TEST5736 Meta Pixel purchase tracking failed:', errorData);
-      } else {
-        console.log('Server-side TEST5736 purchase event tracked');
-      }
 
       const result = await response.json();
       console.log('Server-side Meta Pixel purchase tracked:', result);

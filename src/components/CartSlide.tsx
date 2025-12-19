@@ -357,18 +357,6 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                 <Link
                   to="/checkout"
                   onClick={() => {
-                    // Track checkout start with cart contents
-                    if (items.length > 0) {
-                      pixelYourSiteService.trackCheckoutStart({
-                        value: totalPrice,
-                        currency: 'BDT',
-                        contents: items.map(item => ({
-                          id: item.product.id,
-                          quantity: item.quantity,
-                          item_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
-                        })),
-                      });
-                    }
                     closeAllSidebars();
                     onClose();
                   }}
