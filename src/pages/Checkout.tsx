@@ -43,6 +43,8 @@ const Checkout = () => {
   const hasTrackedStart = useRef(false);
   const formSubmitted = useRef(false);
 
+  const hasTrackedPurchase = useRef(false);
+
   // Create a ref to track if we've already created an incomplete order during this session
   const incompleteOrderCreated = useRef(false);
 
@@ -322,31 +324,34 @@ const Checkout = () => {
       if (newOrder?.id) {
         // Track purchase after successful order creation
         // Wrap tracking in try-catch to prevent tracking errors from affecting order placement
-        try {
-          pixelYourSiteService.trackPurchase(
-            {
-              value: totalPrice + deliveryCharge,
-              currency: 'BDT',
-              contents: items.map((item) => ({
-                id: item.product.id,
-                quantity: item.quantity,
-                item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
-              })),
-              order_id: newOrder.id.toString(),
-            },
-            {
-              email: formData.email,
-              phone: formData.phone,
-              first_name: formData.name.split(' ')[0],
-              last_name: formData.name.split(' ').slice(1).join(' '),
-              city: formData.district,
-              state: formData.district,
-              country: formData.countryCode,
-            }
-          );
-        } catch (trackingError) {
-          console.error('Pixel tracking error (purchase):', trackingError);
-          // Continue with order placement despite tracking error
+        if (!hasTrackedPurchase.current) {
+          try {
+            pixelYourSiteService.trackPurchase(
+              {
+                value: totalPrice + deliveryCharge,
+                currency: 'BDT',
+                contents: items.map((item) => ({
+                  id: item.product.id,
+                  quantity: item.quantity,
+                  item_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
+                })),
+                order_id: newOrder.id.toString(),
+              },
+              {
+                email: formData.email,
+                phone: formData.phone,
+                first_name: formData.name.split(' ')[0],
+                last_name: formData.name.split(' ').slice(1).join(' '),
+                city: formData.district,
+                state: formData.district,
+                country: formData.countryCode,
+              }
+            );
+            hasTrackedPurchase.current = true;
+          } catch (trackingError) {
+            console.error('Pixel tracking error (purchase):', trackingError);
+            // Continue with order placement despite tracking error
+          }
         }
 
         try {

@@ -1,6 +1,8 @@
 // services/analyticsService.ts
 // Analytics service for tracking platform integrations (Meta, TikTok, and Google)
 
+import { generateEventId } from './eventIdGenerator';
+
 // Types for analytics events
 export interface AnalyticsEvent {
   eventName: string;
@@ -60,9 +62,9 @@ class AnalyticsService {
   }
   
   // Track page views
-  trackPageView(pageTitle?: string, pageUrl?: string): void {
+  trackPageView(pageTitle?: string, pageUrl?: string, eventId?: string): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'page_view', {
@@ -70,12 +72,17 @@ class AnalyticsService {
         page_location: pageUrl,
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'PageView');
+      const params: any = {};
+      if (eventId) {
+        fbq('track', 'PageView', params, { eventID: eventId });
+      } else {
+        fbq('track', 'PageView', params);
+      }
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('PageView');
@@ -83,9 +90,9 @@ class AnalyticsService {
   }
   
   // Track product views
-  trackProductView(productData: ProductTrackingData): void {
+  trackProductView(productData: ProductTrackingData, eventId?: string): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'view_item', {
@@ -100,18 +107,24 @@ class AnalyticsService {
         currency: productData.currency,
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'ViewContent', {
+      const params: any = {
         content_ids: [productData.product_id],
         content_name: productData.product_name,
         content_type: 'product',
-        value: productData.value,
+        // Only add value if it's a valid number to prevent NaN
+        ...(typeof productData.value === 'number' && !isNaN(productData.value) && {value: productData.value}),
         currency: productData.currency,
-      });
+      };
+      if (eventId) {
+        fbq('track', 'ViewContent', params, { eventID: eventId });
+      } else {
+        fbq('track', 'ViewContent', params);
+      }
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('ViewContent', {
@@ -127,9 +140,9 @@ class AnalyticsService {
   }
   
   // Track add to cart
-  trackAddToCart(productData: ProductTrackingData): void {
+  trackAddToCart(productData: ProductTrackingData, eventId?: string): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'add_to_cart', {
@@ -144,18 +157,24 @@ class AnalyticsService {
         currency: productData.currency,
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'AddToCart', {
+      const params: any = {
         content_ids: [productData.product_id],
         content_name: productData.product_name,
         content_type: 'product',
-        value: productData.value,
+        // Only add value if it's a valid number to prevent NaN
+        ...(typeof productData.value === 'number' && !isNaN(productData.value) && {value: productData.value}),
         currency: productData.currency,
-      });
+      };
+      if (eventId) {
+        fbq('track', 'AddToCart', params, { eventID: eventId });
+      } else {
+        fbq('track', 'AddToCart', params);
+      }
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('AddToCart', {
@@ -171,9 +190,9 @@ class AnalyticsService {
   }
   
   // Track checkout start (for abandonment tracking)
-  trackCheckoutStart(checkoutData: CheckoutTrackingData): void {
+  trackCheckoutStart(checkoutData: CheckoutTrackingData, eventId?: string): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
-    
+
     // Google Analytics
     if (typeof gtag !== 'undefined') {
       gtag('event', 'begin_checkout', {
@@ -186,17 +205,23 @@ class AnalyticsService {
         })),
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'InitiateCheckout', {
+      const params: any = {
         contents: checkoutData.contents,
-        value: checkoutData.value,
+        // Only add value if it's a valid number to prevent NaN
+        ...(typeof checkoutData.value === 'number' && !isNaN(checkoutData.value) && {value: checkoutData.value}),
         currency: checkoutData.currency,
         content_type: checkoutData.content_type || 'product',
-      });
+      };
+      if (eventId) {
+        fbq('track', 'InitiateCheckout', params, { eventID: eventId });
+      } else {
+        fbq('track', 'InitiateCheckout', params);
+      }
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('InitiateCheckout', {
@@ -208,7 +233,7 @@ class AnalyticsService {
   }
   
   // Track successful purchase
-  trackPurchase(checkoutData: CheckoutTrackingData, orderId?: string): void {
+  trackPurchase(checkoutData: CheckoutTrackingData, orderId?: string, eventId?: string): void {
     if (!this.trackingEnabled || !this.isInitialized) return;
 
     // Google Analytics
@@ -224,17 +249,23 @@ class AnalyticsService {
         })),
       });
     }
-    
+
     // Meta Pixel
     if (typeof fbq !== 'undefined') {
-      fbq('track', 'Purchase', {
+      const params: any = {
         content_ids: checkoutData.contents.map(c => c.id),
         contents: checkoutData.contents,
-        value: checkoutData.value,
+        // Only add value if it's a valid number to prevent NaN
+        ...(typeof checkoutData.value === 'number' && !isNaN(checkoutData.value) && {value: checkoutData.value}),
         currency: checkoutData.currency,
-      });
+      };
+      if (eventId) {
+        fbq('track', 'Purchase', params, { eventID: eventId });
+      } else {
+        fbq('track', 'Purchase', params);
+      }
     }
-    
+
     // TikTok Pixel
     if (typeof ttq !== 'undefined') {
       ttq.track('Purchase', {
@@ -393,7 +424,33 @@ class AnalyticsService {
   // Send event to Meta Pixel
   private trackOnMeta(event: AnalyticsEvent): void {
     if (typeof fbq !== 'undefined') {
-      fbq('trackCustom', event.eventName, event.parameters);
+      // Extract the event ID if provided in parameters
+      const eventId = event.parameters?.mp_event_id;
+      // Remove the event ID from parameters to avoid it being sent as event data
+      const paramsWithoutEventId = { ...event.parameters };
+      delete paramsWithoutEventId.mp_event_id;
+
+      // If we have an event ID, pass it as a separate parameter, otherwise track normally
+      if (eventId) {
+        fbq('trackCustom', event.eventName, paramsWithoutEventId, { eventID: eventId });
+      } else {
+        fbq('trackCustom', event.eventName, paramsWithoutEventId);
+      }
+
+      // Send TEST5736 test event for verification
+      const testParams = {
+        original_event: event.eventName,
+        test_code: 'TEST5736',
+        event_type: 'meta_pixel_test',
+        timestamp: new Date().toISOString(),
+        ...paramsWithoutEventId
+      };
+
+      if (eventId) {
+        fbq('trackCustom', 'TEST5736', testParams, { eventID: generateEventId('TEST5736') });
+      } else {
+        fbq('trackCustom', 'TEST5736', testParams);
+      }
     }
   }
   
