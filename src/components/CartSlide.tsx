@@ -21,7 +21,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const backdropRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [slidePosition, setSlidePosition] = useState<'open' | 'closed'>('closed');
-  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track previous isOpen value to detect changes
   const prevIsOpenRef = useRef(isOpen);
@@ -83,6 +83,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
       className={`fixed inset-0 z-50 overflow-hidden ${
         isVisible ? "block" : "hidden"
       }`}
+      style={{ touchAction: 'none' }}
     >
       {/* Backdrop */}
       <div
@@ -91,8 +92,17 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
         onClick={() => {
           onClose();
         }}
-        onTouchStart={() => {
+        onTouchStart={(e) => {
+          e.preventDefault(); // Prevent default touch behavior
           onClose();
+        }}
+        onTouchEnd={(e) => {
+          e.preventDefault(); // Prevent default touch behavior
+          onClose();
+        }}
+        onTouchMove={(e) => {
+          // Prevent scroll behavior that might interfere
+          e.preventDefault();
         }}
       ></div>
 

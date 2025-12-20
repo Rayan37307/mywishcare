@@ -73,8 +73,8 @@ class ServerSideMetaPixelService {
       // Use provided event_id or generate a consistent event ID
       const eventId = event.event_id || generateEventId(event.event_name, event.custom_data);
 
-      // Send original event with TEST5736 in query parameters for verification
-      const response = await fetch(`${this.apiBaseUrl}/meta-pixel/v1/track?test_event_code=TEST5736`, {
+      // Send original event with TEST31194 in query parameters for verification
+      const response = await fetch(`${this.apiBaseUrl}/meta-pixel/v1/track?test_event_code=TEST31194`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,8 +117,8 @@ class ServerSideMetaPixelService {
     try {
       const eventIdToUse = eventId || generateEventId('Purchase', {order_id: orderId, value});
 
-      // Send original event with TEST5736 in query parameters for verification
-      const response = await fetch(`${this.apiBaseUrl}/meta-pixel/v1/purchase?test_event_code=TEST5736`, {
+      // Send original event with TEST31194 in query parameters for verification
+      const response = await fetch(`${this.apiBaseUrl}/meta-pixel/v1/purchase?test_event_code=TEST31194`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
