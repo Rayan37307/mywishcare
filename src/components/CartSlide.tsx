@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback, useState } from "react";
-import { gsap } from "gsap";
 import { useCartStore } from "../store/cartStore";
 import { useProductStore } from "../store/productStore";
 import { Link } from "react-router-dom";
@@ -21,48 +20,51 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const slideRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [slidePosition, setSlidePosition] = useState<'open' | 'closed'>('closed');
+  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const animateSlide = useCallback(() => {
-    if (!slideRef.current || !backdropRef.current) return;
+  // Track previous isOpen value to detect changes
+  const prevIsOpenRef = useRef(isOpen);
 
-    if (isOpen) {
+  useEffect(() => {
+    if (isOpen && !prevIsOpenRef.current) {
+      // isOpen changed from false to true (opening)
       setIsVisible(true);
-      gsap.set(slideRef.current, { x: "100%", scaleX: 0.95 });
-      gsap.set(backdropRef.current, { opacity: 0 });
-      gsap.to(backdropRef.current, {
-        opacity: 0.5,
-        duration: 0.25,
-        ease: "power3.out",
-      });
-      gsap.to(slideRef.current, {
-        x: 0,
-        scaleX: 1,
-        duration: 0.45,
-        ease: "back.out(1.2)",
-      });
-    } else {
-      gsap.to(backdropRef.current, {
-        opacity: 0,
-        duration: 0.2,
-        ease: "power3.in",
-      });
-      gsap.to(slideRef.current, {
-        x: "100%",
-        scaleX: 0.95,
-        duration: 0.35,
-        ease: "back.in(1.2)",
-        onComplete: () => setIsVisible(false),
-      });
+      // Set the slide to closed position first, then transition to open after a frame
+      setSlidePosition('closed');
+      // Use setTimeout to ensure DOM updates before changing position
+      setTimeout(() => {
+        setSlidePosition('open');
+      }, 0);
+    } else if (prevIsOpenRef.current && !isOpen) {
+      // isOpen changed from true to false (closing)
+      // Set slide to closed position to trigger animation
+      setSlidePosition('closed');
+      // After animation completes, hide the container
+      closeTimerRef.current = setTimeout(() => {
+        setIsVisible(false);
+        closeTimerRef.current = null;
+      }, 400); // Match transition duration
     }
+
+    // Update the previous value
+    prevIsOpenRef.current = isOpen;
   }, [isOpen]);
+
+  // Clear timer when component unmounts
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    };
+  }, []);
+
 
   useEffect(() => {
     if (!bestSellingProducts.length) fetchBestSellingProducts();
   }, [bestSellingProducts.length]);
 
-  useEffect(() => {
-    animateSlide();
-  }, [animateSlide]);
 
   const messages = ["Get extra 5% off use code wcbd5 on BDT ৳2,999 shopping"];
   const memoizedMessages = useCallback(() => {
@@ -85,8 +87,13 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
       {/* Backdrop */}
       <div
         ref={backdropRef}
-        className="absolute inset-0 bg-black/25"
-        onClick={onClose}
+        className={`absolute inset-0 bg-black transition-opacity duration-400 ease-out ${slidePosition === 'open' ? 'opacity-50' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => {
+          onClose();
+        }}
+        onTouchStart={() => {
+          onClose();
+        }}
       ></div>
 
       {/* Slide panel */}
@@ -94,7 +101,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
         <div className="relative w-screen max-w-md">
           <div
             ref={slideRef}
-            className="h-full flex flex-col bg-white shadow-xl ml-16 w-[calc(100%-4rem)]"
+            className={`h-full flex flex-col bg-white shadow-xl ml-16 w-[calc(100%-4rem)] transform transition-all duration-400 ease-out ${slidePosition === 'open' ? 'translate-x-0' : 'translate-x-full'}`}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 sm:py-6 border-b border-gray-200">
@@ -104,7 +111,9 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 className="text-gray-400 hover:text-gray-500"
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                }}
               >
                 <svg
                   className="h-5 w-5 sm:h-6 sm:w-6"
