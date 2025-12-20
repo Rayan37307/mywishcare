@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { useCartStore } from "../store/cartStore";
 import { useProductStore } from "../store/productStore";
 import { Link } from "react-router-dom";
@@ -17,54 +17,22 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const { bestSellingProducts, fetchBestSellingProducts } = useProductStore();
   const { closeAllSidebars } = useSidebar();
 
-  const slideRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [slidePosition, setSlidePosition] = useState<'open' | 'closed'>('closed');
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Track previous isOpen value to detect changes
-  const prevIsOpenRef = useRef(isOpen);
-
+  // Update the document body overflow to prevent background scrolling when cart is open
   useEffect(() => {
-    if (isOpen && !prevIsOpenRef.current) {
-      // isOpen changed from false to true (opening)
-      setIsVisible(true);
-      // Set the slide to closed position first, then transition to open after a frame
-      setSlidePosition('closed');
-      // Use setTimeout to ensure DOM updates before changing position
-      setTimeout(() => {
-        setSlidePosition('open');
-      }, 0);
-    } else if (prevIsOpenRef.current && !isOpen) {
-      // isOpen changed from true to false (closing)
-      // Set slide to closed position to trigger animation
-      setSlidePosition('closed');
-      // After animation completes, hide the container
-      closeTimerRef.current = setTimeout(() => {
-        setIsVisible(false);
-        closeTimerRef.current = null;
-      }, 400); // Match transition duration
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
 
-    // Update the previous value
-    prevIsOpenRef.current = isOpen;
-  }, [isOpen]);
-
-  // Clear timer when component unmounts
-  useEffect(() => {
     return () => {
-      if (closeTimerRef.current) {
-        clearTimeout(closeTimerRef.current);
-      }
+      document.body.style.overflow = "";
     };
-  }, []);
-
+  }, [isOpen]);
 
   useEffect(() => {
     if (!bestSellingProducts.length) fetchBestSellingProducts();
   }, [bestSellingProducts.length]);
-
 
   const messages = ["Get extra 5% off use code wcbd5 on BDT ৳2,999 shopping"];
   const memoizedMessages = useCallback(() => {
@@ -80,28 +48,24 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-hidden ${
-        isVisible ? "block" : "hidden"
-      }`}
-      style={{ touchAction: 'none' }}
+      className={`fixed inset-0 z-50 overflow-hidden ${isOpen ? 'block' : 'hidden'}`}
+      style={{ touchAction: "none" }}
     >
       {/* Backdrop */}
       <div
-        ref={backdropRef}
-        className={`absolute inset-0 bg-black transition-opacity duration-400 ease-out ${slidePosition === 'open' ? 'opacity-50' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => {
-          onClose();
-        }}
+        className={`absolute inset-0 bg-black transition-opacity duration-300 ease-out ${
+          isOpen ? 'opacity-50' : 'opacity-0'
+        }`}
+        onClick={onClose}
         onTouchStart={(e) => {
-          e.preventDefault(); // Prevent default touch behavior
+          e.preventDefault();
           onClose();
         }}
         onTouchEnd={(e) => {
-          e.preventDefault(); // Prevent default touch behavior
+          e.preventDefault();
           onClose();
         }}
         onTouchMove={(e) => {
-          // Prevent scroll behavior that might interfere
           e.preventDefault();
         }}
       ></div>
@@ -110,8 +74,9 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
       <div className="absolute inset-y-0 right-0 max-w-full flex">
         <div className="relative w-screen max-w-md">
           <div
-            ref={slideRef}
-            className={`h-full flex flex-col bg-white shadow-xl ml-16 w-[calc(100%-4rem)] transform transition-all duration-400 ease-out ${slidePosition === 'open' ? 'translate-x-0' : 'translate-x-full'}`}
+            className={`h-full flex flex-col bg-white shadow-xl ml-16 w-[calc(100%-4rem)] transform transition-all duration-300 ease-out ${
+              isOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 sm:py-6 border-b border-gray-200">
@@ -121,9 +86,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 className="text-gray-400 hover:text-gray-500"
-                onClick={() => {
-                  onClose();
-                }}
+                onClick={onClose}
               >
                 <svg
                   className="h-5 w-5 sm:h-6 sm:w-6"
@@ -253,12 +216,12 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                               product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
                               currency: 'BDT',
                               quantity: item.quantity + 1,
-                              value: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')) * (item.quantity + 1),
+                              value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * (item.quantity + 1),
                             });
                           }}
                           disabled={
-                            item.product.manage_stock && 
-                            item.product.stock_quantity !== null && 
+                            item.product.manage_stock &&
+                            item.product.stock_quantity !== null &&
                             item.quantity >= item.product.stock_quantity
                           }
                         >
@@ -352,10 +315,10 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                               pixelYourSiteService.trackAddToCart({
                                 product_id: product.id,
                                 product_name: product.name,
-                                product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                                product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
                                 currency: 'BDT',
                                 quantity: 1,
-                                value: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+                                value: parseFloat(product.price.replace(/[^\d.-]/g, '')),
                               });
                               addItem(product, 1);
                             }}
