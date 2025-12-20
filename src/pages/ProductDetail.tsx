@@ -37,10 +37,10 @@ const ProductDetail = () => {
       pixelYourSiteService.trackAddToCart({
         product_id: product.id,
         product_name: product.name,
-        product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+        product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
         currency: 'BDT',
         quantity: quantity,
-        value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+        value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * quantity,
       });
 
       // The stock check is now handled in the cart store
@@ -54,10 +54,10 @@ const ProductDetail = () => {
       pixelYourSiteService.trackAddToCart({
         product_id: product.id,
         product_name: product.name,
-        product_price: parseFloat(product.price.replace(/[^\\d.-]/g, '')),
+        product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
         currency: 'BDT',
         quantity: quantity,
-        value: parseFloat(product.price.replace(/[^\\d.-]/g, '')) * quantity,
+        value: parseFloat(product.price.replace(/[^\d.-]/g, '')) * quantity,
       });
 
       // Add product to cart without opening the cart slide (for direct purchase)
@@ -141,9 +141,9 @@ const ProductDetail = () => {
           pixelYourSiteService.trackProductView({
             product_id: fetchedProduct.id,
             product_name: fetchedProduct.name,
-            product_price: parseFloat(fetchedProduct.price.replace(/[^\\d.-]/g, '')),
+            product_price: parseFloat(fetchedProduct.price.replace(/[^\d.-]/g, '')),
             currency: 'BDT',
-            value: parseFloat(fetchedProduct.price.replace(/[^\\d.-]/g, '')),
+            value: parseFloat(fetchedProduct.price.replace(/[^\d.-]/g, '')),
           });
         }
       }

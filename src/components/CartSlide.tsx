@@ -30,27 +30,27 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
       gsap.set(slideRef.current, { x: "100%", scaleX: 0.95 });
       gsap.set(backdropRef.current, { opacity: 0 });
       gsap.to(backdropRef.current, {
-        opacity: 1,
-        duration: 0.3,
-        ease: "power2.out",
+        opacity: 0.5,
+        duration: 0.25,
+        ease: "power3.out",
       });
       gsap.to(slideRef.current, {
         x: 0,
         scaleX: 1,
-        duration: 0.4,
-        ease: "power2.out",
+        duration: 0.45,
+        ease: "back.out(1.2)",
       });
     } else {
       gsap.to(backdropRef.current, {
         opacity: 0,
-        duration: 0.25,
-        ease: "power2.in",
+        duration: 0.2,
+        ease: "power3.in",
       });
       gsap.to(slideRef.current, {
         x: "100%",
         scaleX: 0.95,
-        duration: 0.3,
-        ease: "power2.in",
+        duration: 0.35,
+        ease: "back.in(1.2)",
         onComplete: () => setIsVisible(false),
       });
     }
@@ -140,17 +140,17 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
               <style>{`
                 .animate-marquee {
                   display: inline-flex;
-                  animation: marquee 7s linear infinite;
+                  animation: marquee 20s linear infinite;
                 }
                 @keyframes marquee {
-                  0% { transform: translateX(0); }
-                  100% { transform: translateX(-50%); }
+                  0% { transform: translateX(100%); }
+                  100% { transform: translateX(-100%); }
                 }
               `}</style>
             </div>
 
             {/* Scrollable Content (Cart Items + Trending Section) */}
-            <div className="flex-1 flex flex-col min-h-0 p-4 gap-6 overflow-y-auto scrollbar-hidden">
+            <div className="flex-1 flex flex-col min-h-0 p-4 gap-6 overflow-y-auto scrollbar-hidden scroll-smooth">
               {/* Cart items */}
               {items.length === 0 ? (
                 <div className="text-center py-10">
@@ -160,7 +160,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                 items.map((item) => (
                   <div
                     key={item.product.id}
-                    className="bg-white rounded-lg p-4 flex gap-4 items-center border border-gray-100"
+                    className="bg-white rounded-lg p-4 flex gap-4 items-center border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-md"
                   >
                     <div className="w-24 h-24 flex-shrink-0">
                       <img
@@ -194,7 +194,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                       </div>
                       <div className="mt-2 flex gap-2 items-center">
                         <button
-                          className="px-2 py-1 border border-gray-300 rounded-md"
+                          className="px-2 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-1 focus:ring-blue-500"
                           onClick={() => {
                             updateQuantity(
                               item.product.id,
@@ -204,20 +204,20 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                             pixelYourSiteService.trackAddToCart({
                               product_id: item.product.id,
                               product_name: item.product.name,
-                              product_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+                              product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
                               currency: 'BDT',
                               quantity: item.quantity - 1,
-                              value: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')) * (item.quantity - 1),
+                              value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * (item.quantity - 1),
                             });
                           }}
                         >
                           -
                         </button>
-                        <span>{item.quantity}</span>
+                        <span className="px-3 py-1 font-medium transition-colors duration-200">{item.quantity}</span>
                         <button
-                          className={`px-2 py-1 border border-gray-300 rounded-md ${
-                            item.product.manage_stock && 
-                            item.product.stock_quantity !== null && 
+                          className={`px-2 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                            item.product.manage_stock &&
+                            item.product.stock_quantity !== null &&
                             item.quantity >= item.product.stock_quantity
                               ? 'opacity-50 cursor-not-allowed'
                               : ''
@@ -231,7 +231,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                             pixelYourSiteService.trackAddToCart({
                               product_id: item.product.id,
                               product_name: item.product.name,
-                              product_price: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')),
+                              product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
                               currency: 'BDT',
                               quantity: item.quantity + 1,
                               value: parseFloat(item.product.price.replace(/[^\\d.-]/g, '')) * (item.quantity + 1),
@@ -246,14 +246,14 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                           +
                         </button>
                         <button
-                          className="ml-auto text-red-500 text-sm sm:text-base"
+                          className="ml-auto text-red-500 text-sm sm:text-base hover:text-red-700 transition-all duration-200 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-1 focus:ring-red-300 rounded-full p-1"
                           onClick={() => {
                             const removedProduct = items.find(i => i.product.id === item.product.id);
                             if (removedProduct) {
                               pixelYourSiteService.trackCustomEvent('remove_from_cart', {
                                 product_id: removedProduct.product.id,
                                 product_name: removedProduct.product.name,
-                                value: parseFloat(removedProduct.product.price.replace(/[^\\d.-]/g, '')) * removedProduct.quantity,
+                                value: parseFloat(removedProduct.product.price.replace(/[^\d.-]/g, '')) * removedProduct.quantity,
                                 quantity: removedProduct.quantity,
                                 currency: 'BDT',
                               });
@@ -362,7 +362,7 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                   }}
                   className="w-full block"
                 >
-                  <button className="w-full flex justify-center px-4 py-3 text-sm font-medium text-white bg-black hover:bg-black rounded-md">
+                  <button className="w-full flex justify-center px-4 py-3 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-md transition-all duration-300 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
                     Checkout ({totalItems} items) · ৳{totalPrice.toFixed(0)}
                   </button>
                 </Link>
