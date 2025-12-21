@@ -1,10 +1,10 @@
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
 import { useProductStore } from "../store/productStore";
-import { Link } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
 import NoProductsFound from "./NoProductsFound";
-import { pixelYourSiteService } from "../services/pixelYourSiteService";
+// import { pixelYourSiteService } from "../services/pixelYourSiteService";
 
 interface CartSlideProps {
   isOpen: boolean;
@@ -14,234 +14,168 @@ interface CartSlideProps {
 const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
   const { items, totalItems, totalPrice, updateQuantity, removeItem, addItem } =
     useCartStore();
-  const { bestSellingProducts, fetchBestSellingProducts } = useProductStore();
+  const { bestSellingProducts, fetchBestSellingProducts } =
+    useProductStore();
   const { closeAllSidebars } = useSidebar();
 
-  // Update the document body overflow to prevent background scrolling when cart is open
+  // lock body scroll when cart is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen]);
 
+  // fetch trending products
   useEffect(() => {
     if (!bestSellingProducts.length) fetchBestSellingProducts();
-  }, [bestSellingProducts.length]);
+  }, [bestSellingProducts.length, fetchBestSellingProducts]);
 
+  // marquee messages
   const messages = ["Get extra 5% off use code wcbd5 on BDT ৳2,999 shopping"];
-  const memoizedMessages = useCallback(() => {
-    const spacedDot = "|";
-    const repeated = [...messages, ...messages];
-    return repeated.map((msg, i) => (
-      <span key={i} className="flex items-center text-sm tracking-wide">
-        {msg}
-        {i !== repeated.length - 1 && <span>{spacedDot}</span>}
-      </span>
-    ));
-  }, [messages]);
+  // const memoizedMessages = useCallback(() => {
+  //   // repeated without extra spacing at the end
+  //   const repeated = [...messages, ...messages];
+  //   return repeated.map((msg, i) => (
+  //     <span key={i} className="flex items-center text-sm tracking-wide">
+  //       {msg}
+  //     </span>
+  //   ));
+  // }, []);
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-hidden ${isOpen ? 'block' : 'hidden'}`}
+      className={`fixed inset-0 z-50 overflow-hidden ${
+        isOpen ? "pointer-events-auto" : "pointer-events-none"
+      }`}
       style={{ touchAction: "none" }}
     >
       {/* Backdrop */}
       <div
         className={`absolute inset-0 bg-black transition-opacity duration-300 ease-out ${
-          isOpen ? 'opacity-50' : 'opacity-0'
+          isOpen ? "opacity-50" : "opacity-0"
         }`}
         onClick={onClose}
-        onTouchStart={(e) => {
-          e.preventDefault();
-          onClose();
-        }}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          onClose();
-        }}
-        onTouchMove={(e) => {
-          e.preventDefault();
-        }}
-      ></div>
+      />
 
       {/* Slide panel */}
       <div className="absolute inset-y-0 right-0 max-w-full flex">
         <div className="relative w-screen max-w-md">
           <div
-            className={`h-full flex flex-col bg-white shadow-xl ml-16 w-[calc(100%-4rem)] transform transition-all duration-300 ease-out ${
-              isOpen ? 'translate-x-0' : 'translate-x-full'
-            }`}
+            className={`h-full flex flex-col bg-white shadow-xl ml-16 w-[calc(100%-4rem)]
+            transform transition-all duration-300 ease-out
+            ${isOpen ? "translate-x-0" : "translate-x-full"}`}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-4 sm:py-6 border-b border-gray-200">
-              <h2 className="text-lg sm:text-xl font-semibold text-black">
-                Cart
-              </h2>
+              <h2 className="text-lg sm:text-xl font-semibold">Cart</h2>
               <button
-                type="button"
-                className="text-gray-400 hover:text-gray-500"
+                className="text-gray-400 hover:text-gray-500 text-xl"
                 onClick={onClose}
               >
-                <svg
-                  className="h-5 w-5 sm:h-6 sm:w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                ✕
               </button>
             </div>
 
             {/* Banner */}
-            <div className="w-full px-4 flex-shrink-0">
+            <div className="px-4 flex-shrink-0">
               <img
                 src="/cartbanner.png"
                 alt=""
-                className="w-full h-auto object-cover max-h-32 rounded-md"
+                className="w-full max-h-32 rounded-md object-cover"
               />
             </div>
 
             {/* Marquee */}
-            <div className="w-full bg-[#EAE1EF] py-3 overflow-hidden flex-shrink-0">
-              <div className="flex whitespace-nowrap animate-marquee px-4 text-xs">
-                {memoizedMessages()}
-              </div>
-              <style>{`
-                .animate-marquee {
-                  display: inline-flex;
-                  animation: marquee 20s linear infinite;
-                }
-                @keyframes marquee {
-                  0% { transform: translateX(100%); }
-                  100% { transform: translateX(-100%); }
-                }
-              `}</style>
-            </div>
+           {/* Marquee */}
+<div className="w-full bg-[#EAE1EF] py-3 overflow-hidden flex-shrink-0">
+  <div className="inline-flex animate-marquee text-xs">
+    {/* Duplicate messages for seamless loop */}
+    {messages.map((msg, i) => (
+      <span key={i} className="flex items-center whitespace-nowrap">
+        {msg}  |  </span>
+    ))}
+    {messages.map((msg, i) => (
+      <span key={i + messages.length} className="flex items-center whitespace-nowrap">
+          |  {msg}  |  
+      </span>
+    ))}
+  </div>
 
-            {/* Scrollable Content (Cart Items + Trending Section) */}
-            <div className="flex-1 flex flex-col min-h-0 p-4 gap-6 overflow-y-auto scrollbar-hidden scroll-smooth">
-              {/* Cart items */}
+  <style>{`
+    .animate-marquee {
+      display: inline-flex;
+      animation: marquee 10s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+  `}</style>
+</div>
+
+
+            {/* Scrollable content */}
+            <div className="flex-1 flex flex-col min-h-0 p-4 gap-6 overflow-y-auto scrollbar-hidden">
+              {/* Cart Items */}
               {items.length === 0 ? (
-                <div className="text-center py-10">
-                  <p className="text-gray-500">Your cart is empty</p>
+                <div className="text-center py-10 text-gray-500">
+                  Your cart is empty
                 </div>
               ) : (
                 items.map((item) => (
                   <div
                     key={item.product.id}
-                    className="bg-white rounded-lg p-4 flex gap-4 items-center border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-md"
+                    className="bg-white border border-gray-100 rounded-lg p-4 flex gap-4"
                   >
-                    <div className="w-24 h-24 flex-shrink-0">
-                      <img
-                        src={
-                          item.product.images[0]?.src || "/placeholder.webp"
-                        }
-                        alt={item.product.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between">
-                      <h3 className="text-sm sm:text-base font-medium line-clamp-2">
+                    <img
+                      src={item.product.images[0]?.src || "/placeholder.webp"}
+                      alt={item.product.name}
+                      className="w-24 h-24 rounded-lg object-cover"
+                    />
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="text-sm font-medium line-clamp-2">
                         {item.product.name}
                       </h3>
-                      <div className="flex items-center gap-3 mt-2">
-                        <span className="text-black font-semibold text-base sm:text-lg">
+
+                      <div className="mt-2 flex gap-2 items-center">
+                        <span className="font-semibold">
                           ৳
                           {item.product.sale_price &&
-                          item.product.sale_price !==
-                            item.product.regular_price
+                          item.product.sale_price !== item.product.regular_price
                             ? item.product.sale_price
                             : item.product.price}
                         </span>
                         {item.product.sale_price &&
-                          item.product.sale_price !==
-                            item.product.regular_price && (
-                            <span className="text-gray-500 line-through text-sm sm:text-base">
+                          item.product.sale_price !== item.product.regular_price && (
+                            <span className="text-gray-500 line-through text-sm">
                               ৳{item.product.regular_price}
                             </span>
                           )}
                       </div>
-                      <div className="mt-2 flex gap-2 items-center">
+
+                      <div className="mt-3 flex items-center gap-2">
                         <button
-                          className="px-2 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          onClick={() => {
-                            updateQuantity(
-                              item.product.id,
-                              item.quantity - 1
-                            );
-                            // Track when quantity changes
-                            pixelYourSiteService.trackAddToCart({
-                              product_id: item.product.id,
-                              product_name: item.product.name,
-                              product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
-                              currency: 'BDT',
-                              quantity: item.quantity - 1,
-                              value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * (item.quantity - 1),
-                            });
-                          }}
+                          className="px-2 py-1 border rounded"
+                          onClick={() =>
+                            updateQuantity(item.product.id, item.quantity - 1)
+                          }
                         >
                           -
                         </button>
-                        <span className="px-3 py-1 font-medium transition-colors duration-200">{item.quantity}</span>
+                        <span>{item.quantity}</span>
                         <button
-                          className={`px-2 py-1 border border-gray-300 rounded-md hover:bg-gray-50 transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                            item.product.manage_stock &&
-                            item.product.stock_quantity !== null &&
-                            item.quantity >= item.product.stock_quantity
-                              ? 'opacity-50 cursor-not-allowed'
-                              : ''
-                          }`}
-                          onClick={() => {
-                            updateQuantity(
-                              item.product.id,
-                              item.quantity + 1
-                            );
-                            // Track when quantity changes
-                            pixelYourSiteService.trackAddToCart({
-                              product_id: item.product.id,
-                              product_name: item.product.name,
-                              product_price: parseFloat(item.product.price.replace(/[^\d.-]/g, '')),
-                              currency: 'BDT',
-                              quantity: item.quantity + 1,
-                              value: parseFloat(item.product.price.replace(/[^\d.-]/g, '')) * (item.quantity + 1),
-                            });
-                          }}
-                          disabled={
-                            item.product.manage_stock &&
-                            item.product.stock_quantity !== null &&
-                            item.quantity >= item.product.stock_quantity
+                          className="px-2 py-1 border rounded"
+                          onClick={() =>
+                            updateQuantity(item.product.id, item.quantity + 1)
                           }
                         >
                           +
                         </button>
+
                         <button
-                          className="ml-auto text-red-500 text-sm sm:text-base hover:text-red-700 transition-all duration-200 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-1 focus:ring-red-300 rounded-full p-1"
-                          onClick={() => {
-                            const removedProduct = items.find(i => i.product.id === item.product.id);
-                            if (removedProduct) {
-                              pixelYourSiteService.trackCustomEvent('remove_from_cart', {
-                                product_id: removedProduct.product.id,
-                                product_name: removedProduct.product.name,
-                                value: parseFloat(removedProduct.product.price.replace(/[^\d.-]/g, '')) * removedProduct.quantity,
-                                quantity: removedProduct.quantity,
-                                currency: 'BDT',
-                              });
-                            }
-                            removeItem(item.product.id);
-                          }}
+                          className="ml-auto text-red-500 text-sm"
+                          onClick={() => removeItem(item.product.id)}
                         >
                           Remove
                         </button>
@@ -251,81 +185,49 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
                 ))
               )}
 
-              {/* Trending Products Section */}
-              <div className="pb-4 bg-[#e9e7fd] px-3 py-3 mt-6 rounded-lg">
-                <h1 className="text-center text-lg sm:text-xl mb-4 font-semibold">
+              {/* Trending */}
+              <div className="bg-[#e9e7fd] rounded-lg p-3">
+                <h2 className="text-center font-semibold mb-3">
                   Trending Products
-                </h1>
+                </h2>
+
                 <div className="flex gap-3 overflow-x-auto scrollbar-hidden py-2">
                   {bestSellingProducts.length === 0 ? (
                     <NoProductsFound
                       message="No trending products"
-                      className="py-4"
                       showImage={false}
                     />
                   ) : (
                     bestSellingProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="flex-shrink-0 w-[140px] sm:w-[160px]"
+                        className="w-[150px] flex-shrink-0 bg-white rounded-lg p-2 shadow"
                       >
-                        <div className="bg-white rounded-lg overflow-hidden p-2 flex flex-col h-full shadow-md">
-                          <Link
-                            to={`/products/${product.id}`}
-                            className="block"
-                            onClick={() => {
-                              closeAllSidebars();
-                              onClose();
-                            }}
-                          >
-                            <div className="w-full aspect-[3/4]">
-                              <img
-                                src={
-                                  product.images[0]?.src || "/placeholder.webp"
-                                }
-                                alt={product.name}
-                                className="w-full h-full object-cover rounded-lg"
-                              />
-                            </div>
-                            <div className="text-center mt-2 flex flex-col flex-grow">
-                              <h3 className="text-[11px] sm:text-[12px] font-medium line-clamp-2">
-                                {product.name}
-                              </h3>
-                              <div className="text-[9px] sm:text-[10px] text-black mt-1">
-                                {product.sale_price &&
-                                product.sale_price !== "" &&
-                                product.sale_price !==
-                                  product.regular_price ? (
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-red-500 text-[8px] sm:text-[9px] line-through">
-                                      ৳{product.regular_price}
-                                    </span>
-                                    <span>৳{product.sale_price}</span>
-                                  </div>
-                                ) : (
-                                  <span>৳{product.price}</span>
-                                )}
-                              </div>
-                            </div>
-                          </Link>
-                          <button
-                            className="w-full py-1.5 bg-[#D4F871] uppercase rounded-md border border-black text-[10px] sm:text-[11px] flex justify-center items-center gap-1 mt-auto"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              pixelYourSiteService.trackAddToCart({
-                                product_id: product.id,
-                                product_name: product.name,
-                                product_price: parseFloat(product.price.replace(/[^\d.-]/g, '')),
-                                currency: 'BDT',
-                                quantity: 1,
-                                value: parseFloat(product.price.replace(/[^\d.-]/g, '')),
-                              });
-                              addItem(product, 1);
-                            }}
-                          >
-                            Add to cart
-                          </button>
-                        </div>
+                        <Link
+                          to={`/products/${product.id}`}
+                          onClick={() => {
+                            closeAllSidebars();
+                            onClose();
+                          }}
+                        >
+                          <img
+                            src={
+                              product.images[0]?.src || "/placeholder.webp"
+                            }
+                            alt={product.name}
+                            className="rounded-lg object-cover aspect-[3/4]"
+                          />
+                          <p className="text-xs mt-2 line-clamp-2">
+                            {product.name}
+                          </p>
+                        </Link>
+
+                        <button
+                          className="w-full mt-2 py-1.5 bg-[#D4F871] border border-black rounded text-[10px]"
+                          onClick={() => addItem(product, 1)}
+                        >
+                          Add to cart
+                        </button>
                       </div>
                     ))
                   )}
@@ -335,17 +237,16 @@ const CartSlide: React.FC<CartSlideProps> = ({ isOpen, onClose }) => {
 
             {/* Footer */}
             {items.length > 0 && (
-              <div className="p-4 border-t border-gray-200 flex-shrink-0">
+              <div className="flex-shrink-0 border-t border-gray-200 p-4">
                 <Link
                   to="/checkout"
                   onClick={() => {
                     closeAllSidebars();
                     onClose();
                   }}
-                  className="w-full block"
                 >
-                  <button className="w-full flex justify-center px-4 py-3 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-md transition-all duration-300 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-                    Checkout ({totalItems} items) · ৳{totalPrice.toFixed(0)}
+                  <button className="w-full bg-black text-white py-3 rounded-md">
+                    Checkout ({totalItems}) · ৳{totalPrice.toFixed(0)}
                   </button>
                 </Link>
               </div>
